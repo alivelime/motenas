@@ -1,0 +1,20 @@
+version: '3.3'
+services:
+  api:
+    build:
+      context: .
+      args: 
+        - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    container_name: motenas 
+    tty: true
+    stdin_open: true
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./:/go/src/github.com/alivelime/motenas/backend:cached
+    working_dir: /go/src/github.com/alivelime/motenas/backend
+
