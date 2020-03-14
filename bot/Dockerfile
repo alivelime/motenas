@@ -4,16 +4,16 @@ LABEL maintainer "eto-shingo"
 ARG AWS_ACCESS_KEY_ID
 ARG AWS_SECRET_ACCESS_KEY
 
+RUN apk update
 RUN apk --update-cache \
     add musl musl-dev \
     linux-headers \
-    gcc g++ make git \
+    gcc g++ make git curl\
     gfortran \
-    openblas-dev \
+    openblas-dev libressl-dev pkgconfig \
     python3 python3-dev \
     nodejs npm\
-    rust cargo
-
+    musl-dev
 
 RUN pip3 install --upgrade pip
 RUN pip3 install awscli

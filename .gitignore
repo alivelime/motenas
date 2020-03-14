@@ -19,3 +19,11 @@ bin
 go.mod
 go.sum
 
+package-lock.json
+node_modules
+
+.env
+conf/
+omoinas/target
+service_account_key.json
+service_account_key.go

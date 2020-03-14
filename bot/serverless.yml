@@ -3,7 +3,6 @@ frameworkVersion: '>=1.28.0 <2.0.0'
 
 provider:
   name: aws
-  runtime: go1.x
   region: ap-northeast-1
   stage: ${opt:stage, self:custom.defaultStage}
 
@@ -12,22 +11,26 @@ custom:
   otherfile:
     environment:
       dev: ${file(./conf/dev.yml)}
+  rust:
+    dockerTag: 'some-custom-tag'
 
 package:
- exclude:
-   - ./**
- include:
-   - ./bin/**
+  exclude:
+    - ./**
+  include:
+    - ./bin/**
 
 functions:
   linebot:
     handler: bin/linebot
+    runtime: go1.x
     environment:
       CHANNEL_SECRET: ${self:custom.otherfile.environment.${self:provider.stage}.CHANNEL_SECRET}
       CHANNEL_TOKEN: ${self:custom.otherfile.environment.${self:provider.stage}.CHANNEL_TOKEN}
 
     events:
       - http:
-          path: callback
+          path: linebot
           method: post
           cors: true
+  

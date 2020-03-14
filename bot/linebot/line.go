@@ -1,7 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/lambda"
 
 	"github.com/line/line-bot-sdk-go/linebot"
 )
@@ -71,6 +77,26 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 	}
 }
 
+type Event struct {
+	Text string `json:"text"`
+}
+type Message struct {
+	Message string `json:"message"`
+}
+
 func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID string) {
-	r.SendTextMessage(message.Text, replyToken)
+	payload, _ := json.Marshal(Event{Text: message.Text})
+
+	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
+		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-analyzer"),
+		Payload:        payload,
+		InvocationType: aws.String("RequestResponse"),
+	})
+	if err != nil {
+		log.Println(err)
+	}
+
+	var msg Message
+	_ = json.Unmarshal(res.Payload, &msg)
+	r.SendTextMessage(msg.Message, replyToken)
 }

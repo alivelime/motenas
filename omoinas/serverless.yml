@@ -1,0 +1,29 @@
+service: omoinas
+provider:
+  name: aws
+  runtime: rust
+  memorySize: 128
+  region: ap-northeast-1
+package:
+  individually: true
+custom:
+  defaultStage: dev
+  otherfile:
+    environment:
+      dev: ${file(./conf/dev.yml)}
+  rust:
+    dockerTag: '0.2.6-rust-1.41.0'
+ 
+plugins:
+  - serverless-rust
+ 
+functions:
+  analyzer:
+    handler: omoinas.analyzer
+    environment:
+      COTOHA_CLIENT_ID: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_ID}
+      COTOHA_CLIENT_SECRET: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_SECRET}
+    events:
+      - http:
+          path: /analyzer
+          method: POST

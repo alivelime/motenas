@@ -6,6 +6,7 @@ services:
       args: 
         - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
         - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    image: alivelime/motenas_backend:v1
     container_name: motenas 
     tty: true
     stdin_open: true
@@ -15,6 +16,6 @@ services:
     ports:
       - "3002:3002"
     volumes:
-      - ./:/go/src/github.com/alivelime/motenas/backend:cached
-    working_dir: /go/src/github.com/alivelime/motenas/backend
+      - ./:/go/src/github.com/alivelime/motenas/bot:cached
+    working_dir: /go/src/github.com/alivelime/motenas/bot
 
