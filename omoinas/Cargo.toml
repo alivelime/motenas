@@ -5,6 +5,7 @@ authors = ["eto-shingo"]
 edition = "2018"
 
 [dependencies]
+rand = "0.7"
 log = "*"
 simple_logger = "*"
 lambda_runtime = "0.2.1"

@@ -18,12 +18,12 @@ plugins:
   - serverless-rust
  
 functions:
-  analyzer:
-    handler: omoinas.analyzer
+  bachan:
+    handler: omoinas.bachan
     environment:
       COTOHA_CLIENT_ID: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_ID}
       COTOHA_CLIENT_SECRET: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_SECRET}
     events:
       - http:
-          path: /analyzer
+          path: /bachan
           method: POST

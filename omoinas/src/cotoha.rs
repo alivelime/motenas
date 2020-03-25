@@ -54,7 +54,7 @@ struct SentenceTypeResponse {
     status: i32,
     message: String,
 }
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct SentenceType {
     pub modality: String,
     pub dialog_act: Vec<String>,
@@ -105,7 +105,7 @@ pub struct Link {
     pub link: i32,
     pub label: String,
 }
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct Token {
     pub id: i32,
     pub form: String,
@@ -115,13 +115,18 @@ pub struct Token {
     pub features: Option<Vec<String>>,
     pub dependency_labels: Option<Vec<Dependency>>,
 }
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct Dependency {
     pub token_id: i32,
     pub label: String,
 }
 
-pub fn parse(token: &String, text: &String) -> Result<Vec<ParseObject>, reqwest::Error> {
+pub struct ParseObjects {
+    pub chunks: Vec<ParseObject>,
+    pub tokens: Vec<Token>,
+}
+
+pub fn parse(token: &String, text: &String) -> Result<ParseObjects, reqwest::Error> {
     let response: ParseResponse = reqwest::blocking::Client::new()
         .post(&format!("{}/nlp/v1/parse", BASE_URL))
         .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", token))
@@ -132,7 +137,76 @@ pub fn parse(token: &String, text: &String) -> Result<Vec<ParseObject>, reqwest:
         .send()?
         .json()?;
 
-    return Ok(response.result);
+    let mut tokens: Vec<Token> = Vec::new();
+    for ch in &response.result {
+        for t in &ch.tokens {
+            tokens.push(t.clone());
+        }
+    }
+    return Ok(ParseObjects {
+        chunks: response.result,
+        tokens: tokens,
+    });
+}
+
+pub fn bunsetsu(chunk: &ParseObject) -> String {
+    let mut ret = String::new();
+    for token in &chunk.tokens {
+        if imiaru(token.pos.as_str()) {
+            ret = ret + token.lemma.as_str();
+        }
+    }
+    return ret;
+}
+
+fn imiaru(pos: &str) -> bool {
+    return match pos {
+        "名詞" => true,
+        "名詞接尾辞" => true,
+        "冠名詞" => true,
+        "英語接尾辞" => true,
+        "動詞語幹" => true,
+        "動詞活用語尾" => true,
+        "動詞接尾辞" => true,
+        "冠動詞" => true,
+        "補助名詞" => true,
+        "形容詞語幹" => true,
+        "形容詞接尾辞" => true,
+        "冠形容詞" => true,
+        "連体詞" => true,
+        "連用詞" => true,
+        "独立詞" => true,
+        "Number" => true,
+        "助数詞" => true,
+        "冠数詞" => true,
+
+        "接続詞" => false,
+        "接続接尾辞" => false,
+        "判定詞" => false,
+        "格助詞" => false,
+        "引用助詞" => false,
+        "連用助詞" => false,
+        "終助詞" => false,
+        "間投詞" => false,
+        "括弧" => false,
+        "句点" => false,
+        "読点" => false,
+        "空白" => false,
+        "Symbol" => false,
+        "助助数詞" => false,
+        _ => false,
+    };
+}
+
+pub fn has_lemma(chunks: &Vec<ParseObject>, p: Vec<&str>) -> Option<String> {
+    for chunk in chunks {
+        for t in &chunk.tokens {
+            if p.contains(&t.lemma.as_str()) {
+                return Some(t.lemma.clone());
+            }
+        }
+    }
+    return None;
 }
 
 /*

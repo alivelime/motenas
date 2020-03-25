@@ -88,7 +88,7 @@ func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID strin
 	payload, _ := json.Marshal(Event{Text: message.Text})
 
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
-		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-analyzer"),
+		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-bachan"),
 		Payload:        payload,
 		InvocationType: aws.String("RequestResponse"),
 	})
