@@ -2,10 +2,14 @@ use crate::cotoha;
 use crate::omomuki;
 use crate::Tumori;
 
-pub mod aru;
+pub mod modoru;
+pub mod yoku;
 
 pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = aru::new(omomuki, tree) {
+    if let Some(a) = modoru::new(omomuki, tree) {
+        return Some(a);
+    }
+    if let Some(a) = yoku::new(omomuki, tree) {
         return Some(a);
     }
 

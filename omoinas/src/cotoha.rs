@@ -1,213 +1,144 @@
-use std::env;
-
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct TokenRequest {
-    grant_type: String,
-    client_id: String,
-    client_secret: String,
-}
-
-const BASE_URL: &str = "https://api.ce-cotoha.com/api/dev";
-
-#[derive(Deserialize, Debug)]
-struct TokenResponse {
-    access_token: String,
-    token_type: String,
-    // #[serde(deserialize_with = "from_str")]
-    expires_in: String,
-    scope: String,
-    issued_at: String,
-}
-
-pub fn get_access_token() -> Result<String, reqwest::Error> {
-    let access_token_publish_url = "https://api.ce-cotoha.com/v1/oauth/accesstokens";
-
-    let response: TokenResponse = reqwest::blocking::Client::new()
-        .post(access_token_publish_url)
-        .json(&TokenRequest {
-            grant_type: "client_credentials".to_string(),
-            client_id: env::var("COTOHA_CLIENT_ID").unwrap(),
-            client_secret: env::var("COTOHA_CLIENT_SECRET").unwrap(),
-        })
-        .send()?
-        .json()?;
-
-    return Ok(response.access_token);
-}
-
-pub enum Modality {
-    Declarative,
-    Interrogative,
-    Imperative,
-}
-#[derive(Serialize, Debug)]
-struct SentenceTypeRequest {
-    sentence: String,
-    r#type: String,
-}
-#[derive(Deserialize, Debug)]
-struct SentenceTypeResponse {
-    result: SentenceType,
-    status: i32,
-    message: String,
-}
-#[derive(Deserialize, Clone, Debug)]
-pub struct SentenceType {
-    pub modality: String,
-    pub dialog_act: Vec<String>,
-}
-
-pub fn get_sentence_type(token: &String, text: &String) -> Result<SentenceType, reqwest::Error> {
-    let response: SentenceTypeResponse = reqwest::blocking::Client::new()
-        .post(&format!("{}/nlp/v1/sentence_type", BASE_URL))
-        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", token))
-        .json(&SentenceTypeRequest {
-            sentence: text.to_string(),
-            r#type: "kuzure".to_string(),
-        })
-        .send()?
-        .json()?;
-
-    return Ok(response.result);
-}
-
-#[derive(Serialize, Debug)]
-struct ParseRequest {
-    sentence: String,
-    r#type: String,
-}
-#[derive(Deserialize, Debug)]
-struct ParseResponse {
-    result: Vec<ParseObject>,
-    status: i32,
-    message: String,
-}
-#[derive(Deserialize, Debug)]
-pub struct ParseObject {
-    pub chunk_info: Chunk,
-    pub tokens: Vec<Token>,
-}
-#[derive(Deserialize, Debug)]
-pub struct Chunk {
-    pub id: i32,
-    pub head: i32,
-    pub dep: String,
-    pub chunk_head: i32,
-    pub chunk_func: i32,
-    pub links: Vec<Link>,
-    pub predicate: Option<Vec<String>>,
-}
-#[derive(Deserialize, Debug)]
-pub struct Link {
-    pub link: i32,
-    pub label: String,
-}
-#[derive(Deserialize, Clone, Debug)]
-pub struct Token {
-    pub id: i32,
-    pub form: String,
-    pub kana: String,
-    pub lemma: String,
-    pub pos: String,
-    pub features: Option<Vec<String>>,
-    pub dependency_labels: Option<Vec<Dependency>>,
-}
-#[derive(Deserialize, Clone, Debug)]
-pub struct Dependency {
-    pub token_id: i32,
-    pub label: String,
-}
+pub mod api;
 
 pub struct ParseObjects {
-    pub chunks: Vec<ParseObject>,
-    pub tokens: Vec<Token>,
+    pub chunks: Vec<api::ParseObject>,
+    pub tokens: Vec<api::Token>,
 }
 
 pub fn parse(token: &String, text: &String) -> Result<ParseObjects, reqwest::Error> {
-    let response: ParseResponse = reqwest::blocking::Client::new()
-        .post(&format!("{}/nlp/v1/parse", BASE_URL))
-        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", token))
-        .json(&ParseRequest {
-            sentence: text.to_string(),
-            r#type: "kuzure".to_string(),
-        })
-        .send()?
-        .json()?;
-
-    let mut tokens: Vec<Token> = Vec::new();
-    for ch in &response.result {
-        for t in &ch.tokens {
-            tokens.push(t.clone());
-        }
-    }
-    return Ok(ParseObjects {
-        chunks: response.result,
-        tokens: tokens,
-    });
-}
-
-pub fn bunsetsu(chunk: &ParseObject) -> String {
-    let mut ret = String::new();
-    for token in &chunk.tokens {
-        if imiaru(token.pos.as_str()) {
-            ret = ret + token.lemma.as_str();
-        }
-    }
-    return ret;
-}
-
-fn imiaru(pos: &str) -> bool {
-    return match pos {
-        "名詞" => true,
-        "名詞接尾辞" => true,
-        "冠名詞" => true,
-        "英語接尾辞" => true,
-        "動詞語幹" => true,
-        "動詞活用語尾" => true,
-        "動詞接尾辞" => true,
-        "冠動詞" => true,
-        "補助名詞" => true,
-        "形容詞語幹" => true,
-        "形容詞接尾辞" => true,
-        "冠形容詞" => true,
-        "連体詞" => true,
-        "連用詞" => true,
-        "独立詞" => true,
-        "Number" => true,
-        "助数詞" => true,
-        "冠数詞" => true,
-
-        "接続詞" => false,
-        "接続接尾辞" => false,
-        "判定詞" => false,
-        "格助詞" => false,
-        "引用助詞" => false,
-        "連用助詞" => false,
-        "終助詞" => false,
-        "間投詞" => false,
-        "括弧" => false,
-        "句点" => false,
-        "読点" => false,
-        "空白" => false,
-        "Symbol" => false,
-        "助助数詞" => false,
-        _ => false,
+    return match api::parse(token, text) {
+        Ok((chunks, tokens)) => Ok(ParseObjects {
+            chunks: chunks,
+            tokens: tokens,
+        }),
+        Err(e) => Err(e),
     };
 }
 
-pub fn has_lemma(chunks: &Vec<ParseObject>, p: Vec<&str>) -> Option<String> {
-    for chunk in chunks {
-        for t in &chunk.tokens {
-            if p.contains(&t.lemma.as_str()) {
-                return Some(t.lemma.clone());
+impl ParseObjects {
+    pub fn has_lemma(&self, p: Vec<&str>) -> Option<String> {
+        for chunk in &self.chunks {
+            for t in &chunk.tokens {
+                if p.contains(&t.lemma.as_str()) {
+                    return Some(t.lemma.clone());
+                }
             }
         }
+        return None;
     }
-    return None;
+
+    pub fn get_doushi(&self) -> Option<(String, i32, i32)> {
+        for chunk in &self.chunks {
+            for t in &chunk.tokens {
+                if t.pos.as_str() == "動詞語幹" {
+                    return Some((t.lemma.clone(), chunk.chunk_info.id, t.id));
+                }
+            }
+        }
+        return None;
+    }
+
+    pub fn get_keidou(&self) -> Option<(String, i32, i32)> {
+        for chunk in &self.chunks {
+            for t in &chunk.tokens {
+                if t.pos.as_str() == "形容詞語幹" {
+                    return Some((t.lemma.clone(), chunk.chunk_info.id, t.id));
+                }
+            }
+        }
+        return None;
+    }
+
+    pub fn is_mukashi(&self, chunk_id: i32) -> bool {
+        if let Some(p) = &self.chunks[chunk_id as usize].chunk_info.predicate {
+            if p.contains(&String::from("past")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    pub fn is_shinai(&self, chunk_id: i32) -> bool {
+        if let Some(p) = &self.chunks[chunk_id as usize].chunk_info.predicate {
+            if p.contains(&String::from("negative")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn is_ukemi(&self, chunk_id: i32) -> bool {
+        if let Some(p) = &self.chunks[chunk_id as usize].chunk_info.predicate {
+            if p.contains(&String::from("passive")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn get_nani(&self, t: i32) -> Option<(String, i32)> {
+        let mut nani = String::from("");
+        let mut tid: i32 = 0;
+        if let Some(labels) = &self.tokens[t as usize].dependency_labels {
+            for dep in labels {
+                if dep.token_id < t
+                    && self.tokens[dep.token_id as usize].pos == "名詞"
+                    && self.tokens[dep.token_id as usize].lemma != "何か"
+                {
+                    nani = self.tokens[dep.token_id as usize].lemma.clone();
+                    tid = dep.token_id;
+                }
+            }
+        }
+        return Some((nani, tid));
+    }
+    pub fn get_itsu(&self) -> Option<String> {
+        for chunk in &self.chunks {
+            for t in &chunk.tokens {
+                if let Some(features) = &t.features {
+                    if features.contains(&String::from("日時")) {
+                        return Some(t.lemma.clone());
+                    }
+                }
+            }
+        }
+        return None;
+    }
+    pub fn get_keiyou(&self, tid: i32) -> Option<String> {
+        if let Some(deps) = &self.tokens[tid as usize].dependency_labels {
+            for dep in deps {
+                if dep.label == "amod" {
+                    return Some(self.tokens[dep.token_id as usize].lemma.clone());
+                }
+            }
+        }
+        return None;
+    }
 }
+/*
+   // いつ・どこで
+   for link in &chunk.chunk_info.links {
+       match link.label.as_str() {
+           "time" => {
+               // いつ
+               omomuki.itsu =
+                   Some(cotoha::bunsetsu(&objects.chunks[link.link as usize]));
+           }
+           "purpose" => {
+               // 何を
+               omomuki.nani =
+                   Some(cotoha::bunsetsu(&objects.chunks[link.link as usize]));
+           }
+           _ => {}
+       }
+   }
+
+   if let Some(features) = &t.features {
+       if features.contains(&String::from("日時")) && omomuki.itsu.is_none() {
+           omomuki.itsu = Some(t.lemma.clone());
+       }
+   }
+*
+*/
 
 /*
 fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>

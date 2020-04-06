@@ -1,15 +1,10 @@
-use crate::omomuki;
 use crate::Tumori;
 
-pub struct Wakaran {
-    omomuki: omomuki::Omomuki,
-}
+pub struct Wakaran {}
 
 impl Wakaran {
-    pub fn new(omomuki: &omomuki::Omomuki) -> Box<dyn Tumori> {
-        return Box::new(Wakaran {
-            omomuki: omomuki.clone(),
-        });
+    pub fn new() -> Box<dyn Tumori> {
+        return Box::new(Wakaran {});
     }
 }
 impl Tumori for Wakaran {

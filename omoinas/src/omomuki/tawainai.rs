@@ -1,14 +1,10 @@
 use crate::cotoha;
 use crate::Tumori;
 
-pub mod matane;
-pub mod sayonara;
+pub mod yobu;
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = matane::new(tree) {
-        return Some(a);
-    }
-    if let Some(a) = sayonara::new(tree) {
+    if let Some(a) = yobu::new(tree) {
         return Some(a);
     }
 

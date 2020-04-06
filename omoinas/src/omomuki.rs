@@ -1,10 +1,13 @@
-use log::debug;
-
 use crate::cotoha;
 use crate::Tumori;
 
 pub mod aisatsu;
+pub mod kitanai;
+pub mod onegai;
+pub mod shirase;
+pub mod tawainai;
 pub mod toikake;
+// pub mod tsutae;
 pub mod wakaran;
 
 #[derive(Clone, Debug)]
@@ -29,8 +32,6 @@ pub enum Toki {
 }
 #[derive(Clone, Debug)]
 pub struct Doushita {
-    chunk_id: i32,
-    token_id: i32,
     ina: bool,
     toki: Toki,
     ukemi: bool,
@@ -41,16 +42,31 @@ pub struct Omomuki {
     itsu: Option<String>,
     doko: Option<String>,
     dare: Option<String>,
-    nani: Option<String>,
+    nani: Option<Nani>,
     donoyouni: Option<String>,
     doushita: Option<Doushita>,
 }
 
+#[derive(Clone, Debug)]
+pub struct Nani {
+    donna: Option<String>,
+    mono: String,
+}
+
 impl Omomuki {
     pub fn new(
-        sentence_type: &cotoha::SentenceType,
-        objects: &cotoha::ParseObjects,
+        sentence_type: &cotoha::api::SentenceType,
+        tree: &cotoha::ParseObjects,
     ) -> Box<dyn Tumori> {
+        if let Some(a) = kitanai::new(&tree) {
+            return a;
+        }
+
+        // まんず、あいさつかどうか調べるべ
+        if let Some(a) = aisatsu::new(&tree) {
+            return a;
+        }
+
         let mut omomuki = Omomuki {
             itsu: None,
             doko: None,
@@ -60,111 +76,75 @@ impl Omomuki {
             doushita: None,
         };
 
-        // まんず、動詞を探すべ
-        for chunk in &objects.chunks {
-            for t in &chunk.tokens {
-                if t.pos.as_str() == "動詞語幹" {
-                    let mut doushita = Doushita {
-                        chunk_id: chunk.chunk_info.id,
-                        token_id: t.id,
-                        ina: false,
-                        ukemi: false,
-                        toki: Toki::Ima,
-                        suru: t.lemma.clone(),
-                    };
+        // 次に、動詞を探すべ
+        if let Some((suru, chunk_id, token_id)) = tree.get_doushi() {
+            omomuki.doushita = Some(Doushita {
+                ina: tree.is_shinai(chunk_id),
+                ukemi: tree.is_ukemi(chunk_id),
+                toki: if tree.is_mukashi(chunk_id) {
+                    Toki::Mukashi
+                } else {
+                    Toki::Ima
+                },
+                suru: suru.clone(),
+            });
 
-                    // 時制と付加情報
-                    match &chunk.chunk_info.predicate {
-                        Some(predicate) => {
-                            for p in predicate {
-                                match p.as_str() {
-                                    "negative" => doushita.ina = true,
-                                    "past" => doushita.toki = Toki::Mukashi,
-                                    "passive" => doushita.ukemi = true,
-                                    _ => continue,
-                                }
-                            }
-                        }
-                        None => {}
-                    };
-                    omomuki.doushita = Some(doushita.clone());
+            if let Some((nani, tid)) = tree.get_nani(token_id) {
+                omomuki.nani = Some(Nani {
+                    donna: tree.get_keiyou(tid),
+                    mono: nani,
+                });
+            }
+        } else if let Some((dou, _, token_id)) = tree.get_keidou() {
+            // ない場合は形容詞語幹を探す
+            omomuki.donoyouni = Some(dou);
 
-                    // 何を
-                    if let Some(labels) = &t.dependency_labels {
-                        for dep in labels {
-                            if objects.tokens[dep.token_id as usize].pos == "名詞"
-                                && objects.tokens[dep.token_id as usize].lemma != "何か"
-                                || dep.label == "nmod"
-                            {
-                                let nani = &objects.tokens[dep.token_id as usize];
-                                omomuki.nani = Some(nani.lemma.clone());
-
-                                if let Some(nlabels) = &nani.dependency_labels {
-                                    for ndep in nlabels {
-                                        if ndep.label == "amod" {
-                                            omomuki.donoyouni = Some(
-                                                objects.tokens[ndep.token_id as usize]
-                                                    .lemma
-                                                    .clone(),
-                                            );
-                                        }
-                                    }
-                                }
-
-                                // あえてしない break;
-                            }
-                        }
-                    }
-
-                    // いつ・どこで
-                    for link in &chunk.chunk_info.links {
-                        match link.label.as_str() {
-                            "time" => {
-                                // いつ
-                                omomuki.itsu =
-                                    Some(cotoha::bunsetsu(&objects.chunks[link.link as usize]));
-                            }
-                            "purpose" => {
-                                // 何を
-                                omomuki.nani =
-                                    Some(cotoha::bunsetsu(&objects.chunks[link.link as usize]));
-                            }
-                            _ => {}
-                        }
-                    }
-
-                    break;
-                }
-                if let Some(features) = &t.features {
-                    if features.contains(&String::from("日時")) && omomuki.itsu.is_none() {
-                        omomuki.itsu = Some(t.lemma.clone());
-                    }
-                }
+            if let Some((nani, tid)) = tree.get_nani(token_id) {
+                omomuki.nani = Some(Nani {
+                    donna: tree.get_keiyou(tid),
+                    mono: nani,
+                });
             }
         }
-        debug!("{:#?}", omomuki);
 
-        // あいさつ?
-        if let Some(a) = aisatsu::new(&omomuki, &objects.chunks) {
-            return a;
-        }
-
-        // 問いかけ? お願い?
         match sentence_type.modality.as_str() {
             "interrogative" => {
                 // 問いかけ
-                if let Some(t) = toikake::new(&omomuki, &objects.chunks) {
+                if let Some(t) = toikake::new(&omomuki, &tree) {
                     return t;
                 }
             }
-            "imperative" => {}
-            _ => {}
+            "imperative" => {
+                // お願い
+                if let Some(t) = onegai::new(&omomuki, &tree) {
+                    return t;
+                }
+            }
+            _ => {
+                // たわいない
+                if omomuki.is_tawainai() {
+                    if let Some(t) = tawainai::new(&tree) {
+                        return t;
+                    }
+                    // とりあえず適当な奴には適当に返事する
+                    return Box::new(tawainai::yobu::Yobu {});
+                } else {
+                    if let Some(t) = shirase::new(&omomuki, &tree) {
+                        return t;
+                    }
+                    /*
+                    if let Some(t) = tsutae::new(&omomuki, &tree) {
+                        return t;
+                    }
+                    */
+                }
+            }
         };
 
-        return wakaran::Wakaran::new(&omomuki);
+        return wakaran::Wakaran::new();
     }
 
-    pub fn is_tawaimo_nai(&self) -> bool {
+    pub fn is_tawainai(&self) -> bool {
         return self.itsu.is_none()
             && self.doko.is_none()
             && self.dare.is_none()

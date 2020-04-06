@@ -1,26 +1,19 @@
 use crate::cotoha;
-use crate::omomuki;
 use crate::Tumori;
 
-pub mod hatsu;
-pub mod modoru;
-pub mod tama;
-pub mod yoku;
+pub mod hajimemashite;
+pub mod hisashiburi;
+pub mod okaeri;
+pub mod tadaima;
 
-pub fn new(
-    omomuki: &omomuki::Omomuki,
-    chunks: &Vec<cotoha::ParseObject>,
-) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = hatsu::Hatsu::new(omomuki, chunks) {
+pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+    if let Some(a) = hajimemashite::new(tree) {
         return Some(a);
     }
-    if let Some(a) = modoru::Modoru::new(omomuki, chunks) {
+    if let Some(a) = tadaima::new(tree) {
         return Some(a);
     }
-    if let Some(a) = yoku::Yoku::new(omomuki, chunks) {
-        return Some(a);
-    }
-    if let Some(a) = tama::Tama::new(omomuki, chunks) {
+    if let Some(a) = hisashiburi::new(tree) {
         return Some(a);
     }
 

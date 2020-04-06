@@ -1,11 +1,11 @@
+pub mod motomeru;
+
 use crate::cotoha;
 use crate::omomuki;
 use crate::Tumori;
 
-pub mod aru;
-
 pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = aru::new(omomuki, tree) {
+    if let Some(a) = motomeru::new(omomuki, tree) {
         return Some(a);
     }
 
