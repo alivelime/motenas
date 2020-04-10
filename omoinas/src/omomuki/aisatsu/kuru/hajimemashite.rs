@@ -1,6 +1,8 @@
 use crate::cotoha;
+use crate::hitogata;
 use crate::Tumori;
 
+#[derive(Clone, Debug)]
 pub struct Hajimemashite {}
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
@@ -11,7 +13,10 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Hajimemashite {
-    fn get_kotae(&self) -> String {
-        return String::from("はい、ご丁寧にどうも");
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(self.clone());
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.aisatsu.kuru.hajimemashite)();
     }
 }

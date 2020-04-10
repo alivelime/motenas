@@ -1,6 +1,7 @@
 use crate::cotoha;
 use crate::Tumori;
 
+pub mod nani;
 pub mod yobu;
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {

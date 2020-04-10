@@ -1,6 +1,7 @@
 use crate::cotoha;
 use crate::Tumori;
 
+pub mod ittera;
 pub mod matane;
 pub mod sayonara;
 

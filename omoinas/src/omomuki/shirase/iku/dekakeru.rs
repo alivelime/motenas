@@ -1,10 +1,13 @@
 use crate::cotoha;
+use crate::hitogata;
 use crate::omomuki;
 use crate::Tumori;
 
+#[derive(Clone, Debug)]
 pub struct Dekakeru {
-    doko: Option<String>,
-    nani: Option<omomuki::Nani>,
+    pub itsu: Option<String>,
+    pub doko: Option<String>,
+    pub nani: Option<omomuki::Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
@@ -28,6 +31,7 @@ pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<d
             });
         }
         return Some(Box::new(Dekakeru {
+            itsu: None,
             doko: omomuki.doko.clone(),
             nani: n,
         }));
@@ -37,13 +41,14 @@ pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<d
 }
 
 impl Tumori for Dekakeru {
-    fn get_kotae(&self) -> String {
-        return if let Some(doko) = &self.doko {
-            format!("おや、{}に行くのかい。\n気をつけて", doko)
-        } else if let Some(nani) = &self.nani {
-            format!("おや、{}に行くのかい。\n行ってらっしゃい", nani.mono)
-        } else {
-            String::from("はい、行ってらっしゃい")
-        };
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(omomuki::aisatsu::iku::ittera::Ittera {
+            itsu: self.itsu.clone(),
+            doko: self.doko.clone(),
+            nani: self.nani.clone(),
+        });
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.error.noimpl)();
     }
 }

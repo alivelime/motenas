@@ -1,6 +1,8 @@
 use crate::cotoha;
+use crate::hitogata;
 use crate::Tumori;
 
+#[derive(Clone, Debug)]
 pub struct Konbanwa {}
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
@@ -9,8 +11,12 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     }
     return None;
 }
+
 impl Tumori for Konbanwa {
-    fn get_kotae(&self) -> String {
-        return String::from("はい、こんばんは");
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(self.clone());
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.aisatsu.hibi.konbanwa)();
     }
 }

@@ -1,8 +1,8 @@
-use rand::seq::SliceRandom;
-
 use crate::cotoha;
+use crate::hitogata;
 use crate::Tumori;
 
+#[derive(Clone, Debug)]
 pub struct Yobu {}
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
@@ -25,18 +25,10 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Yobu {
-    fn get_kotae(&self) -> String {
-        return vec![
-            "なんだい",
-            "はいよ",
-            "呼んだかい?",
-            "どうかしたかい?",
-            "そんなことより、お茶入れとくれ",
-            "暖かくなってきたねぇ",
-            "何か言ったかい?",
-        ]
-        .choose(&mut rand::thread_rng())
-        .unwrap()
-        .to_string();
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(crate::omomuki::tawainai::nani::Nani {});
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.error.noimpl)();
     }
 }

@@ -1,6 +1,10 @@
 use crate::cotoha;
+use crate::hitogata;
 use crate::omomuki;
 use crate::Tumori;
+
+#[derive(Clone, Debug)]
+pub struct Neru {}
 
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     if omomuki.dare.is_none()
@@ -10,7 +14,16 @@ pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<d
             false
         }
     {
-        return Some(Box::new(crate::omomuki::aisatsu::hibi::oyasumi::Oyasumi {}));
+        return Some(Box::new(Neru {}));
     }
     return None;
+}
+
+impl Tumori for Neru {
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(crate::omomuki::aisatsu::hibi::oyasumi::Oyasumi {});
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.error.noimpl)();
+    }
 }

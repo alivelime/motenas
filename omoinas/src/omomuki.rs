@@ -7,7 +7,6 @@ pub mod onegai;
 pub mod shirase;
 pub mod tawainai;
 pub mod toikake;
-// pub mod tsutae;
 pub mod wakaran;
 
 #[derive(Clone, Debug)]
@@ -141,7 +140,7 @@ impl Omomuki {
             }
         };
 
-        return wakaran::Wakaran::new();
+        return wakaran::new();
     }
 
     pub fn is_tawainai(&self) -> bool {

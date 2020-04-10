@@ -18,12 +18,12 @@ plugins:
   - serverless-rust
  
 functions:
-  bachan:
-    handler: omoinas.bachan
+  ukekotae:
+    handler: omoinas.ukekotae
     environment:
       COTOHA_CLIENT_ID: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_ID}
       COTOHA_CLIENT_SECRET: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_SECRET}
     events:
       - http:
-          path: /bachan
+          path: /ukekotae
           method: POST

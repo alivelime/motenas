@@ -1,6 +1,8 @@
 use crate::cotoha;
+use crate::hitogata;
 use crate::Tumori;
 
+#[derive(Clone, Debug)]
 pub struct Kitanai {
     ng: String,
 }
@@ -14,7 +16,10 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Kitanai {
-    fn get_kotae(&self) -> String {
-        return format!("{}とはなんだい!\nもっと綺麗な言葉をお使い!", self.ng);
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(self.clone());
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.kitanai)(&self.ng);
     }
 }

@@ -3,6 +3,7 @@ use crate::Tumori;
 
 pub mod hajimemashite;
 pub mod hisashiburi;
+pub mod irasshai;
 pub mod okaeri;
 pub mod tadaima;
 

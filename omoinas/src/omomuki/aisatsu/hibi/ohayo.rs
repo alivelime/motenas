@@ -1,7 +1,8 @@
 use crate::cotoha;
-use crate::kaeshi;
+use crate::hitogata;
 use crate::Tumori;
 
+#[derive(Clone, Debug)]
 pub struct Ohayo {}
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
@@ -15,7 +16,10 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Ohayo {
-    fn get_kotae(&self) -> String {
-        return String::from(kaeshi::CHAR.aisatsu.hibi.ohayo);
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(self.clone());
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.aisatsu.hibi.ohayo)();
     }
 }

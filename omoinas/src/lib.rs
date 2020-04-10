@@ -1,8 +1,10 @@
 pub mod cotoha;
-pub mod kaeshi;
+pub mod hitogata;
 pub mod model;
 pub mod omomuki;
+pub mod repository;
 
-pub trait Tumori {
-    fn get_kotae(&self) -> String;
+pub trait Tumori: std::fmt::Debug {
+    fn kotafu(&self) -> Box<dyn Tumori>;
+    fn get_kotae(&self, _: &hitogata::Hitogata) -> String;
 }

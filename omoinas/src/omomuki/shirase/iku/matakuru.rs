@@ -1,6 +1,12 @@
 use crate::cotoha;
+use crate::hitogata;
 use crate::omomuki;
 use crate::Tumori;
+
+#[derive(Clone, Debug)]
+pub struct Matakuru {
+    pub itsu: Option<String>,
+}
 
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     if omomuki.dare.is_none() {
@@ -9,11 +15,22 @@ pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<d
         } else {
             false
         } {
-            return Some(Box::new(crate::omomuki::aisatsu::iku::matane::Matane {
-                itsu: None,
+            return Some(Box::new(Matakuru {
+                itsu: omomuki.itsu.clone(),
             }));
         }
     }
 
     return None;
+}
+
+impl Tumori for Matakuru {
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(crate::omomuki::aisatsu::iku::matane::Matane {
+            itsu: self.itsu.clone(),
+        });
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.error.noimpl)();
+    }
 }

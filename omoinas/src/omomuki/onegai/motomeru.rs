@@ -1,10 +1,11 @@
 use crate::cotoha;
-use crate::model::mono;
+use crate::hitogata;
 use crate::omomuki;
 use crate::Tumori;
 
+#[derive(Clone, Debug)]
 pub struct Motomeru {
-    nani: Option<omomuki::Nani>,
+    pub nani: Option<omomuki::Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
@@ -31,12 +32,12 @@ pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<d
 }
 
 impl Tumori for Motomeru {
-    fn get_kotae(&self) -> String {
-        if let Some(nani) = &self.nani {
-            return mono::get_mono(&nani.mono.clone(), &nani.donna.clone());
-        } else {
-            // 何かない?
-            return String::from("お茶かコーヒーがあるよ");
-        }
+    fn kotafu(&self) -> Box<dyn Tumori> {
+        return Box::new(omomuki::toikake::aru::Aru {
+            nani: self.nani.clone(),
+        });
+    }
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
+        return (chara.kaeshi.error.noimpl)();
     }
 }
