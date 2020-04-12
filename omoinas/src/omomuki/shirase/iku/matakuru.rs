@@ -8,17 +8,14 @@ pub struct Matakuru {
     pub itsu: Option<String>,
 }
 
-pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if omomuki.dare.is_none() {
-        if if let Some(d) = &omomuki.doushita {
-            d.suru == "来る" && d.toki == omomuki::Toki::Ima
-        } else {
-            false
-        } {
-            return Some(Box::new(Matakuru {
-                itsu: omomuki.itsu.clone(),
-            }));
-        }
+pub fn new(omomuki: &omomuki::Suru, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+    if omomuki.dare.is_none()
+        && omomuki.doushita.suru == "来る"
+        && omomuki.doushita.toki == omomuki::Toki::Ima
+    {
+        return Some(Box::new(Matakuru {
+            itsu: omomuki.itsu.clone(),
+        }));
     }
 
     return None;

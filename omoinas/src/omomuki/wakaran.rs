@@ -13,6 +13,6 @@ impl Tumori for Wakaran {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return (chara.kaeshi.error.noimpl)();
+        return (chara.kaeshi.wakaran.wakaran)();
     }
 }

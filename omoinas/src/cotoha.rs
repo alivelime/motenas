@@ -49,6 +49,35 @@ impl ParseObjects {
         return None;
     }
 
+    pub fn get_taigen(&self) -> Option<(String, i32, i32)> {
+        for chunk in &self.chunks {
+            for t in &chunk.tokens {
+                if t.pos.as_str() == "名詞"
+                    && if let Some(f) = &t.features {
+                        f.contains(&String::from("動作"))
+                    } else {
+                        false
+                    }
+                {
+                    return Some((t.lemma.clone(), chunk.chunk_info.id, t.id));
+                }
+            }
+        }
+        return None;
+    }
+
+    pub fn get_meishi(&self) -> Vec<String> {
+        let mut meishi: Vec<String> = Vec::new();
+        for chunk in &self.chunks {
+            for t in &chunk.tokens {
+                if t.pos.as_str() == "名詞" {
+                    meishi.push(t.lemma.clone());
+                }
+            }
+        }
+        return meishi;
+    }
+
     pub fn is_mukashi(&self, chunk_id: i32) -> bool {
         if let Some(p) = &self.chunks[chunk_id as usize].chunk_info.predicate {
             if p.contains(&String::from("past")) {
@@ -91,8 +120,31 @@ impl ParseObjects {
         }
         return Some((nani, tid));
     }
+    pub fn get_mokuteki(&self) -> Option<String> {
+        for chunk in &self.chunks {
+            for link in &chunk.chunk_info.links {
+                match link.label.as_str() {
+                    "purpose" => {
+                        // 何を
+                        return Some(self.bunsetsu(link.link as usize));
+                    }
+                    _ => {}
+                }
+            }
+        }
+        return None;
+    }
     pub fn get_itsu(&self) -> Option<String> {
         for chunk in &self.chunks {
+            for link in &chunk.chunk_info.links {
+                match link.label.as_str() {
+                    "time" => {
+                        return Some(self.bunsetsu(link.link as usize));
+                    }
+                    _ => {}
+                }
+            }
+
             for t in &chunk.tokens {
                 if let Some(features) = &t.features {
                     if features.contains(&String::from("日時")) {
@@ -113,32 +165,16 @@ impl ParseObjects {
         }
         return None;
     }
+    fn bunsetsu(&self, chunk_id: usize) -> String {
+        let mut s = String::new();
+        for t in &self.chunks[chunk_id].tokens {
+            if api::imiaru(t.pos.as_str()) {
+                s = format!("{}{}", s, t.form);
+            }
+        }
+        return s;
+    }
 }
-/*
-   // いつ・どこで
-   for link in &chunk.chunk_info.links {
-       match link.label.as_str() {
-           "time" => {
-               // いつ
-               omomuki.itsu =
-                   Some(cotoha::bunsetsu(&objects.chunks[link.link as usize]));
-           }
-           "purpose" => {
-               // 何を
-               omomuki.nani =
-                   Some(cotoha::bunsetsu(&objects.chunks[link.link as usize]));
-           }
-           _ => {}
-       }
-   }
-
-   if let Some(features) = &t.features {
-       if features.contains(&String::from("日時")) && omomuki.itsu.is_none() {
-           omomuki.itsu = Some(t.lemma.clone());
-       }
-   }
-*
-*/
 
 /*
 fn from_str<'de, T, D>(deserializer: D) -> Result<T, D::Error>

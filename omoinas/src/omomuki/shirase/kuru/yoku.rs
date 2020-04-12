@@ -6,13 +6,10 @@ use crate::Tumori;
 #[derive(Clone, Debug)]
 pub struct Yoku {}
 
-pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &omomuki::Suru, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     if omomuki.dare.is_none()
-        && if let Some(d) = &omomuki.doushita {
-            d.suru == "来る" && d.toki == omomuki::Toki::Mukashi
-        } else {
-            false
-        }
+        && omomuki.doushita.suru == "来る"
+        && omomuki.doushita.toki == omomuki::Toki::Mukashi
     {
         return Some(Box::new(Yoku {}));
     }

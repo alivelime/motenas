@@ -6,17 +6,15 @@ use crate::Tumori;
 #[derive(Clone, Debug)]
 pub struct Neru {}
 
-pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &omomuki::Suru, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     if omomuki.dare.is_none()
-        && if let Some(d) = &omomuki.doushita {
-            d.suru == "寝る" && d.toki == omomuki::Toki::Ima
-        } else {
-            false
-        }
+        && omomuki.doushita.suru == "寝る"
+        && omomuki.doushita.toki == omomuki::Toki::Ima
     {
         return Some(Box::new(Neru {}));
+    } else {
+        return None;
     }
-    return None;
 }
 
 impl Tumori for Neru {

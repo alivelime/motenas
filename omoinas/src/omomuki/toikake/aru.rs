@@ -12,17 +12,27 @@ pub struct Aru {
 }
 
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if if let Some(d) = &omomuki.doushita {
-        d.suru == "ある"
-    } else {
-        false
-    } {
-        return Some(Box::new(Aru {
-            nani: omomuki.nani.clone(),
-        }));
+    return match omomuki {
+        omomuki::Omomuki::Suru(suru) => {
+            if vec!["ある", "くれる", "貰える"].contains(&suru.doushita.suru.as_str()) {
+                Some(Box::new(Aru {
+                    nani: suru.nani.clone(),
+                }))
+            } else {
+                None
+            }
+        }
+        omomuki::Omomuki::Keiyou(keiyou) => {
+            if keiyou.dou == "ない" {
+                Some(Box::new(Aru {
+                    nani: keiyou.nani.clone(),
+                }))
+            } else {
+                None
+            }
+        }
+        _ => None,
     };
-
-    return None;
 }
 
 impl Tumori for Aru {

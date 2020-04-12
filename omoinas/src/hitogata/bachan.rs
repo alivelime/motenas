@@ -67,7 +67,7 @@ pub const BACHAN: Kaeshi = Kaeshi {
         },
     },
     wakaran: Wakaran {
-        wakaran: || String::from("え、なんだって?"),
+        wakaran: || String::from("なんだい?"),
     },
     kitanai: |ng| format!("{}とはなんだい!\nもっと綺麗な言葉をお使い!", ng),
     error: Error {

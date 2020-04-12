@@ -1,3 +1,5 @@
+use log::debug;
+
 use crate::cotoha;
 use crate::Tumori;
 
@@ -23,7 +25,7 @@ pub struct Hito {
 }
 */
 
-#[derive(PartialOrd, PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Toki {
     Nochi,
     Ima,
@@ -37,13 +39,51 @@ pub struct Doushita {
     suru: String,
 }
 #[derive(Clone, Debug)]
-pub struct Omomuki {
+pub enum Omomuki {
+    Suru(Suru),
+    Taigen(Taigen),
+    Keiyou(Keiyou),
+    Dearu(Dearu),
+    Ocha(Ocha),
+}
+
+#[derive(Clone, Debug)]
+pub struct Suru {
     itsu: Option<String>,
     doko: Option<String>,
     dare: Option<String>,
     nani: Option<Nani>,
-    donoyouni: Option<String>,
-    doushita: Option<Doushita>,
+    doushita: Doushita,
+}
+
+#[derive(Clone, Debug)]
+pub struct Taigen {
+    itsu: Option<String>,
+    doko: Option<String>,
+    nani: Option<Nani>,
+    suru: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct Keiyou {
+    dare: Option<String>,
+    nani: Option<Nani>,
+    dou: String,
+    ina: bool,
+    toki: Toki,
+}
+
+#[derive(Clone, Debug)]
+pub struct Dearu {
+    dare: Option<String>,
+    nani: Nani,
+    ina: bool,
+    toki: Toki,
+}
+
+#[derive(Clone, Debug)]
+pub struct Ocha {
+    nani: Vec<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -53,10 +93,7 @@ pub struct Nani {
 }
 
 impl Omomuki {
-    pub fn new(
-        sentence_type: &cotoha::api::SentenceType,
-        tree: &cotoha::ParseObjects,
-    ) -> Box<dyn Tumori> {
+    pub fn new(tree: &cotoha::ParseObjects) -> Box<dyn Tumori> {
         if let Some(a) = kitanai::new(&tree) {
             return a;
         }
@@ -66,18 +103,43 @@ impl Omomuki {
             return a;
         }
 
-        let mut omomuki = Omomuki {
+        let omomuki = get_omomuki(&tree);
+        debug!("{:#?}", omomuki);
+
+        // 問いかけ
+        if tree.has_lemma(vec!["?"]).is_some() {
+            if let Some(t) = toikake::new(&omomuki, &tree) {
+                return t;
+            }
+        } else {
+            // お願い
+            if let Some(t) = onegai::new(&omomuki, &tree) {
+                return t;
+            }
+
+            // たわいない
+            if let Some(t) = tawainai::new(&tree) {
+                return t;
+            }
+
+            // 知らせる
+            if let Some(t) = shirase::new(&omomuki, &tree) {
+                return t;
+            }
+        }
+
+        return wakaran::new();
+    }
+}
+
+fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
+    // 動詞を探すべ
+    if let Some((suru, chunk_id, token_id)) = tree.get_doushi() {
+        return Omomuki::Suru(Suru {
             itsu: None,
             doko: None,
             dare: None,
-            nani: None,
-            donoyouni: None,
-            doushita: None,
-        };
-
-        // 次に、動詞を探すべ
-        if let Some((suru, chunk_id, token_id)) = tree.get_doushi() {
-            omomuki.doushita = Some(Doushita {
+            doushita: Doushita {
                 ina: tree.is_shinai(chunk_id),
                 ukemi: tree.is_ukemi(chunk_id),
                 toki: if tree.is_mukashi(chunk_id) {
@@ -86,68 +148,54 @@ impl Omomuki {
                     Toki::Ima
                 },
                 suru: suru.clone(),
-            });
-
-            if let Some((nani, tid)) = tree.get_nani(token_id) {
-                omomuki.nani = Some(Nani {
+            },
+            nani: if let Some((nani, tid)) = tree.get_nani(token_id) {
+                Some(Nani {
                     donna: tree.get_keiyou(tid),
                     mono: nani,
-                });
-            }
-        } else if let Some((dou, _, token_id)) = tree.get_keidou() {
-            // ない場合は形容詞語幹を探す
-            omomuki.donoyouni = Some(dou);
-
-            if let Some((nani, tid)) = tree.get_nani(token_id) {
-                omomuki.nani = Some(Nani {
+                })
+            } else {
+                None
+            },
+        });
+    }
+    if let Some((dou, chunk_id, token_id)) = tree.get_keidou() {
+        // 形容詞語幹を探す
+        return Omomuki::Keiyou(Keiyou {
+            dou: dou,
+            nani: if let Some((nani, tid)) = tree.get_nani(token_id) {
+                Some(Nani {
                     donna: tree.get_keiyou(tid),
                     mono: nani,
-                });
-            }
-        }
-
-        match sentence_type.modality.as_str() {
-            "interrogative" => {
-                // 問いかけ
-                if let Some(t) = toikake::new(&omomuki, &tree) {
-                    return t;
-                }
-            }
-            "imperative" => {
-                // お願い
-                if let Some(t) = onegai::new(&omomuki, &tree) {
-                    return t;
-                }
-            }
-            _ => {
-                // たわいない
-                if omomuki.is_tawainai() {
-                    if let Some(t) = tawainai::new(&tree) {
-                        return t;
-                    }
-                    // とりあえず適当な奴には適当に返事する
-                    return Box::new(tawainai::yobu::Yobu {});
-                } else {
-                    if let Some(t) = shirase::new(&omomuki, &tree) {
-                        return t;
-                    }
-                    /*
-                    if let Some(t) = tsutae::new(&omomuki, &tree) {
-                        return t;
-                    }
-                    */
-                }
-            }
-        };
-
-        return wakaran::new();
+                })
+            } else {
+                None
+            },
+            dare: None,
+            ina: tree.is_shinai(chunk_id),
+            toki: if tree.is_mukashi(chunk_id) {
+                Toki::Mukashi
+            } else {
+                Toki::Ima
+            },
+        });
     }
-
-    pub fn is_tawainai(&self) -> bool {
-        return self.itsu.is_none()
-            && self.doko.is_none()
-            && self.dare.is_none()
-            && self.nani.is_none()
-            && self.doushita.is_none();
+    if let Some((suru, _chunk_id, token_id)) = tree.get_taigen() {
+        return Omomuki::Taigen(Taigen {
+            itsu: None,
+            doko: None,
+            suru: suru.clone(),
+            nani: if let Some((nani, tid)) = tree.get_nani(token_id) {
+                Some(Nani {
+                    donna: tree.get_keiyou(tid),
+                    mono: nani,
+                })
+            } else {
+                None
+            },
+        });
     }
+    return Omomuki::Ocha(Ocha {
+        nani: tree.get_meishi(),
+    });
 }

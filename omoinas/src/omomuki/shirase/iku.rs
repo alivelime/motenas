@@ -5,7 +5,7 @@ use crate::Tumori;
 pub mod dekakeru;
 pub mod matakuru;
 
-pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &omomuki::Suru, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     if let Some(a) = dekakeru::new(omomuki, tree) {
         return Some(a);
     }

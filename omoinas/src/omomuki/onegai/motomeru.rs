@@ -9,26 +9,36 @@ pub struct Motomeru {
 }
 
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if if let Some(d) = &omomuki.doushita {
-        d.suru == "くださる"
-    } else {
-        false
-    } {
-        return Some(Box::new(Motomeru {
-            nani: omomuki.nani.clone(),
-        }));
+    return match omomuki {
+        omomuki::Omomuki::Suru(suru) => {
+            if suru.doushita.suru == "下さる" {
+                Some(Box::new(Motomeru {
+                    nani: suru.nani.clone(),
+                }))
+            } else {
+                None
+            }
+        }
+        omomuki::Omomuki::Keiyou(keiyou) => {
+            if vec!["欲しい", "ほしい"].contains(&keiyou.dou.as_str()) {
+                Some(Box::new(Motomeru {
+                    nani: keiyou.nani.clone(),
+                }))
+            } else {
+                None
+            }
+        }
+        omomuki::Omomuki::Taigen(taigen) => {
+            if vec!["頂戴", "ちょうだい"].contains(&taigen.suru.as_str()) {
+                Some(Box::new(Motomeru {
+                    nani: taigen.nani.clone(),
+                }))
+            } else {
+                None
+            }
+        }
+        _ => None,
     };
-
-    if if let Some(d) = &omomuki.donoyouni {
-        d == "欲しい" || d == "ほしい"
-    } else {
-        false
-    } {
-        return Some(Box::new(Motomeru {
-            nani: omomuki.nani.clone(),
-        }));
-    };
-    return None;
 }
 
 impl Tumori for Motomeru {

@@ -10,14 +10,11 @@ pub struct Dekakeru {
     pub nani: Option<omomuki::Nani>,
 }
 
-pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &omomuki::Suru, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     // TODO して来る
     if omomuki.dare.is_none()
-        && if let Some(d) = &omomuki.doushita {
-            d.suru == "行く" && d.toki == omomuki::Toki::Ima
-        } else {
-            false
-        }
+        && omomuki.doushita.suru == "行く"
+        && omomuki.doushita.toki == omomuki::Toki::Ima
     {
         let mut n = omomuki.nani.clone();
         if if let Some(nani) = &omomuki.nani {
