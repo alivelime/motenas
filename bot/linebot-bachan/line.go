@@ -78,17 +78,19 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 }
 
 type Event struct {
-	Text string `json:"text"`
+	Text  string `json:"text"`
+	Chara string `json:"chara"`
+	ID    string `json:"id"`
 }
 type Message struct {
 	Message string `json:"message"`
 }
 
 func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID string) {
-	payload, _ := json.Marshal(Event{Text: message.Text})
+	payload, _ := json.Marshal(Event{Text: message.Text, Chara: "bachan", ID: userID})
 
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
-		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-bachan"),
+		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-ukekotae"),
 		Payload:        payload,
 		InvocationType: aws.String("RequestResponse"),
 	})

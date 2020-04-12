@@ -22,7 +22,7 @@ package:
 
 functions:
   linebot:
-    handler: bin/linebot
+    handler: bin/linebot-bachan
     runtime: go1.x
     environment:
       CHANNEL_SECRET: ${self:custom.otherfile.environment.${self:provider.stage}.CHANNEL_SECRET}
@@ -30,7 +30,7 @@ functions:
 
     events:
       - http:
-          path: linebot
+          path: linebot-bachan
           method: post
           cors: true
   
