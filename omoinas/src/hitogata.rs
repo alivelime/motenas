@@ -68,7 +68,7 @@ pub struct Toikake {
     pub aru: ToikakeAru,
 }
 pub struct ToikakeAru {
-    pub iroiro: fn(Vec<&str>) -> String,
+    pub iroiro: fn(Vec<String>) -> String,
     pub aru: fn(&str) -> String,
     pub nai: fn(&str) -> String,
     pub wakaran: fn(&str, &str) -> String,

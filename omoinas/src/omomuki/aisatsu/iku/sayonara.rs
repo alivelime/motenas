@@ -1,5 +1,6 @@
 use crate::cotoha;
 use crate::hitogata;
+use crate::omomuki::Result;
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -17,7 +18,7 @@ impl Tumori for Sayonara {
     fn kotafu(&self) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return (chara.kaeshi.aisatsu.iku.sayonara)();
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+        return Result::Message((chara.kaeshi.aisatsu.iku.sayonara)());
     }
 }

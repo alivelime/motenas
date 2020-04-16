@@ -43,7 +43,7 @@ pub const BACHAN: Kaeshi = Kaeshi {
     },
     toikake: Toikake {
         aru: ToikakeAru {
-            iroiro: |iroiro| format!("{}があるよ", iroiro.join("か")),
+            iroiro: |iroiro| format!("{}があるよ", iroiro.join("か\n")),
             aru: |mono| format!("はい、{}", mono),
             nai: |mono| format!("{}はないねぇ", mono),
             wakaran: |donna, mono| format!("{}{}はちょっとわからないねぇ", donna, mono),
@@ -57,9 +57,8 @@ pub const BACHAN: Kaeshi = Kaeshi {
                 "はいよ",
                 "呼んだかい?",
                 "どうかしたかい?",
-                "そんなことより、お茶入れとくれ",
-                "暖かくなってきたねぇ",
                 "何か言ったかい?",
+                "お弁当、ホットコーヒー、サンドイッチ、ビールにおつまみはいらんかねー?",
             ]
             .choose(&mut rand::thread_rng())
             .unwrap()
@@ -67,7 +66,9 @@ pub const BACHAN: Kaeshi = Kaeshi {
         },
     },
     wakaran: Wakaran {
-        wakaran: || String::from("なんだい?"),
+        wakaran: || {
+            String::from("お弁当、ホットコーヒー、サンドイッチ、ビールにおつまみはいらんかねー?")
+        },
     },
     kitanai: |ng| format!("{}とはなんだい!\nもっと綺麗な言葉をお使い!", ng),
     error: Error {

@@ -1,4 +1,5 @@
 use crate::hitogata;
+use crate::omomuki::Result;
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -8,7 +9,7 @@ impl Tumori for Nani {
     fn kotafu(&self) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return (chara.kaeshi.tawainai.nani)();
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+        return Result::Message((chara.kaeshi.tawainai.nani)());
     }
 }

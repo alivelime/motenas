@@ -1,5 +1,6 @@
 use crate::cotoha;
 use crate::hitogata;
+use crate::omomuki::Result;
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -15,6 +16,7 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
             "やあ",
             "ねえねえ",
             "ねえ",
+            "すみません",
         ])
         .is_some()
     {
@@ -28,7 +30,7 @@ impl Tumori for Yobu {
     fn kotafu(&self) -> Box<dyn Tumori> {
         return Box::new(crate::omomuki::tawainai::nani::Nani {});
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return (chara.kaeshi.error.noimpl)();
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+        return Result::Message((chara.kaeshi.error.noimpl)());
     }
 }

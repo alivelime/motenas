@@ -1,6 +1,6 @@
 use crate::cotoha;
 use crate::hitogata;
-use crate::omomuki;
+use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -27,7 +27,7 @@ impl Tumori for Matakuru {
             itsu: self.itsu.clone(),
         });
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return (chara.kaeshi.error.noimpl)();
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+        return Result::Message((chara.kaeshi.error.noimpl)());
     }
 }

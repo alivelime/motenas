@@ -34,16 +34,19 @@ func NewLine(secret, token string) (Line, error) {
 	}, nil
 }
 
-func (r *Line) SendTextMessage(message string, replyToken string) error {
+func (r *Line) SendTextMessage(replyToken, message string) error {
 	return r.Reply(replyToken, linebot.NewTextMessage(message))
 }
 
 func (r *Line) SendTemplateMessage(replyToken, altText string, template linebot.Template) error {
-	return r.Reply(replyToken, linebot.NewTemplateMessage(altText, template))
+	return r.Reply(replyToken,
+		linebot.NewTextMessage(altText),
+		linebot.NewTemplateMessage(altText, template),
+	)
 }
 
-func (r *Line) Reply(replyToken string, message linebot.SendingMessage) error {
-	if _, err := r.Bot.ReplyMessage(replyToken, message).Do(); err != nil {
+func (r *Line) Reply(replyToken string, message ...linebot.SendingMessage) error {
+	if _, err := r.Bot.ReplyMessage(replyToken, message...).Do(); err != nil {
 		fmt.Printf("Reply Error: %v", err)
 		return err
 	}
@@ -81,13 +84,22 @@ type Event struct {
 	Text  string `json:"text"`
 	Chara string `json:"chara"`
 	ID    string `json:"id"`
+	App   string `json:"app"`
 }
 type Message struct {
-	Message string `json:"message"`
+	Type     string     `json:"type"`
+	Message  string     `json:"message"`
+	Carousel []Carousel `json:"carousel,omitempty"`
+}
+type Carousel struct {
+	Image string `json:"image"`
+	URL   string `json:"url"`
+	Title string `json:"title"`
+	Text  string `json:"text"`
 }
 
 func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID string) {
-	payload, _ := json.Marshal(Event{Text: message.Text, Chara: "bachan", ID: userID})
+	payload, _ := json.Marshal(Event{Text: message.Text, Chara: "bachan", ID: userID, App: "line"})
 
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
 		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-ukekotae"),
@@ -98,7 +110,20 @@ func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID strin
 		log.Println(err)
 	}
 
-	var msg Message
-	_ = json.Unmarshal(res.Payload, &msg)
-	r.SendTextMessage(msg.Message, replyToken)
+	var result Message
+	_ = json.Unmarshal(res.Payload, &result)
+
+	switch result.Type {
+	case "message":
+		r.SendTextMessage(replyToken, result.Message)
+	case "carousel":
+		log.Printf("%#v", result.Carousel)
+		var columns []*linebot.CarouselColumn
+		for _, c := range result.Carousel {
+			columns = append(columns, r.NewCarouselColumn(c.Image, c.Title, c.Text, linebot.NewURIAction("商品情報を見る", c.URL)))
+		}
+		r.SendTemplateMessage(replyToken, result.Message, r.NewCarouselTemplate(columns...))
+	default:
+		break
+	}
 }

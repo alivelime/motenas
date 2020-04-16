@@ -1,6 +1,6 @@
 use crate::cotoha;
 use crate::hitogata;
-use crate::omomuki;
+use crate::omomuki::{self, Result};
 use crate::repository::mono;
 use crate::Tumori;
 
@@ -14,7 +14,7 @@ pub struct Aru {
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     return match omomuki {
         omomuki::Omomuki::Suru(suru) => {
-            if vec!["ある", "くれる", "貰える"].contains(&suru.doushita.suru.as_str()) {
+            if vec!["ある"].contains(&suru.doushita.suru.as_str()) {
                 Some(Box::new(Aru {
                     nani: suru.nani.clone(),
                 }))
@@ -39,34 +39,30 @@ impl Tumori for Aru {
     fn kotafu(&self) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return if let Some(nani) = &self.nani {
-            match mono::get_mono(&nani.mono, &nani.donna) {
-                MonoResult::Category(category) => (chara.kaeshi.toikake.aru.iroiro)(category),
-                MonoResult::Mono(mono) => {
-                    if mono.len() == 1 {
-                        (chara.kaeshi.toikake.aru.aru)(&mono[0].name)
-                    } else {
-                        (chara.kaeshi.toikake.aru.iroiro)(
-                            mono.iter().map(|m| m.name.as_str()).collect(),
-                        )
-                    }
-                }
-                MonoResult::Kawari(nai, aru) => (chara.kaeshi.toikake.aru.naikedo)(
-                    &nai,
-                    &aru.iter()
-                        .map(|m| m.name.as_str())
-                        .collect::<Vec<&str>>()
-                        .join("か"),
-                ),
-                MonoResult::Wakaran(donna, mono) => {
-                    (chara.kaeshi.toikake.aru.wakaran)(&donna, &mono)
-                }
-                MonoResult::Nai(mono) => (chara.kaeshi.toikake.aru.aru)(&mono),
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+        return match mono::get_mono(&self.nani) {
+            MonoResult::Category(category) => {
+                Result::Message((chara.kaeshi.toikake.aru.iroiro)(category))
             }
-        } else {
-            // 何かない?
-            (chara.kaeshi.toikake.aru.iroiro)(mono::get_menu())
+            MonoResult::Mono(mono) => Result::Mono(
+                if mono.len() == 1 {
+                    (chara.kaeshi.toikake.aru.aru)(mono[0].category.last().unwrap())
+                } else {
+                    (chara.kaeshi.toikake.aru.iroiro)(
+                        mono.iter()
+                            .map(|m| m.category.last().unwrap().to_string())
+                            .collect(),
+                    )
+                },
+                mono,
+            ),
+            MonoResult::Naikedo(nai, aru) => {
+                Result::Message((chara.kaeshi.toikake.aru.naikedo)(&nai, &aru.join("か\n")))
+            }
+            MonoResult::Wakaran(donna, mono) => {
+                Result::Message((chara.kaeshi.toikake.aru.wakaran)(&donna, &mono))
+            }
+            MonoResult::Nai(mono) => Result::Message((chara.kaeshi.toikake.aru.nai)(&mono)),
         };
     }
 }

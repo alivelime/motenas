@@ -1,6 +1,7 @@
 use log::debug;
 
 use crate::cotoha;
+use crate::model;
 use crate::Tumori;
 
 pub mod aisatsu;
@@ -88,8 +89,13 @@ pub struct Ocha {
 
 #[derive(Clone, Debug)]
 pub struct Nani {
-    donna: Option<String>,
-    mono: String,
+    pub donna: Option<String>,
+    pub mono: Vec<String>,
+}
+
+pub enum Result {
+    Message(String),
+    Mono(String, Vec<model::mono::Mono>),
 }
 
 impl Omomuki {
@@ -111,14 +117,11 @@ impl Omomuki {
             if let Some(t) = toikake::new(&omomuki, &tree) {
                 return t;
             }
+
+            return wakaran::new();
         } else {
             // お願い
             if let Some(t) = onegai::new(&omomuki, &tree) {
-                return t;
-            }
-
-            // たわいない
-            if let Some(t) = tawainai::new(&tree) {
                 return t;
             }
 
@@ -126,9 +129,14 @@ impl Omomuki {
             if let Some(t) = shirase::new(&omomuki, &tree) {
                 return t;
             }
+
+            // たわいない
+            if let Some(t) = tawainai::new(&tree) {
+                return t;
+            }
         }
 
-        return wakaran::new();
+        return Box::new(tawainai::nani::Nani {});
     }
 }
 

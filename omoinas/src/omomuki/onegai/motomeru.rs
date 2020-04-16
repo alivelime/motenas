@@ -1,6 +1,6 @@
 use crate::cotoha;
 use crate::hitogata;
-use crate::omomuki;
+use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -11,7 +11,8 @@ pub struct Motomeru {
 pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     return match omomuki {
         omomuki::Omomuki::Suru(suru) => {
-            if suru.doushita.suru == "下さる" {
+            if vec!["下さる", "くれる", "貰える", "見せる"].contains(&suru.doushita.suru.as_str())
+            {
                 Some(Box::new(Motomeru {
                     nani: suru.nani.clone(),
                 }))
@@ -47,7 +48,7 @@ impl Tumori for Motomeru {
             nani: self.nani.clone(),
         });
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return (chara.kaeshi.error.noimpl)();
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+        return Result::Message((chara.kaeshi.error.noimpl)());
     }
 }

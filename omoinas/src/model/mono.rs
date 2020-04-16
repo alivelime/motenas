@@ -1,19 +1,21 @@
 pub enum MonoResult {
-    Category(Vec<&'static str>),
+    Category(Vec<String>),
     Mono(Vec<Mono>),
-    Kawari(String, Vec<Mono>),
+    Naikedo(String, Vec<String>),
     Wakaran(String, String),
     Nai(String),
 }
 
-pub enum MonoType {
-    Tsumetai,
-    Atatakai,
-
-    Other,
-}
-
+#[derive(Clone, Debug)]
 pub struct Mono {
-    pub name: String,
-    pub donna: MonoType,
+    pub namae: &'static str,
+    pub category: Vec<&'static str>,
+    pub fuda: Vec<&'static str>,
+    pub neuchi: u32,
+    pub okisa: Option<(u32, &'static str)>,
+    pub aji: Option<&'static str>,
+    pub allergen: Option<Vec<&'static str>>,
+    pub calorie: Option<u32>,
+    pub image: &'static str,
+    pub url: &'static str,
 }

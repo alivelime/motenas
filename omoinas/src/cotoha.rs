@@ -104,21 +104,32 @@ impl ParseObjects {
         return false;
     }
 
-    pub fn get_nani(&self, t: i32) -> Option<(String, i32)> {
-        let mut nani = String::from("");
-        let mut tid: i32 = 0;
-        if let Some(labels) = &self.tokens[t as usize].dependency_labels {
-            for dep in labels {
-                if dep.token_id < t
-                    && self.tokens[dep.token_id as usize].pos == "名詞"
-                    && self.tokens[dep.token_id as usize].lemma != "何か"
-                {
-                    nani = self.tokens[dep.token_id as usize].lemma.clone();
-                    tid = dep.token_id;
+    pub fn get_nani(&self, t: i32) -> Option<(Vec<String>, i32)> {
+        let mut nani: Vec<String> = Vec::new();
+        let mut tid: i32 = -1;
+        for dl in self.tokens[t as usize]
+            .dependency_labels
+            .iter()
+            .flat_map(|d| d.iter())
+        {
+            let dep = &self.tokens[dl.token_id as usize];
+            if dl.token_id < t && dep.pos == "名詞" {
+                tid = dl.token_id;
+                match dep.lemma.as_str() {
+                    "何" | "何か" | "ばあちゃん" => continue,
+                    "物" => nani.push(String::from("モノ")),
+                    _ => {
+                        nani.push(dep.lemma.clone());
+                        for ndl in dep.dependency_labels.iter().flat_map(|d| d.iter()) {
+                            if ndl.label.as_str() == "compound" {
+                                nani.push(self.tokens[ndl.token_id as usize].lemma.clone());
+                            }
+                        }
+                    }
                 }
             }
         }
-        return Some((nani, tid));
+        return if tid != -1 { Some((nani, tid)) } else { None };
     }
     pub fn get_mokuteki(&self) -> Option<String> {
         for chunk in &self.chunks {

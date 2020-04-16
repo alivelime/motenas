@@ -1,6 +1,6 @@
 use crate::cotoha;
 use crate::hitogata;
-use crate::omomuki;
+use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -22,7 +22,7 @@ impl Tumori for Modoru {
     fn kotafu(&self) -> Box<dyn Tumori> {
         return Box::new(crate::omomuki::aisatsu::kuru::okaeri::Okaeri {});
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> String {
-        return (chara.kaeshi.error.noimpl)();
+    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+        return Result::Message((chara.kaeshi.error.noimpl)());
     }
 }
