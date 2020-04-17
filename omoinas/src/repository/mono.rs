@@ -76,16 +76,25 @@ impl<'a> MonoRepository<'a> {
                 .collect(),
         };
     }
-    pub fn get_result(&self, nai: String, aru: &MonoRepository) -> MonoResult {
+    pub fn get_result(&self, nai: &omomuki::Nani, aru: &MonoRepository) -> MonoResult {
         return match self.len() {
             // 絞ったものがなければ、代替案を提示する
-            0 => MonoResult::Naikedo(nai.clone(), aru.get_menu()),
+            0 => MonoResult::Naikedo(nai.donna_namae(), aru.get_menu()),
             1 | 2 | 3 => MonoResult::Mono(self.monos.iter().map(|m| (*m).clone()).collect()),
             _ => MonoResult::Category(self.get_menu()),
         };
     }
 }
 
+pub fn is_mono(nani: &omomuki::Nani) -> bool {
+    let data = get_data();
+    let monos = MonoRepository::new(data.iter().collect::<Vec<&Mono>>());
+    let korekana = monos.korekana(&nani.mono);
+    if korekana.len() > 0 {
+        return true;
+    }
+    return false;
+}
 pub fn get_mono(nani: &Option<omomuki::Nani>) -> MonoResult {
     let data = get_data();
     let monos = MonoRepository::new(data.iter().collect::<Vec<&Mono>>());
@@ -94,30 +103,24 @@ pub fn get_mono(nani: &Option<omomuki::Nani>) -> MonoResult {
             return MonoResult::Category(monos.get_menu());
         }
         // まずカテゴリや商品名・タグで検索
-        let namae = nani
-            .mono
-            .iter()
-            .rev()
-            .fold(String::from(""), |s, m| format!("{}{}", s, m));
+        let namae = nani.namae();
         let searched = monos.search_category(&namae);
         if searched.len() > 0 {
             // 次に形容詞で絞る
             if let Some(donna) = &nani.donna {
-                return searched
-                    .filter_fuda(donna)
-                    .get_result(format!("{}{}", donna, namae), &searched);
+                return searched.filter_fuda(donna).get_result(&nani, &searched);
             } else {
-                return searched.get_result(String::from(""), &searched);
+                return searched.get_result(&nani, &searched);
             }
         } else {
             if nani.mono.len() >= 2 {
                 // なければそれぞの単語で候補を挙げて見る
                 let korekana = monos.korekana(&nani.mono);
                 if korekana.len() > 0 {
-                    return searched.get_result(namae, &korekana);
+                    return searched.get_result(&nani, &korekana);
                 }
             }
-            return MonoResult::Nai(namae.clone());
+            return MonoResult::Nai(nani.namae());
         }
     } else {
         return MonoResult::Category(monos.get_menu());

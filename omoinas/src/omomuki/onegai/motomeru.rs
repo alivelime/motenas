@@ -1,4 +1,3 @@
-use crate::cotoha;
 use crate::hitogata;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
@@ -8,7 +7,7 @@ pub struct Motomeru {
     pub nani: Option<omomuki::Nani>,
 }
 
-pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
     return match omomuki {
         omomuki::Omomuki::Suru(suru) => {
             if vec!["下さる", "くれる", "貰える", "見せる"].contains(&suru.doushita.suru.as_str())
@@ -43,7 +42,7 @@ pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<d
 }
 
 impl Tumori for Motomeru {
-    fn kotafu(&self) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
         return Box::new(omomuki::toikake::aru::Aru {
             nani: self.nani.clone(),
         });

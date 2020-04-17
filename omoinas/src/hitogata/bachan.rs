@@ -3,7 +3,11 @@ use rand::seq::SliceRandom;
 use crate::hitogata::*;
 
 pub fn new() -> Hitogata {
-    return Hitogata { kaeshi: &BACHAN };
+    return Hitogata {
+        id: "bachan",
+        namae: "パッセンジャーズばあちゃん",
+        kaeshi: &BACHAN,
+    };
 }
 
 pub const BACHAN: Kaeshi = Kaeshi {
@@ -51,6 +55,13 @@ pub const BACHAN: Kaeshi = Kaeshi {
         },
     },
     tawainai: Tawainai {
+        ocha: |m, yobareta| {
+            if yobareta {
+                format!("ばあちゃんは{}じゃないよ!\nきちんとした言葉をお使い!", m)
+            } else {
+                format!("{}がなんだって?\nきちんとした言葉をお使い!", m)
+            }
+        },
         nani: || {
             vec![
                 "なんだい",

@@ -10,6 +10,8 @@ pub fn new(name: &str) -> Hitogata {
 }
 
 pub struct Hitogata {
+    pub id: &'static str,
+    pub namae: &'static str,
     pub kaeshi: &'static Kaeshi,
 }
 
@@ -76,6 +78,7 @@ pub struct ToikakeAru {
 }
 
 pub struct Tawainai {
+    pub ocha: fn(&str, bool) -> String,
     pub nani: fn() -> String,
 }
 

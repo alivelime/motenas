@@ -6,7 +6,7 @@ use crate::Tumori;
 pub struct Okaeri {}
 
 impl Tumori for Okaeri {
-    fn kotafu(&self) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {

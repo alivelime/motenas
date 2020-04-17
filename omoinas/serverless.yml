@@ -12,7 +12,7 @@ custom:
     environment:
       dev: ${file(./conf/dev.yml)}
   rust:
-    dockerTag: '0.2.6-rust-1.41.0'
+    dockerTag: '0.2.6-rust-1.42.0'
  
 plugins:
   - serverless-rust

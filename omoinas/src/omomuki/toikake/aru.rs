@@ -1,4 +1,3 @@
-use crate::cotoha;
 use crate::hitogata;
 use crate::omomuki::{self, Result};
 use crate::repository::mono;
@@ -11,7 +10,7 @@ pub struct Aru {
     pub nani: Option<omomuki::Nani>,
 }
 
-pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
     return match omomuki {
         omomuki::Omomuki::Suru(suru) => {
             if vec!["ある"].contains(&suru.doushita.suru.as_str()) {
@@ -36,7 +35,7 @@ pub fn new(omomuki: &omomuki::Omomuki, _: &cotoha::ParseObjects) -> Option<Box<d
 }
 
 impl Tumori for Aru {
-    fn kotafu(&self) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {

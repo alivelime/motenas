@@ -10,7 +10,7 @@ pub fn new() -> Box<dyn Tumori> {
 }
 
 impl Tumori for Wakaran {
-    fn kotafu(&self) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {

@@ -15,7 +15,7 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Sayonara {
-    fn kotafu(&self) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {

@@ -1,4 +1,3 @@
-use crate::cotoha;
 use crate::hitogata;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
@@ -10,7 +9,7 @@ pub struct Dekakeru {
     pub nani: Option<String>,
 }
 
-pub fn new(omomuki: &omomuki::Suru, _: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &omomuki::Suru) -> Option<Box<dyn Tumori>> {
     // TODO して来る
     if omomuki.dare.is_none()
         && omomuki.doushita.suru == "行く"
@@ -35,7 +34,7 @@ pub fn new(omomuki: &omomuki::Suru, _: &cotoha::ParseObjects) -> Option<Box<dyn 
 }
 
 impl Tumori for Dekakeru {
-    fn kotafu(&self) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
         return Box::new(omomuki::aisatsu::iku::ittera::Ittera {
             itsu: self.itsu.clone(),
             doko: self.doko.clone(),

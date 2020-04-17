@@ -5,6 +5,6 @@ pub mod omomuki;
 pub mod repository;
 
 pub trait Tumori: std::fmt::Debug {
-    fn kotafu(&self) -> Box<dyn Tumori>;
+    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori>;
     fn get_kotae(&self, _: &hitogata::Hitogata) -> omomuki::Result;
 }

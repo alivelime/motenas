@@ -66,16 +66,22 @@ impl ParseObjects {
         return None;
     }
 
-    pub fn get_meishi(&self) -> Vec<String> {
-        let mut meishi: Vec<String> = Vec::new();
-        for chunk in &self.chunks {
-            for t in &chunk.tokens {
-                if t.pos.as_str() == "名詞" {
-                    meishi.push(t.lemma.clone());
-                }
-            }
-        }
-        return meishi;
+    pub fn get_meishi(&self) -> Vec<(i32, String)> {
+        return self
+            .chunks
+            .iter()
+            .flat_map(|c| c.tokens.iter())
+            .filter(|t| t.pos.as_str() == "名詞" && self.not_compound(t.id))
+            .map(|t| (t.id, t.lemma.clone()))
+            .collect();
+    }
+    pub fn not_compound(&self, id: i32) -> bool {
+        return self
+            .tokens
+            .iter()
+            .flat_map(|t| t.dependency_labels.iter())
+            .flat_map(|dl| dl.iter())
+            .all(|l| !(l.token_id == id && l.label == "compound"));
     }
 
     pub fn is_mukashi(&self, chunk_id: i32) -> bool {
@@ -120,17 +126,26 @@ impl ParseObjects {
                     "物" => nani.push(String::from("モノ")),
                     _ => {
                         nani.push(dep.lemma.clone());
-                        for ndl in dep.dependency_labels.iter().flat_map(|d| d.iter()) {
-                            if ndl.label.as_str() == "compound" {
-                                nani.push(self.tokens[ndl.token_id as usize].lemma.clone());
-                            }
-                        }
+                        nani = self.add_compound(tid, nani);
                     }
                 }
             }
         }
         return if tid != -1 { Some((nani, tid)) } else { None };
     }
+    pub fn add_compound(&self, id: i32, mut v: Vec<String>) -> Vec<String> {
+        for dl in self.tokens[id as usize]
+            .dependency_labels
+            .iter()
+            .flat_map(|dl| dl.iter())
+        {
+            if dl.label.as_str() == "compound" {
+                v.push(self.tokens[dl.token_id as usize].lemma.clone());
+            }
+        }
+        return v;
+    }
+
     pub fn get_mokuteki(&self) -> Option<String> {
         for chunk in &self.chunks {
             for link in &chunk.chunk_info.links {
@@ -166,6 +181,17 @@ impl ParseObjects {
         }
         return None;
     }
+    pub fn get_doko(&self) -> Option<String> {
+        for t in self.chunks.iter().flat_map(|c| c.tokens.iter()) {
+            if let Some(features) = &t.features {
+                if features.contains(&String::from("固有:地")) {
+                    return Some(t.lemma.clone());
+                }
+            }
+        }
+        return None;
+    }
+
     pub fn get_keiyou(&self, tid: i32) -> Option<String> {
         if let Some(deps) = &self.tokens[tid as usize].dependency_labels {
             for dep in deps {
