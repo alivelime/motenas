@@ -1,4 +1,5 @@
 use crate::hitogata;
+use crate::model;
 use crate::omomuki::{self, Result};
 use crate::repository::mono;
 use crate::Tumori;
@@ -7,31 +8,28 @@ use crate::model::mono::MonoResult;
 
 #[derive(Clone, Debug)]
 pub struct Aru {
-    pub nani: Option<omomuki::Nani>,
+    pub nani: Option<model::Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
-    return match omomuki {
+    match omomuki {
         omomuki::Omomuki::Suru(suru) => {
-            if vec!["ある"].contains(&suru.doushita.suru.as_str()) {
-                Some(Box::new(Aru {
+            if vec!["ある"].contains(&suru.doushita.suru.as_str()) && suru.hatena {
+                return Some(Box::new(Aru {
                     nani: suru.nani.clone(),
-                }))
-            } else {
-                None
+                }));
             }
         }
         omomuki::Omomuki::Keiyou(keiyou) => {
-            if keiyou.dou == "ない" {
-                Some(Box::new(Aru {
+            if keiyou.dou == "ない" && keiyou.hatena {
+                return Some(Box::new(Aru {
                     nani: keiyou.nani.clone(),
-                }))
-            } else {
-                None
+                }));
             }
         }
-        _ => None,
+        _ => {}
     };
+    return None;
 }
 
 impl Tumori for Aru {
@@ -55,13 +53,14 @@ impl Tumori for Aru {
                 },
                 mono,
             ),
-            MonoResult::Naikedo(nai, aru) => {
-                Result::Message((chara.kaeshi.toikake.aru.naikedo)(&nai, &aru.join("か\n")))
+            MonoResult::Naikedo(nai, nara, aru) => {
+                Result::Message((chara.kaeshi.toikake.aru.naikedo)(
+                    &nai,
+                    &nara,
+                    &aru.join("か\n"),
+                ))
             }
-            MonoResult::Wakaran(donna, mono) => {
-                Result::Message((chara.kaeshi.toikake.aru.wakaran)(&donna, &mono))
-            }
-            MonoResult::Nai(mono) => Result::Message((chara.kaeshi.toikake.aru.nai)(&mono)),
+            MonoResult::Nai(mono) => Result::Message((chara.kaeshi.toikake.aru.nai)(&mono.namae())),
         };
     }
 }

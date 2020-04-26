@@ -9,7 +9,8 @@ pub struct Kitanai {
 }
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(ng) = tree.has_lemma(vec!["おい", "ババア", "ばばあ", "くそ", "死ね"]) {
+    if let Some(ng) = tree.has_lemma(vec!["おい", "ババア", "ばばあ", "くそ", "死ね", "ふざける"])
+    {
         return Some(Box::new(Kitanai { ng: ng }));
     }
 

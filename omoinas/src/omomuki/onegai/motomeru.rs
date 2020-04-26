@@ -1,44 +1,78 @@
 use crate::hitogata;
+use crate::model;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Motomeru {
-    pub nani: Option<omomuki::Nani>,
+    pub nani: Option<model::Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
-    return match omomuki {
+    match omomuki {
         omomuki::Omomuki::Suru(suru) => {
-            if vec!["下さる", "くれる", "貰える", "見せる"].contains(&suru.doushita.suru.as_str())
-            {
-                Some(Box::new(Motomeru {
+            if vec!["くれる", "貰える"].contains(&suru.doushita.suru.as_str()) {
+                return Some(Box::new(Motomeru {
                     nani: suru.nani.clone(),
+                }));
+            }
+        }
+        omomuki::Omomuki::Shitai(shitai) => match shitai.doushita.suru.as_str() {
+            "食べる" => {
+                return Some(Box::new(Motomeru {
+                    nani: Some(model::Nani {
+                        mono: vec![String::from("食べ物")],
+                        donna: None,
+                    }),
                 }))
-            } else {
-                None
+            }
+            "飲む" => {
+                return Some(Box::new(Motomeru {
+                    nani: Some(model::Nani {
+                        mono: vec![String::from("飲み物")],
+                        donna: None,
+                    }),
+                }))
+            }
+            "読む" => {
+                return Some(Box::new(Motomeru {
+                    nani: Some(model::Nani {
+                        mono: vec![String::from("読み物")],
+                        donna: None,
+                    }),
+                }))
+            }
+            _ => {}
+        },
+        omomuki::Omomuki::Shite(suru) => {
+            if vec!["下さる", "見せる"].contains(&suru.doushita.suru.as_str()) {
+                return Some(Box::new(Motomeru {
+                    nani: suru.nani.clone(),
+                }));
+            }
+            if vec!["くれる", "寄越す"].contains(&suru.doushita.suru.as_str()) {
+                return Some(Box::new(Motomeru {
+                    nani: suru.nani.clone(),
+                }));
             }
         }
         omomuki::Omomuki::Keiyou(keiyou) => {
             if vec!["欲しい", "ほしい"].contains(&keiyou.dou.as_str()) {
-                Some(Box::new(Motomeru {
+                return Some(Box::new(Motomeru {
                     nani: keiyou.nani.clone(),
-                }))
-            } else {
-                None
+                }));
             }
         }
         omomuki::Omomuki::Taigen(taigen) => {
             if vec!["頂戴", "ちょうだい"].contains(&taigen.suru.as_str()) {
-                Some(Box::new(Motomeru {
+                return Some(Box::new(Motomeru {
                     nani: taigen.nani.clone(),
-                }))
-            } else {
-                None
+                }));
             }
         }
-        _ => None,
+        _ => {}
     };
+    return None;
 }
 
 impl Tumori for Motomeru {

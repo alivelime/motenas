@@ -1,3 +1,5 @@
+use chrono::{DateTime, Local, Timelike};
+
 use crate::cotoha;
 use crate::hitogata;
 use crate::omomuki::Result;
@@ -19,6 +21,13 @@ impl Tumori for Oyasumi {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
-        return Result::Message((chara.kaeshi.aisatsu.hibi.oyasumi)());
+        let local: DateTime<Local> = Local::now();
+        let time = local.hour();
+        return Result::Message(match time {
+            0..=3 => (chara.kaeshi.aisatsu.hibi.oyasumi.mayonaka)(),
+            4..=9 => (chara.kaeshi.aisatsu.hibi.oyasumi.ohayo)(),
+            10..=16 => (chara.kaeshi.aisatsu.hibi.oyasumi.konnichiwa)(),
+            _ => (chara.kaeshi.aisatsu.hibi.oyasumi.oyasumi)(),
+        });
     }
 }

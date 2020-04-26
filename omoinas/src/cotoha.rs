@@ -27,11 +27,38 @@ impl ParseObjects {
         return None;
     }
 
-    pub fn get_doushi(&self) -> Option<(String, i32, i32)> {
+    pub fn get_doushi(&self) -> Option<(String, i32, i32, bool, bool)> {
         for chunk in &self.chunks {
             for t in &chunk.tokens {
                 if t.pos.as_str() == "動詞語幹" {
-                    return Some((t.lemma.clone(), chunk.chunk_info.id, t.id));
+                    return Some((
+                        t.lemma.clone(),
+                        chunk.chunk_info.id,
+                        t.id,
+                        t.dependency_labels
+                            .iter()
+                            .flat_map(|dl| dl.iter())
+                            .any(|dl| {
+                                dl.label == "aux"
+                                    && self.tokens[dl.token_id as usize].lemma == "たい"
+                                    && self.tokens[dl.token_id as usize]
+                                        .features
+                                        .iter()
+                                        .flat_map(|f| f.iter())
+                                        .any(|f| f.as_str() == "終止")
+                            }),
+                        t.dependency_labels
+                            .iter()
+                            .flat_map(|dl| dl.iter())
+                            .any(|dl| {
+                                dl.label == "aux"
+                                    && self.tokens[dl.token_id as usize]
+                                        .features
+                                        .iter()
+                                        .flat_map(|f| f.iter())
+                                        .any(|f| f.as_str() == "命令")
+                            }),
+                    ));
                 }
             }
         }
@@ -63,6 +90,59 @@ impl ParseObjects {
                 }
             }
         }
+        return None;
+    }
+
+    pub fn get_kore_nani(&self) -> Option<(String, i32, String, i32)> {
+        if self.tokens.iter().any(|t| {
+            t.lemma == "判定詞"
+                && match &t.features {
+                    Some(f) => f.contains(&String::from("終止")),
+                    None => false,
+                }
+        }) {
+            if let Some(t) = self.tokens.iter().find(|t| {
+                t.dependency_labels
+                    .iter()
+                    .flat_map(|dl| dl.iter())
+                    .any(|dl| dl.label == "cop")
+            }) {
+                if let Some(nt) = t
+                    .dependency_labels
+                    .iter()
+                    .flat_map(|dl| dl.iter())
+                    .find(|dl| dl.label == "nmod")
+                {
+                    return Some((
+                        t.lemma.clone(),
+                        t.id,
+                        self.tokens[nt.token_id as usize].lemma.clone(),
+                        nt.token_id,
+                    ));
+                }
+            }
+        } else {
+            // 私ってホント馬鹿
+            if let Some(t) = self.tokens.iter().find(|t| {
+                t.dependency_labels
+                    .iter()
+                    .flat_map(|dl| dl.iter())
+                    .any(|dl| dl.label == "case")
+            }) {
+                if let Some(nt) = self.tokens.iter().find(|token| {
+                    token
+                        .dependency_labels
+                        .iter()
+                        .flat_map(|dl| dl.iter())
+                        .any(|dl| {
+                            dl.token_id == t.id
+                                && vec!["nmod", "csub", "nsub"].contains(&dl.label.as_str())
+                        })
+                }) {
+                    return Some((t.lemma.clone(), t.id, nt.lemma.clone(), nt.id));
+                }
+            }
+        };
         return None;
     }
 
@@ -139,7 +219,8 @@ impl ParseObjects {
             .iter()
             .flat_map(|dl| dl.iter())
         {
-            if dl.label.as_str() == "compound" {
+            if dl.label.as_str() == "compound" && self.tokens[dl.token_id as usize].pos == "名詞"
+            {
                 v.push(self.tokens[dl.token_id as usize].lemma.clone());
             }
         }

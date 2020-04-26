@@ -19,6 +19,7 @@ pub struct Kaeshi {
     pub aisatsu: Aisatsu,
     pub shirase: Shirase,
     pub toikake: Toikake,
+    pub onegai: Onegai,
     pub tawainai: Tawainai,
     pub wakaran: Wakaran,
     pub kitanai: fn(&str) -> String,
@@ -30,9 +31,36 @@ pub struct Aisatsu {
     pub kuru: AisatsuKuru,
 }
 pub struct AisatsuHibi {
+    pub ohayo: AisatsuHibiOhayo,
+    pub konnichiwa: AisatsuHibiKonnichiwa,
+    pub konbanwa: AisatsuHibiKonbanwa,
+    pub oyasumi: AisatsuHibiOyasumi,
+}
+pub struct AisatsuHibiOhayo {
+    pub mayonaka: fn() -> String,
+    pub akegata: fn() -> String,
+    pub ohayo: fn() -> String,
+    pub osoyo: fn() -> String,
+    pub ohiru: fn() -> String,
+    pub kure: fn() -> String,
+    pub yoru: fn() -> String,
+}
+pub struct AisatsuHibiKonnichiwa {
+    pub mayonaka: fn() -> String,
     pub ohayo: fn() -> String,
     pub konnichiwa: fn() -> String,
     pub konbanwa: fn() -> String,
+}
+pub struct AisatsuHibiKonbanwa {
+    pub mayonaka: fn() -> String,
+    pub ohayo: fn() -> String,
+    pub konnichiwa: fn() -> String,
+    pub konbanwa: fn() -> String,
+}
+pub struct AisatsuHibiOyasumi {
+    pub mayonaka: fn() -> String,
+    pub ohayo: fn() -> String,
+    pub konnichiwa: fn() -> String,
     pub oyasumi: fn() -> String,
 }
 pub struct AisatsuIku {
@@ -68,18 +96,42 @@ pub struct ShiraseKuru {}
 
 pub struct Toikake {
     pub aru: ToikakeAru,
+    pub desuka: ToikakeDesuka,
 }
 pub struct ToikakeAru {
     pub iroiro: fn(Vec<String>) -> String,
     pub aru: fn(&str) -> String,
     pub nai: fn(&str) -> String,
     pub wakaran: fn(&str, &str) -> String,
-    pub naikedo: fn(&str, &str) -> String,
+    pub naikedo: fn(&str, &str, &str) -> String,
+}
+pub struct ToikakeDesuka {
+    pub wakaran: fn(&str) -> String,
+    pub subete: fn() -> String,
+    pub doreka: fn() -> String,
+    pub chigau: fn() -> String,
+    pub dayo: fn(&str) -> String,
+    pub iroiro: fn(Vec<String>) -> String,
+    pub naniga: fn() -> String,
 }
 
+pub struct Onegai {
+    pub shitai: fn() -> String,
+    pub shite: fn() -> String,
+    pub shiritai: OnegaiShiritai,
+}
+pub struct OnegaiShiritai {
+    pub kore: fn(&str) -> String,
+    pub naniga: fn() -> String,
+}
 pub struct Tawainai {
+    pub ayamaru: fn() -> String,
+    pub arigato: fn() -> String,
+    pub sounanda: fn() -> String,
+    pub bochibochi: fn() -> String,
     pub ocha: fn(&str, bool) -> String,
     pub nani: fn() -> String,
+    pub sonota: fn() -> String,
 }
 
 pub struct Wakaran {

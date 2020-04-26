@@ -28,6 +28,8 @@ pub struct Doushita {
 #[derive(Clone, Debug)]
 pub enum Omomuki {
     Suru(Suru),
+    Shitai(Suru),
+    Shite(Suru),
     Taigen(Taigen),
     Keiyou(Keiyou),
     Dearu(Dearu),
@@ -40,16 +42,18 @@ pub struct Suru {
     itsu: Option<String>,
     doko: Option<String>,
     dare: Option<String>,
-    nani: Option<Nani>,
+    nani: Option<model::Nani>,
     doushita: Doushita,
+    hatena: bool,
 }
 
 #[derive(Clone, Debug)]
 pub struct Taigen {
     itsu: Option<String>,
     doko: Option<String>,
-    nani: Option<Nani>,
+    nani: Option<model::Nani>,
     suru: String,
+    hatena: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -57,46 +61,31 @@ pub struct Keiyou {
     itsu: Option<String>,
     doko: Option<String>,
     dare: Option<String>,
-    nani: Option<Nani>,
+    nani: Option<model::Nani>,
     dou: String,
     ina: bool,
     toki: Toki,
+    hatena: bool,
 }
 
 #[derive(Clone, Debug)]
-pub struct Dearu {}
+pub struct Dearu {
+    kore: model::Nani,
+    are: model::Nani,
+    hatena: bool,
+}
 
 #[derive(Clone, Debug)]
 pub struct Ocha {
-    nani: Vec<Nani>,
+    nani: Vec<model::Nani>,
+    hatena: bool,
 }
 
 #[derive(Clone, Debug)]
 pub struct Tawainai {
     itsu: Option<String>,
     doko: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct Nani {
-    pub donna: Option<String>,
-    pub mono: Vec<String>,
-}
-impl Nani {
-    pub fn donna_namae(&self) -> String {
-        return format!(
-            "{}{}",
-            self.donna.as_ref().unwrap_or(&String::from("")),
-            self.namae()
-        );
-    }
-    pub fn namae(&self) -> String {
-        return self
-            .mono
-            .iter()
-            .rev()
-            .fold(String::from(""), |s, m| format!("{}{}", s, m));
-    }
+    hatena: bool,
 }
 
 pub enum Result {
@@ -106,6 +95,7 @@ pub enum Result {
 
 impl Omomuki {
     pub fn new(tree: &cotoha::ParseObjects) -> Box<dyn Tumori> {
+        // NGワードは弾く
         if let Some(a) = kitanai::new(&tree) {
             return a;
         }
@@ -118,38 +108,44 @@ impl Omomuki {
         let omomuki = get_omomuki(&tree);
         debug!("{:#?}", omomuki);
 
-        // 問いかけ
-        if tree.has_lemma(vec!["?"]).is_some() {
-            if let Some(t) = toikake::new(&omomuki) {
-                return t;
-            }
-
-            return wakaran::new();
-        } else {
-            // お願い
-            if let Some(t) = onegai::new(&omomuki) {
-                return t;
-            }
-
-            // 知らせる
-            if let Some(t) = shirase::new(&omomuki) {
-                return t;
-            }
-
-            // たわいない
-            if let Some(t) = tawainai::new(&omomuki, &tree) {
-                return t;
-            }
+        // お願い
+        if let Some(t) = onegai::new(&omomuki) {
+            return t;
         }
 
-        return Box::new(tawainai::nani::Nani {});
+        // 問いかけ
+        if let Some(t) = toikake::new(&omomuki) {
+            return t;
+        }
+
+        // 知らせる
+        if let Some(t) = shirase::new(&omomuki) {
+            return t;
+        }
+
+        // たわいない
+        if let Some(t) = tawainai::new(&omomuki, &tree) {
+            return t;
+        }
+
+        return if tree.has_lemma(vec!["?"]).is_some() {
+            wakaran::new()
+        } else {
+            match omomuki {
+                Omomuki::Dearu(dearu) => tawainai::dearu::new(&dearu),
+                Omomuki::Shitai(shitai) => onegai::shitai::new(&shitai),
+                Omomuki::Shite(shite) => onegai::shite::new(&shite),
+                _ => Box::new(tawainai::sonota::Sonota {}),
+            }
+        };
     }
 }
 
 fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
+    let hatena = tree.has_lemma(vec!["?"]).is_some();
     // 動詞を探すべ
-    if let Some((suru, chunk_id, token_id)) = tree.get_doushi() {
-        return Omomuki::Suru(Suru {
+    if let Some((suru, chunk_id, token_id, shitai, shite)) = tree.get_doushi() {
+        let suru = Suru {
             itsu: None,
             doko: None,
             dare: None,
@@ -164,14 +160,24 @@ fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
                 suru: suru.clone(),
             },
             nani: if let Some((nani, tid)) = tree.get_nani(token_id) {
-                Some(Nani {
+                Some(model::Nani {
                     donna: tree.get_keiyou(tid),
                     mono: nani,
                 })
             } else {
                 None
             },
-        });
+            hatena: hatena,
+        };
+        return if shitai {
+            // フレンドしたい
+            Omomuki::Shitai(suru)
+        } else if shite {
+            // 頑張って
+            Omomuki::Shite(suru)
+        } else {
+            Omomuki::Suru(suru)
+        };
     }
 
     // 次に体言止めを探すべ
@@ -181,23 +187,38 @@ fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
             doko: None,
             suru: suru.clone(),
             nani: if let Some((nani, tid)) = tree.get_nani(token_id) {
-                Some(Nani {
+                Some(model::Nani {
                     donna: tree.get_keiyou(tid),
                     mono: nani,
                 })
             } else {
                 None
             },
+            hatena: hatena,
         });
     }
+    // これはゾンビですか?
+    if let Some((kore, ktid, are, ntid)) = tree.get_kore_nani() {
+        return Omomuki::Dearu(Dearu {
+            kore: model::Nani {
+                donna: tree.get_keiyou(ktid),
+                mono: tree.add_compound(ktid, vec![kore.clone()]),
+            },
+            are: model::Nani {
+                donna: tree.get_keiyou(ntid),
+                mono: tree.add_compound(ntid, vec![are.clone()]),
+            },
+            hatena: hatena,
+        });
+    }
+    // 形容詞語幹を探す
     if let Some((dou, chunk_id, token_id)) = tree.get_keidou() {
-        // 形容詞語幹を探す
         return Omomuki::Keiyou(Keiyou {
             itsu: None,
             doko: None,
             dou: dou,
             nani: if let Some((nani, tid)) = tree.get_nani(token_id) {
-                Some(Nani {
+                Some(model::Nani {
                     donna: tree.get_keiyou(tid),
                     mono: nani,
                 })
@@ -211,24 +232,28 @@ fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
             } else {
                 Toki::Ima
             },
+            hatena: hatena,
         });
     }
 
+    // ばあちゃん、お茶
     let nani = tree.get_meishi();
     if nani.len() > 0 {
         return Omomuki::Ocha(Ocha {
             nani: nani
                 .iter()
-                .map(|(id, w)| Nani {
+                .map(|(id, w)| model::Nani {
                     donna: tree.get_keiyou(*id),
                     mono: tree.add_compound(*id, vec![w.to_string()]),
                 })
                 .collect(),
+            hatena: hatena,
         });
     }
 
     return Omomuki::Tawainai(Tawainai {
         itsu: tree.get_itsu(),
         doko: tree.get_doko(),
+        hatena: hatena,
     });
 }

@@ -1,5 +1,6 @@
 use crate::cotoha;
 use crate::hitogata;
+use crate::model;
 use crate::omomuki::{self, Result};
 use crate::repository::mono;
 use crate::Tumori;
@@ -7,8 +8,8 @@ use crate::Tumori;
 #[derive(Clone, Debug)]
 pub struct Ocha {
     yobu: bool,
-    nani: Vec<omomuki::Nani>,
-    mono: omomuki::Nani,
+    nani: Vec<model::Nani>,
+    mono: model::Nani,
 }
 
 pub fn new(ocha: &omomuki::Ocha, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {

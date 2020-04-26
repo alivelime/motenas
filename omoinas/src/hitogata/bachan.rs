@@ -13,10 +13,33 @@ pub fn new() -> Hitogata {
 pub const BACHAN: Kaeshi = Kaeshi {
     aisatsu: Aisatsu {
         hibi: AisatsuHibi {
-            ohayo: || String::from("はい、おはよう"),
-            konnichiwa: || String::from("はい、こんにちは!"),
-            konbanwa: || String::from("はい、こんばんは"),
-            oyasumi: || String::from("はい、おやすみ"),
+            ohayo: AisatsuHibiOhayo {
+                mayonaka: || String::from("まだ夜中だよ? 夜勤かい?"),
+                akegata: || String::from("おはよう。早いんだねぇ"),
+                ohayo: || String::from("はい、おはよう"),
+                osoyo: || String::from("やっと起きたのかい"),
+                ohiru: || String::from("もうお昼だよ"),
+                kure: || String::from("もう日が暮れちまうよ"),
+                yoru: || String::from("もう夜中だよ"),
+            },
+            konnichiwa: AisatsuHibiKonnichiwa {
+                mayonaka: || String::from("こんな夜中にどうしたんだい?"),
+                ohayo: || String::from("おや、早いんだねぇ"),
+                konnichiwa: || String::from("はい、こんにちは"),
+                konbanwa: || String::from("もう、こんばんは、だねぇ"),
+            },
+            konbanwa: AisatsuHibiKonbanwa {
+                mayonaka: || String::from("こんな夜中にどうしたんだい?"),
+                ohayo: || String::from("何言ってるんだい。もう朝だよ"),
+                konnichiwa: || String::from("何言ってるんだい。まだお昼だよ"),
+                konbanwa: || String::from("はい、こんばんは"),
+            },
+            oyasumi: AisatsuHibiOyasumi {
+                mayonaka: || String::from("夜更かししないで早く寝るんだよ"),
+                ohayo: || String::from("おや、今から寝るのかい。\nちゃんと寝るんだよ"),
+                konnichiwa: || String::from("おや、風邪でもひいたのかい?\nゆっくり休むんだよ"),
+                oyasumi: || String::from("はい、おやすみ"),
+            },
         },
         iku: AisatsuIku {
             matane: AisatsuIkuMatane {
@@ -51,7 +74,33 @@ pub const BACHAN: Kaeshi = Kaeshi {
             aru: |mono| format!("はい、{}", mono),
             nai: |mono| format!("{}はないねぇ", mono),
             wakaran: |donna, mono| format!("{}{}はちょっとわからないねぇ", donna, mono),
-            naikedo: |nai, aru| format!("{}はないけど{}ならあったかねぇ", nai, aru),
+            naikedo: |nai, nara, aru| {
+                format!("{}はないけど\n{}なら\n{}があったかねぇ", nai, nara, aru)
+            },
+        },
+        desuka: ToikakeDesuka {
+            wakaran: |nai| format!("{}は扱ってないからよくわからないねぇ", nai),
+            subete: || format!("そうだよ"),
+            doreka: || format!("そうじゃないものもあるねぇ"),
+            chigau: || format!("たぶん違うねぇ"),
+            dayo: |are| format!("{}だねぇ", are),
+            iroiro: |iroiro| format!("{}だねぇ", iroiro.join("か\n")),
+            naniga: || format!("何がだい?"),
+        },
+    },
+    onegai: Onegai {
+        shitai: || format!("周りに迷惑かけない範囲で好きにしておくれ"),
+        shite: || format!("ばあちゃんは忙しいから自分でやっとくれ"),
+        shiritai: OnegaiShiritai {
+            kore: |nani| {
+                format!(
+                    "{}について知りたいのかい?\n開発中だからちょっと待っておくれ",
+                    nani
+                )
+            },
+            naniga: || {
+                format!("何について知りたいのかい?\nと言っても教えてあげられる事は何もないねぇ")
+            },
         },
     },
     tawainai: Tawainai {
@@ -65,21 +114,24 @@ pub const BACHAN: Kaeshi = Kaeshi {
         nani: || {
             vec![
                 "なんだい",
-                "はいよ",
                 "呼んだかい?",
                 "どうかしたかい?",
                 "何か言ったかい?",
-                "お弁当、ホットコーヒー、サンドイッチ、ビールにおつまみはいらんかねー?",
             ]
             .choose(&mut rand::thread_rng())
             .unwrap()
             .to_string()
         },
-    },
-    wakaran: Wakaran {
-        wakaran: || {
+        sonota: || {
             String::from("お弁当、ホットコーヒー、サンドイッチ、ビールにおつまみはいらんかねー?")
         },
+        ayamaru: || String::from("おや、何かまずかったかね。すまないねぇ。"),
+        arigato: || String::from("はい、ありがとうね。"),
+        bochibochi: || String::from("ばあちゃんはもう歳だからねぇ"),
+        sounanda: || String::from("おや、そうなのかい。"),
+    },
+    wakaran: Wakaran {
+        wakaran: || String::from("ちょっとわかんないねぇ"),
     },
     kitanai: |ng| format!("{}とはなんだい!\nもっと綺麗な言葉をお使い!", ng),
     error: Error {
