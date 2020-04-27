@@ -33,6 +33,6 @@ impl Tumori for Kizukai {
         return Box::new(omomuki::tawainai::bochibochi::Bochibochi {});
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
-        return Result::Message((chara.kaeshi.error.noimpl)());
+        return Result::Message((chara.kaeshi.tawainai.kizukai)());
     }
 }

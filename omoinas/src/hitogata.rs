@@ -127,11 +127,14 @@ pub struct OnegaiShiritai {
 pub struct Tawainai {
     pub ayamaru: fn() -> String,
     pub arigato: fn() -> String,
-    pub sounanda: fn() -> String,
     pub bochibochi: fn() -> String,
-    pub ocha: fn(&str, bool) -> String,
+    pub kizukai: fn() -> String,
+    pub hagemasu: fn() -> String,
     pub nani: fn() -> String,
+    pub ocha: fn(&str, bool) -> String,
     pub sonota: fn() -> String,
+    pub sounanda: fn() -> String,
+    pub yokatta: fn() -> String,
 }
 
 pub struct Wakaran {

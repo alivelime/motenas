@@ -104,13 +104,11 @@ pub const BACHAN: Kaeshi = Kaeshi {
         },
     },
     tawainai: Tawainai {
-        ocha: |m, yobareta| {
-            if yobareta {
-                format!("ばあちゃんは{}じゃないよ!\nきちんとした言葉をお使い!", m)
-            } else {
-                format!("{}がなんだって?\nきちんとした言葉をお使い!", m)
-            }
-        },
+        arigato: || String::from("はい、ありがとうね。"),
+        ayamaru: || String::from("おや、何かまずかったかね。すまないねぇ。"),
+        bochibochi: || String::from("ばあちゃんはもう歳だからねぇ"),
+        hagemasu: || String::from("大変だと思うけど、頑張っとくれ"),
+        kizukai: || String::from("おや、大丈夫かい?\nしっかり休むんだよ"),
         nani: || {
             vec![
                 "なんだい",
@@ -122,13 +120,18 @@ pub const BACHAN: Kaeshi = Kaeshi {
             .unwrap()
             .to_string()
         },
+        ocha: |m, yobareta| {
+            if yobareta {
+                format!("ばあちゃんは{}じゃないよ!\nきちんとした言葉をお使い!", m)
+            } else {
+                format!("{}がなんだって?\nきちんとした言葉をお使い!", m)
+            }
+        },
         sonota: || {
             String::from("お弁当、ホットコーヒー、サンドイッチ、ビールにおつまみはいらんかねー?")
         },
-        ayamaru: || String::from("おや、何かまずかったかね。すまないねぇ。"),
-        arigato: || String::from("はい、ありがとうね。"),
-        bochibochi: || String::from("ばあちゃんはもう歳だからねぇ"),
         sounanda: || String::from("おや、そうなのかい。"),
+        yokatta: || String::from("そうかい、それは良かったねぇ"),
     },
     wakaran: Wakaran {
         wakaran: || String::from("ちょっとわかんないねぇ"),

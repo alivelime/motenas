@@ -13,7 +13,9 @@ pub mod nani;
 pub mod ocha;
 pub mod sonota;
 pub mod sounanda;
+pub mod watashi;
 pub mod yobu;
+pub mod yokatta;
 
 pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     match omomuki {
@@ -22,18 +24,24 @@ pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Bo
                 return Some(a);
             }
         }
-        _ => {
-            if let Some(a) = hagemasu::new(omomuki) {
-                return Some(a);
-            }
-            if let Some(a) = monku::new(tree) {
-                return Some(a);
-            }
-            if let Some(a) = yobu::new(tree) {
-                return Some(a);
-            }
-        }
+        _ => {}
     };
+
+    if let Some(a) = kizukai::new(omomuki) {
+        return Some(a);
+    }
+    if let Some(a) = hagemasu::new(omomuki) {
+        return Some(a);
+    }
+    if let Some(a) = watashi::new(omomuki) {
+        return Some(a);
+    }
+    if let Some(a) = monku::new(tree) {
+        return Some(a);
+    }
+    if let Some(a) = yobu::new(tree) {
+        return Some(a);
+    }
 
     return None;
 }

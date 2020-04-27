@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local, Timelike};
+use chrono::{FixedOffset, Timelike, Utc};
 
 use crate::cotoha;
 use crate::hitogata;
@@ -23,9 +23,8 @@ impl Tumori for Ohayo {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
-        let local: DateTime<Local> = Local::now();
-        let time = local.hour();
-        return Result::Message(match time {
+        let local = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
+        return Result::Message(match local.hour() {
             0..=3 => (chara.kaeshi.aisatsu.hibi.ohayo.mayonaka)(),
             4..=6 => (chara.kaeshi.aisatsu.hibi.ohayo.akegata)(),
             7..=9 => (chara.kaeshi.aisatsu.hibi.ohayo.ohayo)(),

@@ -16,22 +16,31 @@ impl<'a> MonoRepository<'a> {
         return self.monos.len();
     }
     pub fn get_menu(&self) -> Vec<String> {
-        if self.len() == 0 {
-            return Vec::new();
-        }
-        for i in 0..self.monos[0].category.len() {
-            let mut menu = HashSet::new();
-
-            for mono in &self.monos {
-                menu.insert(mono.category[i].clone());
+        match self.len() {
+            0 => {
+                return Vec::new();
             }
+            1 => {
+                return vec![self.monos[0].category.last().unwrap().to_string()];
+            }
+            _ => {
+                let mut menu = HashSet::new();
+                for i in 0..self.monos[0].category.len() {
+                    menu = HashSet::new();
+                    for mono in &self.monos {
+                        if i < mono.category.len() {
+                            menu.insert(mono.category[i].clone());
+                        }
+                    }
 
-            if menu.len() >= 2 {
+                    if menu.len() >= 2 {
+                        return menu.iter().map(|m| m.to_string()).collect();
+                    }
+                }
+
                 return menu.iter().map(|m| m.to_string()).collect();
             }
-        }
-
-        return Vec::new();
+        };
     }
 
     pub fn filter_fuda(&self, nani: &String) -> MonoRepository {
@@ -123,10 +132,6 @@ pub fn get_mono(nani: &Option<model::Nani>) -> MonoResult {
     let data = get_data();
     let monos = MonoRepository::new(data.iter().collect::<Vec<&Mono>>());
     if let Some(nani) = nani {
-        if nani.mono.contains(&String::from("メニュー")) {
-            return MonoResult::Category(monos.get_menu());
-        }
-
         // 冷たいチョコアイス?
         if let Some(donna) = &nani.donna {
             let searched = monos.match_all([nani.mono.clone(), vec![donna.clone()]].concat());
@@ -149,7 +154,7 @@ pub fn get_mono(nani: &Option<model::Nani>) -> MonoResult {
         if nani.mono.len() >= 2 {
             let korekana = monos.korekana(&nani.mono);
             if korekana.len() > 0 {
-                return searched.get_result(Some((&nani.namae(), &nani.mono[0])));
+                return korekana.get_result(Some((&nani.namae(), &nani.mono[0])));
             }
         }
 
@@ -215,6 +220,16 @@ pub fn desuka(kore: &model::Nani, are: &model::Nani) -> Desu {
 
 fn get_data() -> Vec<Mono> {
     return vec![
+        Mono {
+            namae: "車内販売メニュー",
+            category: vec!["モノ", "メニュー"],
+            fuda: vec![],
+            neuchi: 0,
+            allergen: None,
+            calorie: None,
+            image: "https://www.jr-cp.co.jp/topics/get_image?id=215&image_number=1",
+            url: "https://www.jr-cp.co.jp/pdf/service/wagon_menu_list.pdf",
+        },
         Mono {
             namae: "スジャータアイスクリーム(バニラ)",
             category: vec!["モノ", "食べ物", "アイスクリーム", "バニラアイス"],

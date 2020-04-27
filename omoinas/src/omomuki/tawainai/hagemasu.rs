@@ -32,6 +32,6 @@ impl Tumori for Hagemasu {
         return Box::new(omomuki::tawainai::arigato::Arigato {});
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
-        return Result::Message((chara.kaeshi.error.noimpl)());
+        return Result::Message((chara.kaeshi.tawainai.hagemasu)());
     }
 }
