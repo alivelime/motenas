@@ -9,8 +9,10 @@ provider:
 custom:
   defaultStage: dev
   otherfile:
-    environment:
-      dev: ${file(./conf/dev.yml)}
+    lineBachan:
+      dev: ${file(./conf/line-bachan-dev.yml)}
+    lineMinarai:
+      dev: ${file(./conf/line-minarai-dev.yml)}
   rust:
     dockerTag: 'some-custom-tag'
 
@@ -21,16 +23,65 @@ package:
     - ./bin/**
 
 functions:
-  linebot:
-    handler: bin/linebot-bachan
+  lineBachan:
+    handler: bin/line-bachan
     runtime: go1.x
     environment:
-      CHANNEL_SECRET: ${self:custom.otherfile.environment.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.environment.${self:provider.stage}.CHANNEL_TOKEN}
+      CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_SECRET}
+      CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_TOKEN}
+      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
+      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
 
     events:
       - http:
-          path: linebot-bachan
+          path: line-bachan
           method: post
           cors: true
+  
+  lineBachanAdmin:
+    handler: bin/line-bachan-admin
+    runtime: go1.x
+    environment:
+      CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_SECRET}
+      CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_TOKEN}
+      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
+      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
+
+    events:
+      - http:
+          path: line-bachan-admin
+          method: post
+          cors: true
+  
+  
+  lineMinarai:
+    handler: bin/line-minarai
+    runtime: go1.x
+    environment:
+      CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_SECRET}
+      CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_TOKEN}
+      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
+      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
+
+    events:
+      - http:
+          path: line-minarai
+          method: post
+          cors: true
+  
+  lineMinaraiAdmin:
+    handler: bin/line-minarai-admin
+    runtime: go1.x
+    environment:
+      CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_SECRET}
+      CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_TOKEN}
+      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
+      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
+
+    events:
+      - http:
+          path: line-minarai-admin
+          method: post
+          cors: true
+  
   
