@@ -16,30 +16,62 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
                     nani: suru.nani.clone(),
                 }));
             }
+            if let Some(nani) = &suru.nani {
+                if vec!["お腹", "原"].contains(&nani.namae().as_str())
+                    && vec!["空く", "すく", "へる", "減る"].contains(&suru.doushita.suru.as_str())
+                {
+                    return Some(Box::new(Motomeru {
+                        nani: Some(model::Nani {
+                            mono: vec![String::from("弁当")],
+                            donna: None,
+                        }),
+                    }));
+                }
+                if (nani.namae() == "喉"
+                    && vec!["かわく", "渇く", "乾く"].contains(&suru.doushita.suru.as_str()))
+                    || (nani.namae() == "のどか" && suru.doushita.suru.as_str() == "わく")
+                {
+                    return Some(Box::new(Motomeru {
+                        nani: Some(model::Nani {
+                            mono: vec![String::from("ソフトドリンク")],
+                            donna: None,
+                        }),
+                    }));
+                }
+            }
         }
         omomuki::Omomuki::Shitai(shitai) => match shitai.doushita.suru.as_str() {
             "食べる" => {
                 return Some(Box::new(Motomeru {
-                    nani: Some(model::Nani {
-                        mono: vec![String::from("食べ物")],
-                        donna: None,
-                    }),
+                    nani: match shitai.nani {
+                        Some(_) => shitai.nani.clone(),
+                        None => Some(model::Nani {
+                            mono: vec![String::from("食べ物")],
+                            donna: None,
+                        }),
+                    },
                 }))
             }
             "飲む" => {
                 return Some(Box::new(Motomeru {
-                    nani: Some(model::Nani {
-                        mono: vec![String::from("飲み物")],
-                        donna: None,
-                    }),
+                    nani: match shitai.nani {
+                        Some(_) => shitai.nani.clone(),
+                        None => Some(model::Nani {
+                            mono: vec![String::from("飲み物")],
+                            donna: None,
+                        }),
+                    },
                 }))
             }
             "読む" => {
                 return Some(Box::new(Motomeru {
-                    nani: Some(model::Nani {
-                        mono: vec![String::from("読み物")],
-                        donna: None,
-                    }),
+                    nani: match shitai.nani {
+                        Some(_) => shitai.nani.clone(),
+                        None => Some(model::Nani {
+                            mono: vec![String::from("読み物")],
+                            donna: None,
+                        }),
+                    },
                 }))
             }
             _ => {}

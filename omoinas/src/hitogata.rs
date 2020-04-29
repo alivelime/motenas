@@ -4,7 +4,7 @@ pub mod minarai;
 pub fn new(name: &str) -> Hitogata {
     return match name {
         "bachan" => bachan::new(),
-        // "minarai" => minarai::new(),
+        "minarai" => minarai::new(),
         _ => bachan::new(),
     };
 }
@@ -113,6 +113,7 @@ pub struct ToikakeDesuka {
     pub dayo: fn(&str) -> String,
     pub iroiro: fn(Vec<String>) -> String,
     pub naniga: fn() -> String,
+    pub ikura: fn(Vec<(&str, u32)>) -> String,
 }
 
 pub struct Onegai {

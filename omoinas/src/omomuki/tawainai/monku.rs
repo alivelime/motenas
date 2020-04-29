@@ -8,7 +8,7 @@ pub struct Monku {}
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     if tree
-        .has_lemma(vec!["えー", "うそ", "違う", "ない", "笑い"])
+        .has_lemma(vec!["えー", "うそ", "嘘つき", "違う", "ない", "笑い", "嘘"])
         .is_some()
     {
         return Some(Box::new(Monku {}));

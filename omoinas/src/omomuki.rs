@@ -197,20 +197,6 @@ fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
             hatena: hatena,
         });
     }
-    // これはゾンビですか?
-    if let Some((kore, ktid, are, ntid)) = tree.get_kore_nani() {
-        return Omomuki::Dearu(Dearu {
-            kore: model::Nani {
-                donna: tree.get_keiyou(ktid),
-                mono: tree.add_compound(ktid, vec![kore.clone()]),
-            },
-            are: model::Nani {
-                donna: tree.get_keiyou(ntid),
-                mono: tree.add_compound(ntid, vec![are.clone()]),
-            },
-            hatena: hatena,
-        });
-    }
     // 形容詞語幹を探す
     if let Some((dou, chunk_id, token_id)) = tree.get_keidou() {
         return Omomuki::Keiyou(Keiyou {
@@ -231,6 +217,20 @@ fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
                 Toki::Mukashi
             } else {
                 Toki::Ima
+            },
+            hatena: hatena,
+        });
+    }
+    // これはゾンビですか?
+    if let Some((kore, ktid, are, ntid)) = tree.get_kore_nani() {
+        return Omomuki::Dearu(Dearu {
+            kore: model::Nani {
+                donna: tree.get_keiyou(ktid),
+                mono: tree.add_compound(ktid, vec![kore.clone()]),
+            },
+            are: model::Nani {
+                donna: tree.get_keiyou(ntid),
+                mono: tree.add_compound(ntid, vec![are.clone()]),
             },
             hatena: hatena,
         });

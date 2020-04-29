@@ -86,6 +86,17 @@ pub const BACHAN: Kaeshi = Kaeshi {
             dayo: |are| format!("{}だねぇ", are),
             iroiro: |iroiro| format!("{}だねぇ", iroiro.join("か\n")),
             naniga: || format!("何がだい?"),
+            ikura: |nefuda| {
+                format!(
+                    "{}だよ",
+                    nefuda.iter().fold(String::new(), |s, (n, p)| format!(
+                        "{}{}は￥{}\n",
+                        s,
+                        n,
+                        p.to_string()
+                    ))
+                )
+            },
         },
     },
     onegai: Onegai {

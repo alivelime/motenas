@@ -68,6 +68,7 @@ impl<'a> MonoRepository<'a> {
                     nani.iter()
                         .all(|n| m.category.contains(&n.as_str()) || m.fuda.contains(&n.as_str()))
                         || m.category.contains(&namae.as_str())
+                        || m.fuda.contains(&namae.as_str())
                 })
                 .cloned()
                 .collect(),
@@ -172,15 +173,20 @@ pub fn zakkuri(kore: &model::Nani) -> Desu {
     }
     return match get_mono(&Some(kore.clone())) {
         MonoResult::Category(category) => Desu::Category(category),
-        MonoResult::Mono(mono) => Desu::Category(
-            mono.iter()
-                .map(|m| m.category.last().unwrap().to_string())
-                .collect(),
-        ),
+        MonoResult::Mono(mono) => Desu::Mono(mono),
         MonoResult::Naikedo(nai, _, _) => Desu::Wakaran(nai),
         MonoResult::Nai(mono) => Desu::Wakaran(mono.donna_namae()),
     };
 }
+pub fn ikura(kore: &model::Nani) -> Desu {
+    return match get_mono(&Some(kore.clone())) {
+        MonoResult::Category(category) => Desu::Category(category),
+        MonoResult::Mono(mono) => Desu::Ikura(mono),
+        MonoResult::Naikedo(nai, _, _) => Desu::Wakaran(nai),
+        MonoResult::Nai(mono) => Desu::Wakaran(mono.donna_namae()),
+    };
+}
+
 pub fn desuka(kore: &model::Nani, are: &model::Nani) -> Desu {
     if kore.donna_namae() == are.donna_namae() {
         return Desu::Subete();
@@ -188,6 +194,9 @@ pub fn desuka(kore: &model::Nani, are: &model::Nani) -> Desu {
 
     if are.mono.len() > 0 && are.mono[0].as_str() == "何" {
         return zakkuri(kore);
+    }
+    if are.mono.len() > 0 && vec!["幾等", "おいくら"].contains(&are.mono[0].as_str()) {
+        return ikura(kore);
     }
 
     let data = get_data();
@@ -395,7 +404,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "マカデミアナッツ＆さくさくチーズ",
             category: vec!["モノ", "食べ物", "おつまみ", "マカデミアナッツ"],
-            fuda: vec!["マカデミアナッツ", "菓子"],
+            fuda: vec!["マカデミアナッツ", "お摘まみ"],
             neuchi: 340,
             allergen: None,
             calorie: None,
@@ -405,7 +414,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "柿の種とピーナッツ",
             category: vec!["モノ", "食べ物", "おつまみ", "柿の種"],
-            fuda: vec!["ピーナッツ", "柿ピー", "菓子"],
+            fuda: vec!["ピーナッツ", "柿ピー", "お摘まみ"],
             neuchi: 250,
             allergen: None,
             calorie: None,
@@ -415,7 +424,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "プレミアムミックスナッツ",
             category: vec!["モノ", "食べ物", "おつまみ", "ミックスナッツ"],
-            fuda: vec!["菓子"],
+            fuda: vec!["お摘まみ"],
             neuchi: 310,
             allergen: None,
             calorie: None,
@@ -425,7 +434,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "鯛入りちくわ",
             category: vec!["モノ", "食べ物", "おつまみ", "ちくわ"],
-            fuda: vec![],
+            fuda: vec!["お摘まみ"],
             neuchi: 370,
             allergen: None,
             calorie: None,
@@ -435,7 +444,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "やわらかビーフジャーキースパイシー味",
             category: vec!["モノ", "食べ物", "おつまみ", "ビーフジャーキー"],
-            fuda: vec![],
+            fuda: vec!["お摘まみ"],
             neuchi: 310,
             allergen: None,
             calorie: None,
@@ -445,7 +454,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "しっとりやわらかいか燻製",
             category: vec!["モノ", "食べ物", "おつまみ", "いか"],
-            fuda: vec!["スルメ", "するめ"],
+            fuda: vec!["鯣", "鯣イカ", "お摘まみ"],
             neuchi: 370,
             allergen: None,
             calorie: None,
@@ -517,7 +526,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "うなぎパイ12本入",
             category: vec!["モノ", "食べ物", "お土産", "うなぎパイ"],
-            fuda: vec!["春華堂", "おすすめ"],
+            fuda: vec!["春華堂", "おすすめ", "鰻パイ"],
             neuchi: 970,
             allergen: None,
             calorie: None,
@@ -547,7 +556,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "春満喫 鯛めしとたけのこ御膳",
             category: vec!["モノ", "食べ物", "弁当", "たけのこ御膳"],
-            fuda: vec!["駅弁"],
+            fuda: vec!["駅弁", "筍御膳"],
             neuchi: 1150,
             allergen: None,
             calorie: None,
@@ -587,7 +596,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "厚切りヒレカツサンド",
             category: vec!["モノ", "食べ物", "サンドイッチ", "ヒレカツサンド"],
-            fuda: vec!["カツサンド"],
+            fuda: vec!["ヒレカツ", "カツサンド"],
             neuchi: 750,
             allergen: None,
             calorie: None,
@@ -607,7 +616,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "牛カルビ焼肉重",
             category: vec!["モノ", "食べ物", "弁当", "牛カルビ焼肉重"],
-            fuda: vec!["駅弁", "焼肉"],
+            fuda: vec!["駅弁", "焼肉", "牛カルビ", "カルビ", "焼き肉"],
             neuchi: 920,
             allergen: None,
             calorie: None,
@@ -627,7 +636,7 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "カツ＆ポテトサンド",
             category: vec!["モノ", "食べ物", "サンドイッチ", "カツポテトサンド"],
-            fuda: vec!["カツサンド"],
+            fuda: vec!["カツサンド", "カツポテト"],
             neuchi: 420,
             allergen: None,
             calorie: None,

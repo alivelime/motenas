@@ -136,7 +136,8 @@ impl ParseObjects {
                         .flat_map(|dl| dl.iter())
                         .any(|dl| {
                             dl.token_id == t.id
-                                && vec!["nmod", "csub", "nsub"].contains(&dl.label.as_str())
+                                && vec!["nsubj", "nmod", "csub", "nsub"]
+                                    .contains(&dl.label.as_str())
                         })
                 }) {
                     return Some((t.lemma.clone(), t.id, nt.lemma.clone(), nt.id));

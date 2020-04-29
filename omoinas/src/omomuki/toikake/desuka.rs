@@ -54,6 +54,22 @@ impl Tumori for Desuka {
                 Desu::Category(category) => {
                     Result::Message((chara.kaeshi.toikake.desuka.iroiro)(category))
                 }
+                Desu::Mono(mono) => Result::Mono(
+                    (chara.kaeshi.toikake.desuka.iroiro)(
+                        mono.iter()
+                            .map(|m| m.category.last().unwrap().to_string())
+                            .collect(),
+                    ),
+                    mono,
+                ),
+                Desu::Ikura(mono) => Result::Mono(
+                    (chara.kaeshi.toikake.desuka.ikura)(
+                        mono.iter()
+                            .map(|m| (m.category.last().unwrap().clone(), m.neuchi))
+                            .collect(),
+                    ),
+                    mono,
+                ),
             }
         } else {
             Result::Message((chara.kaeshi.toikake.desuka.naniga)())

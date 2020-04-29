@@ -14,6 +14,8 @@ pub enum Desu {
     Chigau(),
     IsCategory(String),
     Category(Vec<String>),
+    Mono(Vec<Mono>),
+    Ikura(Vec<Mono>),
 }
 
 #[derive(Clone, Debug)]
