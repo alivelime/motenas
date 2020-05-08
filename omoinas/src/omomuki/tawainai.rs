@@ -6,6 +6,7 @@ pub mod arigato;
 pub mod ayamaru;
 pub mod bochibochi;
 pub mod dearu;
+pub mod douitashimashite;
 pub mod hagemasu;
 pub mod kizukai;
 pub mod monku;
@@ -18,6 +19,12 @@ pub mod yobu;
 pub mod yokatta;
 
 pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+    if let Some(a) = arigato::new(tree) {
+        return Some(a);
+    }
+    if let Some(a) = douitashimashite::new(tree) {
+        return Some(a);
+    }
     match omomuki {
         omomuki::Omomuki::Ocha(ocha) => {
             if let Some(a) = ocha::new(ocha, tree) {

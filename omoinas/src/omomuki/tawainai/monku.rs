@@ -10,6 +10,7 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     if tree
         .has_lemma(vec!["えー", "うそ", "嘘つき", "違う", "ない", "笑い", "嘘"])
         .is_some()
+        || (tree.has_lemma(vec!["あれ"]).is_some() && tree.is_hatena())
     {
         return Some(Box::new(Monku {}));
     }

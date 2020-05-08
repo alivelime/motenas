@@ -1,13 +1,24 @@
+use crate::cotoha;
 use crate::hitogata;
-use crate::omomuki::Result;
+use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Arigato {}
 
+pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
+    if tree
+        .has_lemma(vec!["ありがとう", "ありがとうございます"])
+        .is_some()
+    {
+        return Some(Box::new(Arigato {}));
+    }
+    return None;
+}
+
 impl Tumori for Arigato {
     fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
-        return Box::new(self.clone());
+        return Box::new(omomuki::tawainai::douitashimashite::Douitashimashite {});
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
         return Result::Message((chara.kaeshi.tawainai.arigato)());

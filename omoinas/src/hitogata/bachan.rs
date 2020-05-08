@@ -116,6 +116,7 @@ pub const BACHAN: Kaeshi = Kaeshi {
     },
     tawainai: Tawainai {
         arigato: || String::from("はい、ありがとうね。"),
+        douitashimashite: || String::from("お礼はいいから、もっと買っとくれ"),
         ayamaru: || String::from("おや、何かまずかったかね。すまないねぇ。"),
         bochibochi: || String::from("ばあちゃんはもう歳だからねぇ"),
         hagemasu: || String::from("大変だと思うけど、頑張っとくれ"),

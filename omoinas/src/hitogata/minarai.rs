@@ -109,6 +109,9 @@ pub const MINARAI: Kaeshi = Kaeshi {
     },
     tawainai: Tawainai {
         arigato: || String::from("はい、ありがとうございます!"),
+        douitashimashite: || {
+            String::from("お役に立てて嬉しいです。でももっと買ってくれるとさらに嬉しいです")
+        },
         ayamaru: || String::from("すみません。とりあえず謝っておきます"),
         bochibochi: || String::from("誰か買ってください"),
         hagemasu: || String::from("そんなに頑張らなくていいんですよ?"),

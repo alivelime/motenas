@@ -39,7 +39,8 @@ impl ParseObjects {
                     && self.tokens[dl.token_id as usize]
                         .features
                         .iter()
-                        .any(|fs| fs.contains(&String::from("終止")))
+                        .flat_map(|fs| fs.iter())
+                        .any(|f| vec!["終止", "形容詞語幹"].contains(&f.as_str()))
             });
     }
     fn is_shite(&self, t: &api::Token) -> bool {
@@ -52,7 +53,7 @@ impl ParseObjects {
                     && self.tokens[dl.token_id as usize]
                         .features
                         .iter()
-                        .any(|fs| fs.contains(&String::from("終止")))
+                        .any(|fs| fs.contains(&String::from("命令")))
             });
     }
     pub fn is_hatena(&self) -> bool {
@@ -108,12 +109,14 @@ impl ParseObjects {
         return None;
     }
 
+    fn is_taigen(&self, t: &api::Token) -> bool {
+        return t.pos.as_str() == "名詞"
+            && t.features.iter().any(|f| f.contains(&String::from("動作")));
+    }
     pub fn get_taigen(&self) -> Option<Taigen> {
         for chunk in &self.chunks {
             for t in &chunk.tokens {
-                if t.pos.as_str() == "名詞"
-                    && t.features.iter().any(|f| f.contains(&String::from("動作")))
-                {
+                if self.is_taigen(t) {
                     return Some(Taigen {
                         itsu: None,
                         doko: None,
@@ -213,7 +216,7 @@ impl ParseObjects {
             .chunks
             .iter()
             .flat_map(|c| c.tokens.iter())
-            .filter(|t| t.pos.as_str() == "名詞" && self.not_compound(t.id))
+            .filter(|t| t.pos.as_str() == "名詞" && self.is_main_meishi(t.id))
             .map(|t| Nani {
                 donna: self.get_keiyou(t.id),
                 mono: vec![Koto::new(&t.kana, &t.lemma)]
@@ -223,13 +226,11 @@ impl ParseObjects {
             })
             .collect();
     }
-    pub fn not_compound(&self, id: i32) -> bool {
-        return self
-            .tokens
-            .iter()
-            .flat_map(|t| t.dependency_labels.iter())
-            .flat_map(|dl| dl.iter())
-            .all(|l| !(l.token_id == id && l.label == "compound"));
+    pub fn is_main_meishi(&self, id: i32) -> bool {
+        return match &self.tokens.get((id + 1) as usize) {
+            Some(t) => &t.pos != "名詞" || self.is_taigen(t),
+            None => true,
+        };
     }
 
     pub fn get_toki(&self, chunk_id: i32) -> Toki {
@@ -268,32 +269,29 @@ impl ParseObjects {
             .flat_map(|dls| dls.iter())
             .filter_map(|dl| {
                 let dep = &self.tokens[dl.token_id as usize];
-                return match dep.pos.as_str() {
-                    "名詞" => Some(Nani {
+                return if dep.pos == "名詞" && self.is_main_meishi(dep.id) {
+                    Some(Nani {
                         donna: self.get_keiyou(dep.id),
                         mono: vec![Koto::new(&dep.kana, &dep.lemma)]
                             .into_iter()
                             .chain(self.get_compound(dep.id).into_iter())
                             .collect::<Vec<Koto>>(),
-                    }),
-                    _ => None,
+                    })
+                } else {
+                    None
                 };
             })
             .collect::<Vec<Nani>>();
     }
     pub fn get_compound(&self, id: i32) -> Vec<Koto> {
-        return self.tokens[id as usize]
-            .dependency_labels
+        return self
+            .tokens
             .iter()
-            .flat_map(|dls| dls.iter())
-            .filter_map(|dl| {
-                let t = &self.tokens[dl.token_id as usize];
-                match dl.label == "compound" && t.pos == "名詞" {
-                    true => Some(Koto::new(&t.kana, &t.lemma)),
-                    false => None,
-                }
-            })
-            .collect::<Vec<Koto>>();
+            .take(id as usize)
+            .rev()
+            .take_while(|t| t.pos == "名詞")
+            .map(|t| Koto::new(&t.kana, &t.lemma))
+            .collect();
     }
 
     pub fn get_mokuteki(&self) -> Option<Koto> {
