@@ -1,5 +1,7 @@
 pub mod api;
 
+use crate::model::{Dearu, Doushita, Keiyou, Koto, Nani, Suru, Taigen, Toki};
+
 pub struct ParseObjects {
     pub chunks: Vec<api::ParseObject>,
     pub tokens: Vec<api::Token>,
@@ -17,47 +19,67 @@ pub fn parse(token: &String, text: &String) -> Result<ParseObjects, reqwest::Err
 
 impl ParseObjects {
     pub fn has_lemma(&self, p: Vec<&str>) -> Option<String> {
-        for chunk in &self.chunks {
-            for t in &chunk.tokens {
-                if p.contains(&t.lemma.as_str()) {
-                    return Some(t.lemma.clone());
-                }
+        return self.tokens.iter().find_map(|t| {
+            if p.contains(&t.lemma.as_str()) {
+                Some(t.lemma.clone())
+            } else {
+                None
             }
-        }
-        return None;
+        });
     }
 
-    pub fn get_doushi(&self) -> Option<(String, i32, i32, bool, bool)> {
+    fn is_shitai(&self, t: &api::Token) -> bool {
+        return t
+            .dependency_labels
+            .iter()
+            .flat_map(|dls| dls.iter())
+            .any(|dl| {
+                dl.label == "aux"
+                    && self.tokens[dl.token_id as usize].lemma == "たい"
+                    && self.tokens[dl.token_id as usize]
+                        .features
+                        .iter()
+                        .any(|fs| fs.contains(&String::from("終止")))
+            });
+    }
+    fn is_shite(&self, t: &api::Token) -> bool {
+        return t
+            .dependency_labels
+            .iter()
+            .flat_map(|dls| dls.iter())
+            .any(|dl| {
+                dl.label == "aux"
+                    && self.tokens[dl.token_id as usize]
+                        .features
+                        .iter()
+                        .any(|fs| fs.contains(&String::from("終止")))
+            });
+    }
+    pub fn is_hatena(&self) -> bool {
+        return self.has_lemma(vec!["?"]).is_some();
+    }
+
+    pub fn get_doushi(&self) -> Option<(Suru, bool, bool)> {
         for chunk in &self.chunks {
             for t in &chunk.tokens {
                 if t.pos.as_str() == "動詞語幹" {
+                    let chunk_id = chunk.chunk_info.id;
                     return Some((
-                        t.lemma.clone(),
-                        chunk.chunk_info.id,
-                        t.id,
-                        t.dependency_labels
-                            .iter()
-                            .flat_map(|dl| dl.iter())
-                            .any(|dl| {
-                                dl.label == "aux"
-                                    && self.tokens[dl.token_id as usize].lemma == "たい"
-                                    && self.tokens[dl.token_id as usize]
-                                        .features
-                                        .iter()
-                                        .flat_map(|f| f.iter())
-                                        .any(|f| f.as_str() == "終止")
-                            }),
-                        t.dependency_labels
-                            .iter()
-                            .flat_map(|dl| dl.iter())
-                            .any(|dl| {
-                                dl.label == "aux"
-                                    && self.tokens[dl.token_id as usize]
-                                        .features
-                                        .iter()
-                                        .flat_map(|f| f.iter())
-                                        .any(|f| f.as_str() == "命令")
-                            }),
+                        Suru {
+                            itsu: None,
+                            doko: None,
+                            dare: None,
+                            doushita: Doushita {
+                                ina: self.is_nai(chunk_id),
+                                ukemi: self.is_ukemi(chunk_id),
+                                toki: self.get_toki(chunk_id),
+                                suru: Koto::new(&t.kana, &t.lemma),
+                            },
+                            nani: self.get_nani(t.id),
+                            hatena: self.is_hatena(),
+                        },
+                        self.is_shitai(&t),
+                        self.is_shite(&t),
                     ));
                 }
             }
@@ -65,95 +87,140 @@ impl ParseObjects {
         return None;
     }
 
-    pub fn get_keidou(&self) -> Option<(String, i32, i32)> {
+    pub fn get_keidou(&self) -> Option<Keiyou> {
         for chunk in &self.chunks {
             for t in &chunk.tokens {
                 if t.pos.as_str() == "形容詞語幹" {
-                    return Some((t.lemma.clone(), chunk.chunk_info.id, t.id));
+                    let chunk_id = chunk.chunk_info.id;
+                    return Some(Keiyou {
+                        itsu: None,
+                        doko: None,
+                        dare: None,
+                        dou: Koto::new(&t.kana, &t.lemma),
+                        nani: self.get_nani(t.id),
+                        ina: self.is_nai(chunk_id),
+                        toki: self.get_toki(chunk_id),
+                        hatena: self.is_hatena(),
+                    });
                 }
             }
         }
         return None;
     }
 
-    pub fn get_taigen(&self) -> Option<(String, i32, i32)> {
+    pub fn get_taigen(&self) -> Option<Taigen> {
         for chunk in &self.chunks {
             for t in &chunk.tokens {
                 if t.pos.as_str() == "名詞"
-                    && if let Some(f) = &t.features {
-                        f.contains(&String::from("動作"))
-                    } else {
-                        false
-                    }
+                    && t.features.iter().any(|f| f.contains(&String::from("動作")))
                 {
-                    return Some((t.lemma.clone(), chunk.chunk_info.id, t.id));
+                    return Some(Taigen {
+                        itsu: None,
+                        doko: None,
+                        suru: Koto::new(&t.kana, &t.lemma),
+                        nani: self.get_nani(t.id),
+                        hatena: self.is_hatena(),
+                    });
                 }
             }
         }
         return None;
     }
 
-    pub fn get_kore_nani(&self) -> Option<(String, i32, String, i32)> {
+    pub fn get_kore_are(&self) -> Option<Dearu> {
         if self.tokens.iter().any(|t| {
             t.lemma == "判定詞"
-                && match &t.features {
-                    Some(f) => f.contains(&String::from("終止")),
-                    None => false,
-                }
+                && t.features
+                    .iter()
+                    .any(|fs| fs.contains(&String::from("終止")))
         }) {
+            // 猫
             if let Some(t) = self.tokens.iter().find(|t| {
                 t.dependency_labels
                     .iter()
                     .flat_map(|dl| dl.iter())
                     .any(|dl| dl.label == "cop")
             }) {
-                if let Some(nt) = t
+                // 我輩
+                if let Some(dep) = t
                     .dependency_labels
                     .iter()
                     .flat_map(|dl| dl.iter())
                     .find(|dl| dl.label == "nmod")
                 {
-                    return Some((
-                        t.lemma.clone(),
-                        t.id,
-                        self.tokens[nt.token_id as usize].lemma.clone(),
-                        nt.token_id,
-                    ));
+                    let nt = &self.tokens[dep.token_id as usize];
+                    return Some(Dearu {
+                        kore: Nani {
+                            donna: self.get_keiyou(t.id),
+                            mono: vec![Koto::new(&t.kana, &t.lemma)]
+                                .into_iter()
+                                .chain(self.get_compound(t.id).into_iter())
+                                .collect::<Vec<Koto>>(),
+                        },
+                        are: Nani {
+                            donna: self.get_keiyou(nt.id),
+                            mono: vec![Koto::new(&nt.kana, &nt.lemma)]
+                                .into_iter()
+                                .chain(self.get_compound(nt.id).into_iter())
+                                .collect::<Vec<Koto>>(),
+                        },
+                        hatena: self.is_hatena(),
+                    });
                 }
             }
-        } else {
-            // 私ってホント馬鹿
-            if let Some(t) = self.tokens.iter().find(|t| {
-                t.dependency_labels
+        }
+        // 私ってホント馬鹿
+        if let Some(t) = self.tokens.iter().find(|t| {
+            t.dependency_labels
+                .iter()
+                .flat_map(|dl| dl.iter())
+                .any(|dl| dl.label == "case")
+        }) {
+            if let Some(nt) = self.tokens.iter().find(|token| {
+                token
+                    .dependency_labels
                     .iter()
                     .flat_map(|dl| dl.iter())
-                    .any(|dl| dl.label == "case")
+                    .any(|dl| {
+                        dl.token_id == t.id
+                            && vec!["nsubj", "nmod", "csub", "nsub"].contains(&dl.label.as_str())
+                    })
             }) {
-                if let Some(nt) = self.tokens.iter().find(|token| {
-                    token
-                        .dependency_labels
-                        .iter()
-                        .flat_map(|dl| dl.iter())
-                        .any(|dl| {
-                            dl.token_id == t.id
-                                && vec!["nsubj", "nmod", "csub", "nsub"]
-                                    .contains(&dl.label.as_str())
-                        })
-                }) {
-                    return Some((t.lemma.clone(), t.id, nt.lemma.clone(), nt.id));
-                }
+                return Some(Dearu {
+                    kore: Nani {
+                        donna: self.get_keiyou(t.id),
+                        mono: vec![Koto::new(&t.kana, &t.lemma)]
+                            .into_iter()
+                            .chain(self.get_compound(t.id).into_iter())
+                            .collect::<Vec<Koto>>(),
+                    },
+                    are: Nani {
+                        donna: self.get_keiyou(nt.id),
+                        mono: vec![Koto::new(&nt.kana, &nt.lemma)]
+                            .into_iter()
+                            .chain(self.get_compound(nt.id).into_iter())
+                            .collect::<Vec<Koto>>(),
+                    },
+                    hatena: self.is_hatena(),
+                });
             }
-        };
+        }
         return None;
     }
 
-    pub fn get_meishi(&self) -> Vec<(i32, String)> {
+    pub fn get_meishi(&self) -> Vec<Nani> {
         return self
             .chunks
             .iter()
             .flat_map(|c| c.tokens.iter())
             .filter(|t| t.pos.as_str() == "名詞" && self.not_compound(t.id))
-            .map(|t| (t.id, t.lemma.clone()))
+            .map(|t| Nani {
+                donna: self.get_keiyou(t.id),
+                mono: vec![Koto::new(&t.kana, &t.lemma)]
+                    .into_iter()
+                    .chain(self.get_compound(t.id).into_iter())
+                    .collect::<Vec<Koto>>(),
+            })
             .collect();
     }
     pub fn not_compound(&self, id: i32) -> bool {
@@ -165,89 +232,86 @@ impl ParseObjects {
             .all(|l| !(l.token_id == id && l.label == "compound"));
     }
 
-    pub fn is_mukashi(&self, chunk_id: i32) -> bool {
-        if let Some(p) = &self.chunks[chunk_id as usize].chunk_info.predicate {
-            if p.contains(&String::from("past")) {
-                return true;
-            }
-        }
-        return false;
+    pub fn get_toki(&self, chunk_id: i32) -> Toki {
+        return match self.is_mukashi(chunk_id) {
+            true => Toki::Mukashi,
+            false => Toki::Ima,
+        };
     }
-    pub fn is_shinai(&self, chunk_id: i32) -> bool {
-        if let Some(p) = &self.chunks[chunk_id as usize].chunk_info.predicate {
-            if p.contains(&String::from("negative")) {
-                return true;
-            }
-        }
-        return false;
+    pub fn is_mukashi(&self, chunk_id: i32) -> bool {
+        return self.chunks[chunk_id as usize]
+            .chunk_info
+            .predicate
+            .iter()
+            .any(|ps| ps.contains(&String::from("past")));
+    }
+    pub fn is_nai(&self, chunk_id: i32) -> bool {
+        return self.chunks[chunk_id as usize]
+            .chunk_info
+            .predicate
+            .iter()
+            .any(|ps| ps.contains(&String::from("negative")));
     }
 
     pub fn is_ukemi(&self, chunk_id: i32) -> bool {
-        if let Some(p) = &self.chunks[chunk_id as usize].chunk_info.predicate {
-            if p.contains(&String::from("passive")) {
-                return true;
-            }
-        }
-        return false;
+        return self.chunks[chunk_id as usize]
+            .chunk_info
+            .predicate
+            .iter()
+            .any(|ps| ps.contains(&String::from("passive")));
     }
 
-    pub fn get_nani(&self, t: i32) -> Option<(Vec<String>, i32)> {
-        let mut nani: Vec<String> = Vec::new();
-        let mut tid: i32 = -1;
-        for dl in self.tokens[t as usize]
+    pub fn get_nani(&self, tid: i32) -> Vec<Nani> {
+        return self.tokens[tid as usize]
             .dependency_labels
             .iter()
-            .flat_map(|d| d.iter())
-        {
-            let dep = &self.tokens[dl.token_id as usize];
-            if dl.token_id < t && dep.pos == "名詞" {
-                tid = dl.token_id;
-                match dep.lemma.as_str() {
-                    "何" | "何か" | "ばあちゃん" => continue,
-                    "物" => nani.push(String::from("モノ")),
-                    _ => {
-                        nani.push(dep.lemma.clone());
-                        nani = self.add_compound(tid, nani);
-                    }
-                }
-            }
-        }
-        return if tid != -1 { Some((nani, tid)) } else { None };
+            .flat_map(|dls| dls.iter())
+            .filter_map(|dl| {
+                let dep = &self.tokens[dl.token_id as usize];
+                return match dep.pos.as_str() {
+                    "名詞" => Some(Nani {
+                        donna: self.get_keiyou(dep.id),
+                        mono: vec![Koto::new(&dep.kana, &dep.lemma)]
+                            .into_iter()
+                            .chain(self.get_compound(dep.id).into_iter())
+                            .collect::<Vec<Koto>>(),
+                    }),
+                    _ => None,
+                };
+            })
+            .collect::<Vec<Nani>>();
     }
-    pub fn add_compound(&self, id: i32, mut v: Vec<String>) -> Vec<String> {
-        for dl in self.tokens[id as usize]
+    pub fn get_compound(&self, id: i32) -> Vec<Koto> {
+        return self.tokens[id as usize]
             .dependency_labels
             .iter()
-            .flat_map(|dl| dl.iter())
-        {
-            if dl.label.as_str() == "compound" && self.tokens[dl.token_id as usize].pos == "名詞"
-            {
-                v.push(self.tokens[dl.token_id as usize].lemma.clone());
-            }
-        }
-        return v;
+            .flat_map(|dls| dls.iter())
+            .filter_map(|dl| {
+                let t = &self.tokens[dl.token_id as usize];
+                match dl.label == "compound" && t.pos == "名詞" {
+                    true => Some(Koto::new(&t.kana, &t.lemma)),
+                    false => None,
+                }
+            })
+            .collect::<Vec<Koto>>();
     }
 
-    pub fn get_mokuteki(&self) -> Option<String> {
-        for chunk in &self.chunks {
-            for link in &chunk.chunk_info.links {
-                match link.label.as_str() {
-                    "purpose" => {
-                        // 何を
-                        return Some(self.bunsetsu(link.link as usize));
-                    }
-                    _ => {}
-                }
-            }
-        }
-        return None;
+    pub fn get_mokuteki(&self) -> Option<Koto> {
+        return self
+            .chunks
+            .iter()
+            .flat_map(|ch| ch.chunk_info.links.iter())
+            .find_map(|link| match link.label.as_str() {
+                "purpose" => Some(Koto::new("", self.bunsetsu(link.link as usize))),
+                _ => None,
+            });
     }
-    pub fn get_itsu(&self) -> Option<String> {
+    pub fn get_itsu(&self) -> Option<Koto> {
         for chunk in &self.chunks {
             for link in &chunk.chunk_info.links {
                 match link.label.as_str() {
                     "time" => {
-                        return Some(self.bunsetsu(link.link as usize));
+                        return Some(Koto::new("", self.bunsetsu(link.link as usize)));
                     }
                     _ => {}
                 }
@@ -256,33 +320,36 @@ impl ParseObjects {
             for t in &chunk.tokens {
                 if let Some(features) = &t.features {
                     if features.contains(&String::from("日時")) {
-                        return Some(t.lemma.clone());
+                        return Some(Koto::new(&t.kana, &t.lemma));
                     }
                 }
             }
         }
         return None;
     }
-    pub fn get_doko(&self) -> Option<String> {
+    pub fn get_doko(&self) -> Option<Koto> {
         for t in self.chunks.iter().flat_map(|c| c.tokens.iter()) {
             if let Some(features) = &t.features {
                 if features.contains(&String::from("固有:地")) {
-                    return Some(t.lemma.clone());
+                    return Some(Koto::new(&t.kana, &t.lemma));
                 }
             }
         }
         return None;
     }
 
-    pub fn get_keiyou(&self, tid: i32) -> Option<String> {
-        if let Some(deps) = &self.tokens[tid as usize].dependency_labels {
-            for dep in deps {
-                if dep.label == "amod" {
-                    return Some(self.tokens[dep.token_id as usize].lemma.clone());
-                }
-            }
-        }
-        return None;
+    pub fn get_keiyou(&self, tid: i32) -> Option<Koto> {
+        return self.tokens[tid as usize]
+            .dependency_labels
+            .iter()
+            .flat_map(|dls| dls.iter())
+            .find_map(|dl| {
+                let dep = &self.tokens[dl.token_id as usize];
+                return match dl.label.as_str() {
+                    "amod" => Some(Koto::new(&dep.kana, &dep.lemma)),
+                    _ => None,
+                };
+            });
     }
     fn bunsetsu(&self, chunk_id: usize) -> String {
         let mut s = String::new();

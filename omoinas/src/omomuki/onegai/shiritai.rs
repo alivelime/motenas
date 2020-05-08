@@ -1,11 +1,11 @@
 use crate::hitogata;
-use crate::model;
+use crate::model::Nani;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Shiritai {
-    nani: Option<model::Nani>,
+    nani: Vec<Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
@@ -34,9 +34,11 @@ impl Tumori for Shiritai {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
-        return match &self.nani {
-            Some(nani) => Result::Message((chara.kaeshi.onegai.shiritai.kore)(&nani.donna_namae())),
-            None => Result::Message((chara.kaeshi.onegai.shiritai.naniga)()),
+        return match self.nani.len() {
+            0 => Result::Message((chara.kaeshi.onegai.shiritai.naniga)()),
+            _ => Result::Message((chara.kaeshi.onegai.shiritai.kore)(
+                &self.nani[0].donna_namae(),
+            )),
         };
     }
 }

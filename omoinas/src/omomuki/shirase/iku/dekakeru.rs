@@ -1,12 +1,13 @@
 use crate::hitogata;
+use crate::model::{Koto, Nani};
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Dekakeru {
-    pub itsu: Option<String>,
-    pub doko: Option<String>,
-    pub nani: Option<String>,
+    pub itsu: Option<Koto>,
+    pub doko: Option<Koto>,
+    pub nani: Vec<Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Suru) -> Option<Box<dyn Tumori>> {
@@ -16,17 +17,22 @@ pub fn new(omomuki: &omomuki::Suru) -> Option<Box<dyn Tumori>> {
         && omomuki.doushita.toki == omomuki::Toki::Ima
     {
         return Some(Box::new(Dekakeru {
-            itsu: None,
+            itsu: omomuki.itsu.clone(),
             doko: omomuki.doko.clone(),
-            nani: if let Some(nani) = &omomuki.nani {
-                if nani.mono.contains(&String::from("お昼")) {
-                    Some(String::from("お昼食べに"))
-                } else {
-                    Some(nani.mono.join(""))
-                }
-            } else {
-                None
-            },
+            nani: omomuki
+                .nani
+                .iter()
+                .map(|n| {
+                    if n.mono.iter().any(|m| m == "お昼") {
+                        Nani {
+                            donna: None,
+                            mono: vec![Koto::from_str("お昼"), Koto::from_str("食べ")],
+                        }
+                    } else {
+                        n.clone()
+                    }
+                })
+                .collect(),
         }));
     }
 

@@ -8,7 +8,7 @@ pub struct Ganbaru {}
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
     match omomuki {
         omomuki::Omomuki::Suru(suru) => {
-            if vec!["頑張る"].contains(&suru.doushita.suru.as_str()) {
+            if suru.doushita.suru == "頑張る" {
                 return Some(Box::new(Ganbaru {}));
             }
         }

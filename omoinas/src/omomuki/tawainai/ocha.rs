@@ -26,14 +26,14 @@ impl Tumori for Ocha {
     fn kotafu(&self, chara: &hitogata::Hitogata) -> Box<dyn Tumori> {
         if let Some(n) = self.nani.iter().find(|n| mono::is_mono(n)) {
             if chara.id == "bachan" {
-                return Box::new(omomuki::tawainai::ocha::Ocha {
+                return Box::new(Ocha {
                     mono: n.clone(),
                     yobu: self.yobu,
                     nani: self.nani.clone(),
                 });
             } else {
                 return Box::new(omomuki::toikake::aru::Aru {
-                    nani: Some(n.clone()),
+                    nani: vec![n.clone()],
                 });
             }
         }

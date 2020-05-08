@@ -1,4 +1,5 @@
 use crate::hitogata;
+use crate::model::Kotoba;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
@@ -8,7 +9,7 @@ pub struct Modoru {}
 pub fn new(omomuki: &omomuki::Suru) -> Option<Box<dyn Tumori>> {
     // 行ってきた
     if omomuki.dare == None
-        && (omomuki.doushita.suru == "戻る" || omomuki.doushita.suru == "帰る")
+        && omomuki.doushita.suru == Kotoba::from_vec(vec!["戻る", "帰る"])
         && omomuki.doushita.toki == omomuki::Toki::Mukashi
     {
         return Some(Box::new(Modoru {}));

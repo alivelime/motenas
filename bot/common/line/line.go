@@ -137,7 +137,7 @@ func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID strin
 	}
 	r.AdminTextMessage(userID + "\n" + prof.DisplayName + "\n" + message.Text)
 
-	payload, _ := json.Marshal(Event{Text: message.Text, Chara: os.Getenv("BOT_NAME"), ID: userID, App: "line"})
+	payload, _ := json.Marshal(Event{Text: message.Text, Chara: os.Getenv("CHARA_NAME"), ID: userID, App: "line"})
 
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
 		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-ukekotae"),

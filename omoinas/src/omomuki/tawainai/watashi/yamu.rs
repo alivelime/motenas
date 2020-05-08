@@ -13,13 +13,7 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
             }
         }
         omomuki::Omomuki::Suru(suru) => {
-            if vec!["ある"].contains(&suru.doushita.suru.as_str())
-                && if let Some(nani) = &suru.nani {
-                    nani.namae().as_str() == "熱"
-                } else {
-                    false
-                }
-            {
+            if suru.doushita.suru == "ある" && suru.nani.iter().any(|n| n.has(vec!["熱"])) {
                 return Some(Box::new(Yamu {}));
             }
         }

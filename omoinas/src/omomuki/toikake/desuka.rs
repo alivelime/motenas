@@ -24,7 +24,7 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
         omomuki::Omomuki::Keiyou(keiyou) => {
             if keiyou.hatena {
                 return Some(Box::new(Desuka {
-                    kore: keiyou.nani.clone(),
+                    kore: keiyou.nani.last().cloned(),
                     are: model::Nani {
                         donna: Some(keiyou.dou.clone()),
                         mono: Vec::new(),
@@ -65,7 +65,7 @@ impl Tumori for Desuka {
                 Desu::Ikura(mono) => Result::Mono(
                     (chara.kaeshi.toikake.desuka.ikura)(
                         mono.iter()
-                            .map(|m| (m.category.last().unwrap().clone(), m.neuchi))
+                            .map(|m| (m.category.last().unwrap().as_str(), m.neuchi))
                             .collect(),
                     ),
                     mono,

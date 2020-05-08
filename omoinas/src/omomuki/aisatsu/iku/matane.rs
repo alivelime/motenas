@@ -1,11 +1,12 @@
 use crate::cotoha;
 use crate::hitogata;
+use crate::model::Koto;
 use crate::omomuki::Result;
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Matane {
-    pub itsu: Option<String>,
+    pub itsu: Option<Koto>,
 }
 
 pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {

@@ -15,8 +15,10 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
         "ばばあ",
         "くそ",
         "死ね",
+        "馬鹿",
         "ふざける",
         "おっぱい",
+        "パンツ",
     ]) {
         return Some(Box::new(Kitanai { ng: ng }));
     }

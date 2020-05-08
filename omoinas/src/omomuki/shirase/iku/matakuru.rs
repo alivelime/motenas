@@ -1,10 +1,11 @@
 use crate::hitogata;
+use crate::model::Koto;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Matakuru {
-    pub itsu: Option<String>,
+    pub itsu: Option<Koto>,
 }
 
 pub fn new(omomuki: &omomuki::Suru) -> Option<Box<dyn Tumori>> {

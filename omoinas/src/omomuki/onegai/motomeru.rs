@@ -1,102 +1,98 @@
 use crate::hitogata;
-use crate::model;
+use crate::model::{Koto, Kotoba, Nani};
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Motomeru {
-    pub nani: Option<model::Nani>,
+    pub nani: Vec<Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
     match omomuki {
         omomuki::Omomuki::Suru(suru) => {
-            if vec!["くれる", "貰える"].contains(&suru.doushita.suru.as_str()) {
+            if Kotoba::from_vec(vec!["くれる", "貰える"]) == suru.doushita.suru {
                 return Some(Box::new(Motomeru {
                     nani: suru.nani.clone(),
                 }));
             }
-            if let Some(nani) = &suru.nani {
-                if vec!["お腹", "原"].contains(&nani.namae().as_str())
-                    && vec!["空く", "すく", "へる", "減る"].contains(&suru.doushita.suru.as_str())
-                {
-                    return Some(Box::new(Motomeru {
-                        nani: Some(model::Nani {
-                            mono: vec![String::from("弁当")],
-                            donna: None,
-                        }),
-                    }));
-                }
-                if (nani.namae() == "喉"
-                    && vec!["かわく", "渇く", "乾く"].contains(&suru.doushita.suru.as_str()))
-                    || (nani.namae() == "のどか" && suru.doushita.suru.as_str() == "わく")
-                {
-                    return Some(Box::new(Motomeru {
-                        nani: Some(model::Nani {
-                            mono: vec![String::from("ソフトドリンク")],
-                            donna: None,
-                        }),
-                    }));
-                }
+            if suru.nani.iter().any(|n| n.has(vec!["お腹", "腹"]))
+                && Kotoba::from_vec(vec!["空く", "すく", "減る"]) == suru.doushita.suru
+            {
+                return Some(Box::new(Motomeru {
+                    nani: vec![Nani {
+                        mono: vec![Koto::from_str("弁当")],
+                        donna: None,
+                    }],
+                }));
+            }
+            if suru
+                .nani
+                .iter()
+                .any(|n| n.has(vec!["のど", "喉", "のどか"]))
+                && Kotoba::from_vec(vec!["かわく", "乾く", "渇く", "わく"]) == suru.doushita.suru
+            {
+                return Some(Box::new(Motomeru {
+                    nani: vec![Nani {
+                        mono: vec![Koto::from_str("ソフトドリンク")],
+                        donna: None,
+                    }],
+                }));
             }
         }
         omomuki::Omomuki::Shitai(shitai) => match shitai.doushita.suru.as_str() {
             "食べる" => {
                 return Some(Box::new(Motomeru {
-                    nani: match shitai.nani {
-                        Some(_) => shitai.nani.clone(),
-                        None => Some(model::Nani {
-                            mono: vec![String::from("食べ物")],
+                    nani: match shitai.nani.len() {
+                        0 => vec![Nani {
+                            mono: vec![Koto::from_str("食べ物")],
                             donna: None,
-                        }),
+                        }],
+                        _ => shitai.nani.clone(),
                     },
                 }))
             }
             "飲む" => {
                 return Some(Box::new(Motomeru {
-                    nani: match shitai.nani {
-                        Some(_) => shitai.nani.clone(),
-                        None => Some(model::Nani {
-                            mono: vec![String::from("飲み物")],
+                    nani: match shitai.nani.len() {
+                        0 => vec![Nani {
+                            mono: vec![Koto::from_str("飲み物")],
                             donna: None,
-                        }),
+                        }],
+                        _ => shitai.nani.clone(),
                     },
                 }))
             }
             "読む" => {
                 return Some(Box::new(Motomeru {
-                    nani: match shitai.nani {
-                        Some(_) => shitai.nani.clone(),
-                        None => Some(model::Nani {
-                            mono: vec![String::from("読み物")],
+                    nani: match shitai.nani.len() {
+                        0 => vec![Nani {
+                            mono: vec![Koto::from_str("読み物")],
                             donna: None,
-                        }),
+                        }],
+                        _ => shitai.nani.clone(),
                     },
                 }))
             }
             _ => {}
         },
         omomuki::Omomuki::Shite(suru) => {
-            if vec!["下さる", "見せる"].contains(&suru.doushita.suru.as_str()) {
-                return Some(Box::new(Motomeru {
-                    nani: suru.nani.clone(),
-                }));
-            }
-            if vec!["くれる", "寄越す"].contains(&suru.doushita.suru.as_str()) {
+            if Kotoba::from_vec(vec!["下さる", "見せる", "くれる", "寄越す"]) == suru.doushita.suru
+            {
                 return Some(Box::new(Motomeru {
                     nani: suru.nani.clone(),
                 }));
             }
         }
         omomuki::Omomuki::Keiyou(keiyou) => {
-            if vec!["欲しい", "ほしい"].contains(&keiyou.dou.as_str()) {
+            if Kotoba::from_vec(vec!["欲しい", "ほしい"]) == keiyou.dou {
                 return Some(Box::new(Motomeru {
                     nani: keiyou.nani.clone(),
                 }));
             }
         }
         omomuki::Omomuki::Taigen(taigen) => {
-            if vec!["頂戴", "ちょうだい"].contains(&taigen.suru.as_str()) {
+            if Kotoba::from_vec(vec!["頂戴", "ちょうだい"]) == taigen.suru {
                 return Some(Box::new(Motomeru {
                     nani: taigen.nani.clone(),
                 }));

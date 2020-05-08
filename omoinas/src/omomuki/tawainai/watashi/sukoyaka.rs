@@ -8,9 +8,7 @@ pub struct Sukoyaka {}
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
     match omomuki {
         omomuki::Omomuki::Dearu(dearu) => {
-            if (dearu.kore.namae().as_str() == "私" && dearu.are.namae() == "元気")
-                || (dearu.kore.namae().as_str() == "私" && dearu.are.namae() == "大丈夫")
-            {
+            if dearu.are.has(vec!["元気", "大丈夫"]) && !dearu.hatena {
                 return Some(Box::new(Sukoyaka {}));
             }
         }

@@ -1,10 +1,10 @@
-use crate::model;
+use crate::model::{Kotoba, Nani};
 
 pub enum MonoResult {
     Category(Vec<String>),
     Mono(Vec<Mono>),
     Naikedo(String, String, Vec<String>),
-    Nai(model::Nani),
+    Nai(Nani),
 }
 
 pub enum Desu {
@@ -21,7 +21,7 @@ pub enum Desu {
 #[derive(Clone, Debug)]
 pub struct Mono {
     pub namae: &'static str,
-    pub category: Vec<&'static str>,
+    pub category: Vec<Kotoba>,
     pub fuda: Vec<&'static str>,
     pub neuchi: u32,
     //    pub okisa: Option<(u32, &'static str)>,

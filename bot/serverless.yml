@@ -27,6 +27,7 @@ functions:
     handler: bin/line-bachan
     runtime: go1.x
     environment:
+      CHARA_NAME:  ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHARA_NAME}
       CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_SECRET}
       CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_TOKEN}
       ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
@@ -58,6 +59,7 @@ functions:
     handler: bin/line-minarai
     runtime: go1.x
     environment:
+      CHARA_NAME:  ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHARA_NAME}
       CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_SECRET}
       CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_TOKEN}
       ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_SECRET}

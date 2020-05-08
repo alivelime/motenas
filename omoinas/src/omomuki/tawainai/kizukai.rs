@@ -15,10 +15,7 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
         omomuki::Omomuki::Suru(suru) => {
             if suru.hatena
                 && suru.doushita.suru == "ひく"
-                && match &suru.nani {
-                    Some(nani) => nani.has(vec!["風邪"]),
-                    None => false,
-                }
+                && suru.nani.iter().any(|n| n.has(vec!["風邪"]))
             {
                 return Some(Box::new(Kizukai {}));
             }

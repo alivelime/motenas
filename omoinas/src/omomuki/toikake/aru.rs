@@ -8,13 +8,13 @@ use crate::model::mono::MonoResult;
 
 #[derive(Clone, Debug)]
 pub struct Aru {
-    pub nani: Option<model::Nani>,
+    pub nani: Vec<model::Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
     match omomuki {
         omomuki::Omomuki::Suru(suru) => {
-            if vec!["ある"].contains(&suru.doushita.suru.as_str()) && suru.hatena {
+            if suru.doushita.suru == "ある" && suru.hatena {
                 return Some(Box::new(Aru {
                     nani: suru.nani.clone(),
                 }));
@@ -37,13 +37,17 @@ impl Tumori for Aru {
         return Box::new(self.clone());
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
-        return match mono::get_mono(&self.nani) {
+        let nani = self
+            .nani
+            .iter()
+            .find(|n| !n.has(vec!["ばあちゃん", "おばあちゃん", "何か", "何"]));
+        return match mono::get_mono(nani) {
             MonoResult::Category(category) => {
                 Result::Message((chara.kaeshi.toikake.aru.iroiro)(category))
             }
             MonoResult::Mono(mono) => Result::Mono(
                 if mono.len() == 1 {
-                    (chara.kaeshi.toikake.aru.aru)(mono[0].category.last().unwrap())
+                    (chara.kaeshi.toikake.aru.aru)(mono[0].category.last().unwrap().as_str())
                 } else {
                     (chara.kaeshi.toikake.aru.iroiro)(
                         mono.iter()

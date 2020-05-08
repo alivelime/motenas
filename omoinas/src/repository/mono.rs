@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use crate::model;
 use crate::model::mono::{Desu, Mono, MonoResult};
+use crate::model::{Koto, Kotoba, Nani};
 
 pub struct MonoRepository<'a> {
     pub monos: Vec<&'a Mono>,
@@ -29,7 +29,7 @@ impl<'a> MonoRepository<'a> {
                     menu = HashSet::new();
                     for mono in &self.monos {
                         if i < mono.category.len() {
-                            menu.insert(mono.category[i].clone());
+                            menu.insert(mono.category[i].as_str());
                         }
                     }
 
@@ -43,50 +43,51 @@ impl<'a> MonoRepository<'a> {
         };
     }
 
-    pub fn filter_fuda(&self, nani: &String) -> MonoRepository {
-        if nani.is_empty() {
-            return MonoRepository { monos: Vec::new() };
-        }
-
+    pub fn filter_fuda(&self, nani: &Koto) -> MonoRepository {
         return MonoRepository {
             monos: self
                 .monos
                 .iter()
-                .filter(|&m| m.fuda.contains(&nani.as_str()))
+                .filter(|&m| m.fuda.iter().any(|f| f == nani))
                 .cloned()
                 .collect(),
         };
     }
 
-    pub fn match_all(&self, nani: Vec<String>) -> MonoRepository {
-        let namae = nani.iter().rev().cloned().collect::<Vec<String>>().join("");
+    pub fn match_all(&self, nani: Vec<Koto>) -> MonoRepository {
+        let namae = nani
+            .iter()
+            .rev()
+            .map(|n| n.to_string())
+            .collect::<Vec<String>>()
+            .join("");
         return MonoRepository {
             monos: self
                 .monos
                 .iter()
                 .filter(|&m| {
                     nani.iter()
-                        .all(|n| m.category.contains(&n.as_str()) || m.fuda.contains(&n.as_str()))
-                        || m.category.contains(&namae.as_str())
-                        || m.fuda.contains(&namae.as_str())
+                        .all(|n| m.category.iter().any(|c| c == n) || m.fuda.iter().any(|f| f == n))
+                        || m.category.iter().any(|c| c == &namae)
+                        || m.fuda.iter().any(|f| f == &namae)
                 })
                 .cloned()
                 .collect(),
         };
     }
-    pub fn korekana(&self, nani: &Vec<String>) -> MonoRepository {
+    pub fn korekana(&self, nani: &Vec<Koto>) -> MonoRepository {
         return MonoRepository {
             monos: self
                 .monos
                 .iter()
                 .filter(|&m| {
-                    m.category.contains(&nani[0].as_str()) || m.fuda.contains(&nani[0].as_str())
+                    m.category.iter().any(|c| c == &nani[0]) || m.fuda.iter().any(|f| f == &nani[0])
                 })
                 .cloned()
                 .collect(),
         };
     }
-    pub fn get_result(&self, nai: Option<(&String, &String)>) -> MonoResult {
+    pub fn get_result(&self, nai: Option<(String, String)>) -> MonoResult {
         return if let Some((nai, nara)) = nai {
             // 絞ったものがなければ、代替案を提示する
             MonoResult::Naikedo(nai.clone(), nara.clone(), self.get_menu())
@@ -99,28 +100,28 @@ impl<'a> MonoRepository<'a> {
     }
     pub fn get_category(&self, nani: &String) -> Option<String> {
         return self.monos.iter().find_map(|&m| {
-            if let Some(p) = m.category.iter().position(|&c| c == nani) {
+            if let Some(p) = m.category.iter().position(|c| c == nani) {
                 Some(m.category[p - 1].to_string())
             } else {
                 None
             }
         });
     }
-    pub fn include_all(&self, kore: &Vec<String>) -> bool {
+    pub fn include_all(&self, kore: &Vec<Koto>) -> bool {
         return self.monos.iter().all(|m| {
             kore.iter()
-                .all(|k| m.category.contains(&k.as_str()) || m.fuda.contains(&k.as_str()))
+                .all(|k| m.category.iter().any(|c| c == k) || m.fuda.iter().any(|f| f == k))
         });
     }
-    pub fn include_any(&self, kore: &Vec<String>) -> bool {
+    pub fn include_any(&self, kore: &Vec<Koto>) -> bool {
         return self.monos.iter().any(|m| {
             kore.iter()
-                .all(|k| m.category.contains(&k.as_str()) || m.fuda.contains(&k.as_str()))
+                .all(|k| m.category.iter().any(|c| c == k) || m.fuda.iter().any(|f| f == k))
         });
     }
 }
 
-pub fn is_mono(nani: &model::Nani) -> bool {
+pub fn is_mono(nani: &Nani) -> bool {
     let data = get_data();
     let monos = MonoRepository::new(data.iter().collect::<Vec<&Mono>>());
     let korekana = monos.korekana(&nani.mono);
@@ -129,7 +130,7 @@ pub fn is_mono(nani: &model::Nani) -> bool {
     }
     return false;
 }
-pub fn get_mono(nani: &Option<model::Nani>) -> MonoResult {
+pub fn get_mono(nani: Option<&Nani>) -> MonoResult {
     let data = get_data();
     let monos = MonoRepository::new(data.iter().collect::<Vec<&Mono>>());
     if let Some(nani) = nani {
@@ -145,7 +146,7 @@ pub fn get_mono(nani: &Option<model::Nani>) -> MonoResult {
         let searched = monos.match_all(nani.mono.clone());
         if searched.len() > 0 {
             return if nani.donna.is_some() {
-                searched.get_result(Some((&nani.donna_namae(), &nani.namae())))
+                searched.get_result(Some((nani.donna_namae(), nani.namae())))
             } else {
                 searched.get_result(None)
             };
@@ -155,7 +156,7 @@ pub fn get_mono(nani: &Option<model::Nani>) -> MonoResult {
         if nani.mono.len() >= 2 {
             let korekana = monos.korekana(&nani.mono);
             if korekana.len() > 0 {
-                return korekana.get_result(Some((&nani.namae(), &nani.mono[0])));
+                return korekana.get_result(Some((nani.namae(), nani.mono[0].to_string())));
             }
         }
 
@@ -165,21 +166,21 @@ pub fn get_mono(nani: &Option<model::Nani>) -> MonoResult {
     }
 }
 
-pub fn zakkuri(kore: &model::Nani) -> Desu {
+pub fn zakkuri(kore: &Nani) -> Desu {
     let data = get_data();
     let monos = MonoRepository::new(data.iter().collect::<Vec<&Mono>>());
     if let Some(category) = monos.get_category(&kore.namae()) {
         return Desu::IsCategory(category);
     }
-    return match get_mono(&Some(kore.clone())) {
+    return match get_mono(Some(&kore)) {
         MonoResult::Category(category) => Desu::Category(category),
         MonoResult::Mono(mono) => Desu::Mono(mono),
         MonoResult::Naikedo(nai, _, _) => Desu::Wakaran(nai),
         MonoResult::Nai(mono) => Desu::Wakaran(mono.donna_namae()),
     };
 }
-pub fn ikura(kore: &model::Nani) -> Desu {
-    return match get_mono(&Some(kore.clone())) {
+pub fn ikura(kore: &Nani) -> Desu {
+    return match get_mono(Some(&kore)) {
         MonoResult::Category(category) => Desu::Category(category),
         MonoResult::Mono(mono) => Desu::Ikura(mono),
         MonoResult::Naikedo(nai, _, _) => Desu::Wakaran(nai),
@@ -187,15 +188,15 @@ pub fn ikura(kore: &model::Nani) -> Desu {
     };
 }
 
-pub fn desuka(kore: &model::Nani, are: &model::Nani) -> Desu {
+pub fn desuka(kore: &Nani, are: &Nani) -> Desu {
     if kore.donna_namae() == are.donna_namae() {
         return Desu::Subete();
     }
 
-    if are.mono.len() > 0 && are.mono[0].as_str() == "何" {
+    if are.mono.len() > 0 && are.has(vec!["何"]) {
         return zakkuri(kore);
     }
-    if are.mono.len() > 0 && vec!["幾等", "おいくら"].contains(&are.mono[0].as_str()) {
+    if are.mono.len() > 0 && are.has(vec!["幾等", "おいくら"]) {
         return ikura(kore);
     }
 
@@ -204,7 +205,7 @@ pub fn desuka(kore: &model::Nani, are: &model::Nani) -> Desu {
 
     // 冷たいチョコアイス?
     let searched = monos.match_all(match &kore.donna {
-        Some(donna) => [kore.mono.clone(), vec![donna.clone()]].concat(),
+        Some(donna) => kore.mono.iter().chain(vec![donna]).cloned().collect(),
         None => kore.mono.clone(),
     });
 
@@ -231,7 +232,7 @@ fn get_data() -> Vec<Mono> {
     return vec![
         Mono {
             namae: "車内販売メニュー",
-            category: vec!["モノ", "メニュー"],
+            category: vec![Kotoba::from_str("モノ"), Kotoba::from_str("メニュー")],
             fuda: vec![],
             neuchi: 0,
             allergen: None,
@@ -241,8 +242,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "スジャータアイスクリーム(バニラ)",
-            category: vec!["モノ", "食べ物", "アイスクリーム", "バニラアイス"],
-            fuda: vec!["冷たい", "甘い", "バニラ", "アイス", "スジャータ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["アイス", "アイスクリーム"]),
+                Kotoba::from_vec(vec!["バニラアイス", "バニラアイスクリーム"]),
+            ],
+            fuda: vec!["冷たい", "甘い", "バニラ", "スジャータ"],
             neuchi: 290,
             allergen: Some(vec!["乳", "卵"]),
             calorie: Some(232),
@@ -251,13 +257,17 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "スジャータアイスクリーム(いちご)",
-            category: vec!["モノ", "食べ物", "アイスクリーム", "ストロベリーアイス"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["アイス", "アイスクリーム"]),
+                Kotoba::from_vec(vec!["ストロベリーアイス", "ストロベリーアイスクリーム"]),
+            ],
             fuda: vec![
                 "冷たい",
                 "甘い",
                 "苺",
                 "ストロベリー",
-                "アイス",
                 "スジャータ",
                 "期間限定",
             ],
@@ -269,12 +279,16 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "スジャータアイスクリーム(ピスタチオ)",
-            category: vec!["モノ", "食べ物", "アイスクリーム", "ピスタチオアイス"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["アイス", "アイスクリーム"]),
+                Kotoba::from_str("ピスタチオアイス"),
+            ],
             fuda: vec![
                 "冷たい",
                 "甘い",
                 "ピスタチオ",
-                "アイス",
                 "スジャータ",
                 "新しい",
                 "期間限定",
@@ -287,8 +301,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ウェッジ月刊誌",
-            category: vec!["モノ", "読み物", "雑誌", "ウェッジ"],
-            fuda: vec!["時代の先端を行く雑誌", "wedge"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("読み物"),
+                Kotoba::from_str("雑誌"),
+                Kotoba::from_vec(vec!["ウェッジ", "wedge"]),
+            ],
+            fuda: vec![],
             neuchi: 550,
             allergen: None,
             calorie: None,
@@ -297,7 +316,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ひととき",
-            category: vec!["モノ", "読み物", "雑誌", "ひととき"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("読み物"),
+                Kotoba::from_str("雑誌"),
+                Kotoba::from_str("ひととき"),
+            ],
             fuda: vec![],
             neuchi: 550,
             allergen: None,
@@ -307,7 +331,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "オーボンヴュータン／プティフールセック",
-            category: vec!["モノ", "食べ物", "新幹線スイーツ", "プティフールセック"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["新幹線スイーツ", "スイーツ"]),
+                Kotoba::from_str("プティフールセック"),
+            ],
             fuda: vec!["甘い", "焼き菓子", "オーボンヴュータン"],
             neuchi: 590,
             allergen: None,
@@ -317,7 +346,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "メゾンカイザー　フランボワーズショコラフィナンシェ",
-            category: vec!["モノ", "食べ物", "新幹線スイーツ", "ショコラフィナンシェ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["新幹線スイーツ", "スイーツ"]),
+                Kotoba::from_str("ショコラフィナンシェ"),
+            ],
             fuda: vec!["甘い", "焼き菓子", "メゾンカイザー"],
             neuchi: 540,
             allergen: None,
@@ -327,7 +361,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "メゾンカイザー　大人のキャラメルクッキー",
-            category: vec!["モノ", "食べ物", "新幹線スイーツ", "キャラメルクッキー"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["新幹線スイーツ", "スイーツ"]),
+                Kotoba::from_str("キャラメルクッキー"),
+            ],
             fuda: vec!["甘い", "焼き菓子", "メゾンカイザー"],
             neuchi: 430,
             allergen: None,
@@ -337,8 +376,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ストーンサークル･クォーター(赤)",
-            category: vec!["モノ", "飲み物", "お酒", "ワイン", "赤ワイン"],
-            fuda: vec!["冷たい", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("赤ワイン"),
+            ],
+            fuda: vec!["冷たい"],
             neuchi: 500,
             allergen: None,
             calorie: None,
@@ -347,8 +391,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ストーンサークル･クォーター(白)",
-            category: vec!["モノ", "飲み物", "お酒", "ワイン", "白ワイン"],
-            fuda: vec!["冷たい", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("白ワイン"),
+            ],
+            fuda: vec!["冷たい"],
             neuchi: 500,
             allergen: None,
             calorie: None,
@@ -357,8 +406,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "山崎12年(50ml)",
-            category: vec!["モノ", "飲み物", "お酒", "ウイスキー", "山崎"],
-            fuda: vec!["冷たい", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ウイスキー"),
+                Kotoba::from_str("山崎"),
+            ],
+            fuda: vec!["冷たい"],
             neuchi: 1180,
             allergen: None,
             calorie: None,
@@ -367,8 +422,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ジャックダニエルブラック(50ml)",
-            category: vec!["モノ", "飲み物", "お酒", "ウイスキー", "ジャックダニエル"],
-            fuda: vec!["冷たい", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ウイスキー"),
+                Kotoba::from_str("ジャックダニエル"),
+            ],
+            fuda: vec!["冷たい"],
             neuchi: 870,
             allergen: None,
             calorie: None,
@@ -377,8 +438,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "大吟醸カップ(210ml)",
-            category: vec!["モノ", "飲み物", "お酒", "日本酒", "大吟醸カップ"],
-            fuda: vec!["冷たい", "ワンカップ", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("日本酒"),
+                Kotoba::from_str("大吟醸カップ"),
+            ],
+            fuda: vec!["冷たい", "ワンカップ"],
             neuchi: 370,
             allergen: None,
             calorie: None,
@@ -388,13 +455,13 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "ウィルキンソンタンサン缶(250ml)",
             category: vec![
-                "モノ",
-                "飲み物",
-                "ソフトドリンク",
-                "炭酸飲料",
-                "ウィルキンソン",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("ソフトドリンク"),
+                Kotoba::from_vec(vec!["炭酸水", "炭酸飲料", "炭酸"]),
+                Kotoba::from_str("ウィルキンソン"),
             ],
-            fuda: vec!["冷たい", "炭酸", "炭酸水"],
+            fuda: vec!["冷たい"],
             neuchi: 100,
             allergen: None,
             calorie: None,
@@ -403,8 +470,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "マカデミアナッツ＆さくさくチーズ",
-            category: vec!["モノ", "食べ物", "おつまみ", "マカデミアナッツ"],
-            fuda: vec!["マカデミアナッツ", "お摘まみ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["おつまみ", "お摘まみ"]),
+                Kotoba::from_str("マカデミアナッツ"),
+            ],
+            fuda: vec![],
             neuchi: 340,
             allergen: None,
             calorie: None,
@@ -413,8 +485,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "柿の種とピーナッツ",
-            category: vec!["モノ", "食べ物", "おつまみ", "柿の種"],
-            fuda: vec!["ピーナッツ", "柿ピー", "お摘まみ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["おつまみ", "お摘まみ"]),
+                Kotoba::from_vec(vec!["柿の種", "柿ピー"]),
+            ],
+            fuda: vec!["ピーナッツ"],
             neuchi: 250,
             allergen: None,
             calorie: None,
@@ -423,8 +500,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "プレミアムミックスナッツ",
-            category: vec!["モノ", "食べ物", "おつまみ", "ミックスナッツ"],
-            fuda: vec!["お摘まみ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["おつまみ", "お摘まみ"]),
+                Kotoba::from_str("ミックスナッツ"),
+            ],
+            fuda: vec![],
             neuchi: 310,
             allergen: None,
             calorie: None,
@@ -433,8 +515,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "鯛入りちくわ",
-            category: vec!["モノ", "食べ物", "おつまみ", "ちくわ"],
-            fuda: vec!["お摘まみ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["おつまみ", "お摘まみ"]),
+                Kotoba::from_vec(vec!["ちくわ", "竹輪"]),
+            ],
+            fuda: vec![],
             neuchi: 370,
             allergen: None,
             calorie: None,
@@ -443,8 +530,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "やわらかビーフジャーキースパイシー味",
-            category: vec!["モノ", "食べ物", "おつまみ", "ビーフジャーキー"],
-            fuda: vec!["お摘まみ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["おつまみ", "お摘まみ"]),
+                Kotoba::from_str("ビーフジャーキー"),
+            ],
+            fuda: vec![],
             neuchi: 310,
             allergen: None,
             calorie: None,
@@ -453,8 +545,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "しっとりやわらかいか燻製",
-            category: vec!["モノ", "食べ物", "おつまみ", "いか"],
-            fuda: vec!["鯣", "鯣イカ", "お摘まみ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["おつまみ", "お摘まみ"]),
+                Kotoba::from_vec(vec!["いか燻製", "イカ", "イカ燻製", "鯣", "鯣イカ"]),
+            ],
+            fuda: vec![],
             neuchi: 370,
             allergen: None,
             calorie: None,
@@ -463,7 +560,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ロッテトッポ",
-            category: vec!["モノ", "食べ物", "菓子", "トッポ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お菓子", "菓子"]),
+                Kotoba::from_str("トッポ"),
+            ],
             fuda: vec!["ロッテ"],
             neuchi: 260,
             allergen: None,
@@ -473,7 +575,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "チップスター極 海の精焼き塩使用しお味",
-            category: vec!["モノ", "食べ物", "菓子", "チップスターしお味"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お菓子", "菓子"]),
+                Kotoba::from_str("チップスターしお味"),
+            ],
             fuda: vec![
                 "ヤマザキ",
                 "しお味",
@@ -489,7 +596,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "チップスター松阪牛ステーキ味",
-            category: vec!["モノ", "食べ物", "菓子", "チップスターステーキ味"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お菓子", "菓子"]),
+                Kotoba::from_str("チップスターステーキ味"),
+            ],
             fuda: vec![
                 "ヤマザキ",
                 "ステーキ味",
@@ -505,7 +617,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ゆかり濃厚おつまみスナック",
-            category: vec!["モノ", "食べ物", "菓子", "おつまみスナック"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お菓子", "菓子"]),
+                Kotoba::from_vec(vec!["おつまみスナック", "お摘まみスナック"]),
+            ],
             fuda: vec!["スナック"],
             neuchi: 200,
             allergen: None,
@@ -515,8 +632,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "柿もなか2個入",
-            category: vec!["モノ", "食べ物", "菓子", "柿もなか"],
-            fuda: vec!["最中", "モナカ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お菓子", "菓子"]),
+                Kotoba::from_vec(vec!["柿もなか", "柿最中", "最中"]),
+            ],
+            fuda: vec![],
             neuchi: 300,
             allergen: None,
             calorie: None,
@@ -525,8 +647,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "うなぎパイ12本入",
-            category: vec!["モノ", "食べ物", "お土産", "うなぎパイ"],
-            fuda: vec!["春華堂", "おすすめ", "鰻パイ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_str("お土産"),
+                Kotoba::from_vec(vec!["うなぎパイ", "鰻パイ"]),
+            ],
+            fuda: vec!["春華堂", "おすすめ"],
             neuchi: 970,
             allergen: None,
             calorie: None,
@@ -535,7 +662,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "崎陽軒　真空パックシウマイ30個入",
-            category: vec!["モノ", "食べ物", "お土産", "シウマイ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_str("お土産"),
+                Kotoba::from_vec(vec!["シウマイ", "シュウマイ"]),
+            ],
             fuda: vec!["崎陽軒"],
             neuchi: 970,
             allergen: None,
@@ -545,8 +677,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "特撰肉づくし",
-            category: vec!["モノ", "食べ物", "弁当", "特撰肉づくし"],
-            fuda: vec!["駅弁"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お弁当", "弁当", "駅弁"]),
+                Kotoba::from_str("特撰肉づくし"),
+            ],
+            fuda: vec![],
             neuchi: 1350,
             allergen: None,
             calorie: None,
@@ -555,8 +692,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "春満喫 鯛めしとたけのこ御膳",
-            category: vec!["モノ", "食べ物", "弁当", "たけのこ御膳"],
-            fuda: vec!["駅弁", "筍御膳"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お弁当", "弁当", "駅弁"]),
+                Kotoba::from_vec(vec!["たけのこ御膳", "筍御膳"]),
+            ],
+            fuda: vec![],
             neuchi: 1150,
             allergen: None,
             calorie: None,
@@ -565,8 +707,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "焼売炒飯弁當",
-            category: vec!["モノ", "食べ物", "弁当", "焼売炒飯弁當"],
-            fuda: vec!["駅弁"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お弁当", "弁当", "駅弁"]),
+                Kotoba::from_vec(vec!["焼売炒飯弁当"]),
+            ],
+            fuda: vec![],
             neuchi: 940,
             allergen: None,
             calorie: None,
@@ -575,8 +722,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "特製幕之内御膳",
-            category: vec!["モノ", "食べ物", "弁当", "特製幕之内御膳"],
-            fuda: vec!["駅弁", "幕の内弁当", "幕内"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お弁当", "弁当", "駅弁"]),
+                Kotoba::from_vec(vec!["特製幕之内御膳", "幕の内御膳", "幕の内", "幕内"]),
+            ],
+            fuda: vec![],
             neuchi: 1380,
             allergen: None,
             calorie: None,
@@ -585,8 +737,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "東海道新幹線弁当",
-            category: vec!["モノ", "食べ物", "弁当", "東海道新幹線弁当"],
-            fuda: vec!["駅弁"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お弁当", "弁当", "駅弁"]),
+                Kotoba::from_str("東海道新幹線弁当"),
+            ],
+            fuda: vec![],
             neuchi: 1000,
             allergen: None,
             calorie: None,
@@ -595,7 +752,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "厚切りヒレカツサンド",
-            category: vec!["モノ", "食べ物", "サンドイッチ", "ヒレカツサンド"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["サンドイッチ", "サンドウィッチ"]),
+                Kotoba::from_str("ヒレカツサンド"),
+            ],
             fuda: vec!["ヒレカツ", "カツサンド"],
             neuchi: 750,
             allergen: None,
@@ -605,8 +767,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "朝のおむすび弁当",
-            category: vec!["モノ", "食べ物", "弁当", "おむすび弁当"],
-            fuda: vec!["駅弁", "おむすび", "おにぎり"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お弁当", "弁当", "駅弁"]),
+                Kotoba::from_vec(vec!["おむすび弁当", "おむすび", "おにぎり"]),
+            ],
+            fuda: vec![],
             neuchi: 450,
             allergen: None,
             calorie: None,
@@ -615,8 +782,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "牛カルビ焼肉重",
-            category: vec!["モノ", "食べ物", "弁当", "牛カルビ焼肉重"],
-            fuda: vec!["駅弁", "焼肉", "牛カルビ", "カルビ", "焼き肉"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["お弁当", "弁当", "駅弁"]),
+                Kotoba::from_vec(vec!["牛カルビ焼肉弁当", "カルビ", "焼肉", "焼き肉"]),
+            ],
+            fuda: vec![],
             neuchi: 920,
             allergen: None,
             calorie: None,
@@ -625,7 +797,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "プレミアムミックスサンド",
-            category: vec!["モノ", "食べ物", "サンドイッチ", "ミックスサンド"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["サンドイッチ", "サンドウィッチ"]),
+                Kotoba::from_str("ミックスサンド"),
+            ],
             fuda: vec![],
             neuchi: 700,
             allergen: None,
@@ -635,7 +812,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "カツ＆ポテトサンド",
-            category: vec!["モノ", "食べ物", "サンドイッチ", "カツポテトサンド"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["サンドイッチ", "サンドウィッチ"]),
+                Kotoba::from_str("カツポテトサンド"),
+            ],
             fuda: vec!["カツサンド", "カツポテト"],
             neuchi: 420,
             allergen: None,
@@ -645,8 +827,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ハムチーズ＆たまごサンド",
-            category: vec!["モノ", "食べ物", "サンドイッチ", "ハムチーズたまごサンド"],
-            fuda: vec!["ハム", "チーズ", "たまご"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["サンドイッチ", "サンドウィッチ"]),
+                Kotoba::from_str("ハムチーズたまごサンド"),
+            ],
+            fuda: vec!["ハム", "チーズ", "たまご", "卵", "玉子", "サンド"],
             neuchi: 420,
             allergen: None,
             calorie: None,
@@ -655,7 +842,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "柔らかカツサンド",
-            category: vec!["モノ", "食べ物", "サンドイッチ", "カツサンド"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["サンドイッチ", "サンドウィッチ"]),
+                Kotoba::from_str("カツサンド"),
+            ],
             fuda: vec![],
             neuchi: 650,
             allergen: None,
@@ -665,8 +857,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ハムサラダ＆ハムチーズサンド",
-            category: vec!["モノ", "食べ物", "サンドイッチ", "ハムサラダサンド"],
-            fuda: vec!["ハム", "チーズ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("食べ物"),
+                Kotoba::from_vec(vec!["サンドイッチ", "サンドウィッチ"]),
+                Kotoba::from_str("ハムサラダサンド"),
+            ],
+            fuda: vec!["ハム", "サラダ", "サンド"],
             neuchi: 470,
             allergen: None,
             calorie: None,
@@ -675,7 +872,12 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "アイスコーヒー",
-            category: vec!["モノ", "飲み物", "コーヒー", "アイスコーヒー"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("コーヒー"),
+                Kotoba::from_vec(vec!["アイスコーヒー", "冷コー"]),
+            ],
             fuda: vec!["冷たい"],
             neuchi: 330,
             allergen: None,
@@ -685,8 +887,13 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ホットコーヒー",
-            category: vec!["モノ", "飲み物", "コーヒー", "ホットコーヒー"],
-            fuda: vec!["あたたかい"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("コーヒー"),
+                Kotoba::from_str("ホットコーヒー"),
+            ],
+            fuda: vec!["あたたかい", "暖かい"],
             neuchi: 320,
             allergen: None,
             calorie: None,
@@ -696,13 +903,13 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "サントリー ザ･プレミアムモルツ 350ml",
             category: vec![
-                "モノ",
-                "飲み物",
-                "お酒",
-                "ビール",
-                "サントリープレミアムモルツ",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ビール"),
+                Kotoba::from_str("サントリープレミアムモルツ"),
             ],
-            fuda: vec!["冷たい", "サントリー", "モルツ", "プレモル", "アルコール"],
+            fuda: vec!["冷たい", "サントリー", "モルツ", "プレモル"],
             neuchi: 340,
             allergen: None,
             calorie: None,
@@ -712,13 +919,13 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "サントリー　ザ・プレミアムモルツ香るエール　350㎖",
             category: vec![
-                "モノ",
-                "飲み物",
-                "お酒",
-                "ビール",
-                "サントリープレミアムモルツエール",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ビール"),
+                Kotoba::from_str("サントリープレミアムモルツエール"),
             ],
-            fuda: vec!["冷たい", "サントリー", "モルツ", "エール", "アルコール"],
+            fuda: vec!["冷たい", "サントリー", "モルツ", "エール"],
             neuchi: 340,
             allergen: None,
             calorie: None,
@@ -727,8 +934,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "キリン一番搾り 350ml",
-            category: vec!["モノ", "飲み物", "お酒", "ビール", "キリン一番搾り"],
-            fuda: vec!["冷たい", "キリン", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ビール"),
+                Kotoba::from_vec(vec!["キリン一番搾り", "一番搾り"]),
+            ],
+            fuda: vec!["冷たい", "キリン"],
             neuchi: 310,
             allergen: None,
             calorie: None,
@@ -737,8 +950,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "サッポロエビス 350ml",
-            category: vec!["モノ", "飲み物", "お酒", "ビール", "サッポロエビス"],
-            fuda: vec!["冷たい", "サッポロ", "エビス", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ビール"),
+                Kotoba::from_vec(vec!["サッポロエビス", "エビス", "ヱビス"]),
+            ],
+            fuda: vec!["冷たい", "サッポロ"],
             neuchi: 330,
             allergen: None,
             calorie: None,
@@ -747,14 +966,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "アサヒスーパードライ 350ml",
-            category: vec!["モノ", "飲み物", "お酒", "ビール", "アサヒスーパードライ"],
-            fuda: vec![
-                "冷たい",
-                "アサヒ",
-                "スーパードライ",
-                "極度乾燥",
-                "アルコール",
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ビール"),
+                Kotoba::from_vec(vec!["アサヒスーパードライ", "スーパードライ", "極度乾燥"]),
             ],
+            fuda: vec!["冷たい", "アサヒ"],
             neuchi: 310,
             allergen: None,
             calorie: None,
@@ -764,13 +983,13 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "サントリー角ハイボール 350ml",
             category: vec![
-                "モノ",
-                "飲み物",
-                "お酒",
-                "ハイボール",
-                "サントリー角ハイボール",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("ハイボール"),
+                Kotoba::from_vec(vec!["サントリー角ハイボール", "ハイボール"]),
             ],
-            fuda: vec!["冷たい", "サントリー", "角ハイボール", "アルコール"],
+            fuda: vec!["冷たい", "サントリー"],
             neuchi: 270,
             allergen: None,
             calorie: None,
@@ -780,13 +999,13 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "タカラ缶チューハイレモン 350ml",
             category: vec![
-                "モノ",
-                "飲み物",
-                "お酒",
-                "チューハイ",
-                "タカラ缶チューハイレモン",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("チューハイ"),
+                Kotoba::from_vec(vec!["タカラ缶チューハイレモン", "缶チューハイ"]),
             ],
-            fuda: vec!["冷たい", "タカラ", "アルコール"],
+            fuda: vec!["冷たい", "タカラ"],
             neuchi: 270,
             allergen: None,
             calorie: None,
@@ -795,8 +1014,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "こだわり酒場のレモンサワー　500㎖",
-            category: vec!["モノ", "飲み物", "お酒", "サワー", "レモンサワー"],
-            fuda: vec!["冷たい", "アルコール"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_vec(vec!["お酒", "酒", "アルコール"]),
+                Kotoba::from_str("サワー"),
+                Kotoba::from_str("レモンサワー"),
+            ],
+            fuda: vec!["冷たい"],
             neuchi: 270,
             allergen: None,
             calorie: None,
@@ -805,8 +1030,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "旅茶房静岡茶500ml",
-            category: vec!["モノ", "飲み物", "ソフトドリンク", "お茶", "旅茶房静岡茶"],
-            fuda: vec!["冷たい", "緑茶"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("ソフトドリンク"),
+                Kotoba::from_vec(vec!["お茶", "茶", "緑茶"]),
+                Kotoba::from_str("旅茶房静岡茶"),
+            ],
+            fuda: vec!["冷たい"],
             neuchi: 160,
             allergen: None,
             calorie: None,
@@ -816,11 +1047,10 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "ナチュラルミネラルウォーター Mont Fuji / 500ｍｌ",
             category: vec![
-                "モノ",
-                "飲み物",
-                "ソフトドリンク",
-                "水",
-                "ミネラルウォーター",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("ソフトドリンク"),
+                Kotoba::from_vec(vec!["ミネラルウェーター", "水", "お水"]),
             ],
             fuda: vec!["冷たい"],
             neuchi: 130,
@@ -832,11 +1062,11 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "オレンジジュース100 / 280ｍｌ",
             category: vec![
-                "モノ",
-                "飲み物",
-                "ソフトドリンク",
-                "ジュース",
-                "オレンジジュース",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("ソフトドリンク"),
+                Kotoba::from_str("ジュース"),
+                Kotoba::from_str("オレンジジュース"),
             ],
             fuda: vec!["冷たい"],
             neuchi: 180,
@@ -847,8 +1077,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "ポカリスエット/ 300ml",
-            category: vec!["モノ", "飲み物", "ソフトドリンク", "ポカリスエット/ 300ml"],
-            fuda: vec!["冷たい", "ポカリスウェット"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("ソフトドリンク"),
+                Kotoba::from_str("ジュース"),
+                Kotoba::from_vec(vec!["ポカリスエット", "ポカリスウェット", "ポカリ"]),
+            ],
+            fuda: vec!["冷たい"],
             neuchi: 130,
             allergen: None,
             calorie: None,
@@ -858,11 +1094,11 @@ fn get_data() -> Vec<Mono> {
         Mono {
             namae: "Welch'sグレープ50 280PET",
             category: vec![
-                "モノ",
-                "飲み物",
-                "ソフトドリンク",
-                "ジュース",
-                "ウェルチグレープ",
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("ソフトドリンク"),
+                Kotoba::from_str("ジュース"),
+                Kotoba::from_str("ウェルチグレープ"),
             ],
             fuda: vec!["冷たい", "ウェルチ"],
             neuchi: 140,
@@ -873,8 +1109,14 @@ fn get_data() -> Vec<Mono> {
         },
         Mono {
             namae: "コカ･コーラ ボトル /280ml",
-            category: vec!["モノ", "飲み物", "ソフトドリンク", "コカコーラ"],
-            fuda: vec!["冷たい", "コーラ"],
+            category: vec![
+                Kotoba::from_str("モノ"),
+                Kotoba::from_str("飲み物"),
+                Kotoba::from_str("ソフトドリンク"),
+                Kotoba::from_str("ジュース"),
+                Kotoba::from_vec(vec!["コカコーラ", "コーラ"]),
+            ],
+            fuda: vec!["冷たい", "炭酸", "炭酸飲料"],
             neuchi: 130,
             allergen: None,
             calorie: None,

@@ -135,12 +135,13 @@ pub fn parse(
         .send()?
         .json()?;
 
-    let mut tokens: Vec<Token> = Vec::new();
-    for ch in &response.result {
-        for t in &ch.tokens {
-            tokens.push(t.clone());
-        }
-    }
+    let tokens = response
+        .result
+        .iter()
+        .flat_map(|ch| ch.tokens.iter())
+        .cloned()
+        .collect::<Vec<Token>>();
+
     return Ok((response.result, tokens));
 }
 
