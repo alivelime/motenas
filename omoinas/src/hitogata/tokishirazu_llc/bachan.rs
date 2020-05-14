@@ -2,14 +2,6 @@ use rand::seq::SliceRandom;
 
 use crate::hitogata::*;
 
-pub fn new() -> Hitogata {
-    return Hitogata {
-        id: "bachan",
-        namae: "パッセンジャーズばあちゃん",
-        kaeshi: &BACHAN,
-    };
-}
-
 pub const BACHAN: Kaeshi = Kaeshi {
     aisatsu: Aisatsu {
         hibi: AisatsuHibi {

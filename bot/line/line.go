@@ -1,10 +1,11 @@
-package line
+package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -14,15 +15,14 @@ import (
 )
 
 type Line struct {
-	ChannelSecret      string
-	ChannelToken       string
-	Bot                *linebot.Client
-	AdminChannelSecret string
-	AdminChannelToken  string
-	AdminBot           *linebot.Client
+	ChannelSecret string
+	ChannelToken  string
+	Bot           *linebot.Client
+	AdminGroupID  string
+	OrderGroupID  string
 }
 
-func NewLine(secret, token, adminSecret, adminToken string) (Line, error) {
+func NewLine(secret, token, adminGroupID, orderGroupID string) (Line, error) {
 	bot, err := linebot.New(
 		secret,
 		token,
@@ -31,39 +31,21 @@ func NewLine(secret, token, adminSecret, adminToken string) (Line, error) {
 		return Line{}, err
 	}
 
-	adminBot, err := linebot.New(
-		adminSecret,
-		adminToken,
-	)
-	if err != nil {
-		return Line{}, err
-	}
-
 	return Line{
-		ChannelSecret:      secret,
-		ChannelToken:       token,
-		Bot:                bot,
-		AdminChannelSecret: adminSecret,
-		AdminChannelToken:  adminToken,
-		AdminBot:           adminBot,
+		ChannelSecret: secret,
+		ChannelToken:  token,
+		Bot:           bot,
+		AdminGroupID:  adminGroupID,
+		OrderGroupID:  orderGroupID,
 	}, nil
 }
 
-func (r *Line) SendTextMessage(replyToken, message string) error {
+func (r *Line) ReplyTextMessage(replyToken, message string) error {
 	return r.Reply(replyToken, linebot.NewTextMessage(message))
 }
-func (r *Line) AdminTextMessage(message string) error {
-	return r.Broadcast(linebot.NewTextMessage(message))
-}
 
-func (r *Line) SendTemplateMessage(replyToken, altText string, template linebot.Template) error {
+func (r *Line) ReplyTemplateMessage(replyToken, altText string, template linebot.Template) error {
 	return r.Reply(replyToken,
-		linebot.NewTextMessage(altText),
-		linebot.NewTemplateMessage(altText, template),
-	)
-}
-func (r *Line) AdminTemplateMessage(altText string, template linebot.Template) error {
-	return r.Broadcast(
 		linebot.NewTextMessage(altText),
 		linebot.NewTemplateMessage(altText, template),
 	)
@@ -76,8 +58,22 @@ func (r *Line) Reply(replyToken string, message ...linebot.SendingMessage) error
 	}
 	return nil
 }
+func (r *Line) BroadcastTextMessage(message string) error {
+	return r.Broadcast(linebot.NewTextMessage(message))
+}
 func (r *Line) Broadcast(message ...linebot.SendingMessage) error {
-	if _, err := r.AdminBot.BroadcastMessage(message...).Do(); err != nil {
+	if _, err := r.Bot.BroadcastMessage(message...).Do(); err != nil {
+		fmt.Printf("Broadcast Error: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (r *Line) PushTextMessage(to, message string) error {
+	return r.PushMessage(to, linebot.NewTextMessage(message))
+}
+func (r *Line) PushMessage(to string, message ...linebot.SendingMessage) error {
+	if _, err := r.Bot.PushMessage(to, message...).Do(); err != nil {
 		fmt.Printf("Reply Error: %v", err)
 		return err
 	}
@@ -92,11 +88,30 @@ func (r *Line) NewCarouselColumn(thumbnailImageURL, title, text string, actions 
 		Actions:           actions,
 	}
 }
-
 func (r *Line) NewCarouselTemplate(columns ...*linebot.CarouselColumn) *linebot.CarouselTemplate {
 	return &linebot.CarouselTemplate{
 		Columns: columns,
 	}
+}
+
+func (r *Line) AdminTextMessage(message string) error {
+	return r.AdminPushMessage(linebot.NewTextMessage(message))
+}
+func (r *Line) AdminTemplateMessage(altText string, template linebot.Template) error {
+	return r.AdminPushMessage(
+		linebot.NewTextMessage(altText),
+		linebot.NewTemplateMessage(altText, template),
+	)
+}
+
+func (r *Line) AdminPushMessage(message ...linebot.SendingMessage) error {
+	if len(r.AdminGroupID) > 0 {
+		if _, err := r.Bot.PushMessage(r.AdminGroupID, message...).Do(); err != nil {
+			fmt.Printf("Reply Error: %v", err)
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *Line) EventRouter(eve []*linebot.Event) {
@@ -105,8 +120,16 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				r.handleText(message, event.ReplyToken, event.Source.UserID)
+				switch event.Source.GroupID {
+				case r.AdminGroupID:
+					r.handleTextAdmin(message, event.ReplyToken, event.Source.UserID)
+				case r.OrderGroupID:
+				default:
+					r.handleTextChara(message, event.ReplyToken, event.Source.UserID)
+				}
 			}
+		case linebot.EventTypeJoin:
+			log.Printf("Join group id : %v", event.Source.GroupID)
 		}
 	}
 }
@@ -129,7 +152,7 @@ type Carousel struct {
 	Text  string `json:"text"`
 }
 
-func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID string) {
+func (r *Line) handleTextChara(message *linebot.TextMessage, replyToken, userID string) {
 	// redirect admin
 	prof, err := r.Bot.GetProfile(userID).Do()
 	if err != nil {
@@ -153,7 +176,7 @@ func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID strin
 
 	switch result.Type {
 	case "message":
-		r.SendTextMessage(replyToken, result.Message)
+		r.ReplyTextMessage(replyToken, result.Message)
 		r.AdminTextMessage(result.Message)
 	case "carousel":
 		log.Printf("%#v", result.Carousel)
@@ -161,9 +184,27 @@ func (r *Line) handleText(message *linebot.TextMessage, replyToken, userID strin
 		for _, c := range result.Carousel {
 			columns = append(columns, r.NewCarouselColumn(c.Image, c.Title, c.Text, linebot.NewURIAction("商品情報を見る", c.URL)))
 		}
-		r.SendTemplateMessage(replyToken, result.Message, r.NewCarouselTemplate(columns...))
+		r.ReplyTemplateMessage(replyToken, result.Message, r.NewCarouselTemplate(columns...))
 		r.AdminTemplateMessage(result.Message, r.NewCarouselTemplate(columns...))
 	default:
 		break
+	}
+}
+
+func (r *Line) handleTextAdmin(message *linebot.TextMessage, replyToken, userID string) {
+	t := strings.Split(message.Text, "\n")
+	switch t[0] {
+	case "全体":
+		if err := r.BroadcastTextMessage(strings.Join(t[1:], "^n")); err != nil {
+			r.ReplyTextMessage(replyToken, "エラーが発生しました "+err.Error())
+		} else {
+			r.ReplyTextMessage(replyToken, "全体メッセージを送信しました")
+		}
+	case "個別":
+		if err := r.PushTextMessage(t[1], strings.Join(t[2:], "^n")); err != nil {
+			r.ReplyTextMessage(replyToken, "エラーが発生しました "+err.Error())
+		} else {
+			r.ReplyTextMessage(replyToken, "個別メッセージを送信しました")
+		}
 	}
 }

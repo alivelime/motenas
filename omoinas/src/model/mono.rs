@@ -2,8 +2,8 @@ use crate::model::{Kotoba, Nani};
 
 pub enum MonoResult {
     Category(Vec<String>),
-    Mono(Vec<Mono>),
-    Naikedo(String, String, Vec<String>),
+    Mono(Vec<Mono>, Vec<String>),
+    Naikedo(String, String, Vec<Mono>, Vec<String>),
     Nai(Nani),
 }
 
@@ -14,7 +14,7 @@ pub enum Desu {
     Chigau(),
     IsCategory(String),
     Category(Vec<String>),
-    Mono(Vec<Mono>),
+    Mono(Vec<Mono>, Vec<String>),
     Ikura(Vec<Mono>),
 }
 
@@ -24,9 +24,9 @@ pub struct Mono {
     pub category: Vec<Kotoba>,
     pub fuda: Vec<&'static str>,
     pub neuchi: u32,
-    //    pub okisa: Option<(u32, &'static str)>,
-    //    pub aji: Option<&'static str>,
+    pub comment: &'static str,
     pub allergen: Option<Vec<&'static str>>,
+    pub ingredients: Option<Vec<&'static str>>,
     pub calorie: Option<u32>,
     pub image: &'static str,
     pub url: &'static str,

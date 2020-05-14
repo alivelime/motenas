@@ -43,7 +43,7 @@ impl Tumori for Desuka {
     }
     fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
         return if let Some(kore) = &self.kore {
-            match mono::desuka(&kore, &self.are) {
+            match mono::desuka(&chara.omise, &kore, &self.are) {
                 Desu::Wakaran(nai) => Result::Message((chara.kaeshi.toikake.desuka.wakaran)(&nai)),
                 Desu::Subete() => Result::Message((chara.kaeshi.toikake.desuka.subete)()),
                 Desu::Doreka() => Result::Message((chara.kaeshi.toikake.desuka.doreka)()),
@@ -54,22 +54,32 @@ impl Tumori for Desuka {
                 Desu::Category(category) => {
                     Result::Message((chara.kaeshi.toikake.desuka.iroiro)(category))
                 }
-                Desu::Mono(mono) => Result::Mono(
-                    (chara.kaeshi.toikake.desuka.iroiro)(
-                        mono.iter()
-                            .map(|m| m.category.last().unwrap().to_string())
-                            .collect(),
+                Desu::Mono(mono, category) => match mono.len() {
+                    1..=7 => Result::Mono(
+                        (chara.kaeshi.toikake.desuka.iroiro)(
+                            mono.iter()
+                                .map(|m| m.category.last().unwrap().to_string())
+                                .collect(),
+                        ),
+                        mono,
                     ),
-                    mono,
-                ),
-                Desu::Ikura(mono) => Result::Mono(
-                    (chara.kaeshi.toikake.desuka.ikura)(
+                    _ => Result::Message((chara.kaeshi.toikake.desuka.iroiro)(category)),
+                },
+                Desu::Ikura(mono) => match mono.len() {
+                    1..=7 => Result::Mono(
+                        (chara.kaeshi.toikake.desuka.ikura)(
+                            mono.iter()
+                                .map(|m| (m.category.last().unwrap().as_str(), m.neuchi))
+                                .collect(),
+                        ),
+                        mono,
+                    ),
+                    _ => Result::Message((chara.kaeshi.toikake.desuka.ikura)(
                         mono.iter()
                             .map(|m| (m.category.last().unwrap().as_str(), m.neuchi))
                             .collect(),
-                    ),
-                    mono,
-                ),
+                    )),
+                },
             }
         } else {
             Result::Message((chara.kaeshi.toikake.desuka.naniga)())

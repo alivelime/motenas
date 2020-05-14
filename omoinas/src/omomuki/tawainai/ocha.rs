@@ -24,7 +24,7 @@ pub fn new(ocha: &omomuki::Ocha, tree: &cotoha::ParseObjects) -> Option<Box<dyn 
 
 impl Tumori for Ocha {
     fn kotafu(&self, chara: &hitogata::Hitogata) -> Box<dyn Tumori> {
-        if let Some(n) = self.nani.iter().find(|n| mono::is_mono(n)) {
+        if let Some(n) = self.nani.iter().find(|n| mono::is_mono(&chara.omise, n)) {
             if chara.id == "bachan" {
                 return Box::new(Ocha {
                     mono: n.clone(),

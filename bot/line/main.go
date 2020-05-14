@@ -8,21 +8,19 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/line/line-bot-sdk-go/linebot"
-
-	admin "github.com/alivelime/motenas/bot/admin/line"
-	common "github.com/alivelime/motenas/bot/common/line"
 )
 
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	line, err := admin.NewLine(
+	line, err := NewLine(
 		os.Getenv("CHANNEL_SECRET"),
 		os.Getenv("CHANNEL_TOKEN"),
-		os.Getenv("ADMIN_CHANNEL_SECRET"),
-		os.Getenv("ADMIN_CHANNEL_TOKEN"))
+		os.Getenv("ADMIN_GROUP_ID"),
+		os.Getenv("ORDER_GROUP_ID"),
+	)
 	if err != nil {
 		fmt.Println(err)
 	}
-	eve, err := common.ParseRequest(line.AdminChannelSecret, request)
+	eve, err := ParseRequest(line.ChannelSecret, request)
 	if err != nil {
 		status := 200
 		if err == linebot.ErrInvalidSignature {

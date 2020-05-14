@@ -1,18 +1,36 @@
-pub mod bachan;
-pub mod minarai;
+pub mod tokishirazu_llc;
 
-pub fn new(name: &str) -> Hitogata {
-    return match name {
-        "bachan" => bachan::new(),
-        "minarai" => minarai::new(),
-        _ => bachan::new(),
+use crate::omise::{self, Omise};
+
+pub fn new(namae: &str) -> Hitogata {
+    return match namae {
+        "tokishirazu.llc/bachan" => Hitogata {
+            id: String::from(namae),
+            namae: "パッセンジャーズばあちゃん",
+            kaeshi: &tokishirazu_llc::bachan::BACHAN,
+            omise: omise::new(namae),
+        },
+        "tokishirazu.llc/minarai" => Hitogata {
+            id: String::from(namae),
+            namae: "みならいちゃん",
+            kaeshi: &tokishirazu_llc::minarai::MINARAI,
+            omise: omise::new(namae),
+        },
+        "comfull.co.jp/sendagi/bachan" => Hitogata {
+            id: String::from(namae),
+            namae: "コンフルばあちゃん",
+            kaeshi: &tokishirazu_llc::bachan::BACHAN,
+            omise: omise::new("comfull.co.jp/sendagi"),
+        },
+        _ => panic!("invalid chara. {}", namae),
     };
 }
 
 pub struct Hitogata {
-    pub id: &'static str,
+    pub id: String,
     pub namae: &'static str,
     pub kaeshi: &'static Kaeshi,
+    pub omise: Omise,
 }
 
 pub struct Kaeshi {

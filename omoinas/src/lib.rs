@@ -1,6 +1,7 @@
 pub mod cotoha;
 pub mod hitogata;
 pub mod model;
+pub mod omise;
 pub mod omomuki;
 pub mod repository;
 

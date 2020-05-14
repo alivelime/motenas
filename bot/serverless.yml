@@ -9,10 +9,10 @@ provider:
 custom:
   defaultStage: dev
   otherfile:
-    lineBachan:
-      dev: ${file(./conf/line-bachan-dev.yml)}
-    lineMinarai:
-      dev: ${file(./conf/line-minarai-dev.yml)}
+    lineTokishirazuLlcBachan:
+      dev: ${file(./conf/line-tokishirazu-llc-bachan-dev.yml)}
+    lineTokishirazuLlcMinarai:
+      dev: ${file(./conf/line-tokishirazu-llc-minarai-dev.yml)}
   rust:
     dockerTag: 'some-custom-tag'
 
@@ -24,66 +24,37 @@ package:
 
 functions:
   lineBachan:
-    handler: bin/line-bachan
+    handler: bin/line
     runtime: go1.x
     environment:
-      CHARA_NAME:  ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHARA_NAME}
-      CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_TOKEN}
-      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
-      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
+      CHARA_NAME:  ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.CHARA_NAME}
+      CHANNEL_SECRET: ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.CHANNEL_SECRET}
+      CHANNEL_TOKEN: ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.CHANNEL_TOKEN}
+      ADMIN_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.ADMIN_GROUP_ID}
+      ORDER_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.ORDER_GROUP_ID}
 
     events:
       - http:
-          path: line-bachan
-          method: post
-          cors: true
-  
-  lineBachanAdmin:
-    handler: bin/line-bachan-admin
-    runtime: go1.x
-    environment:
-      CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.CHANNEL_TOKEN}
-      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
-      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineBachan.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
-
-    events:
-      - http:
-          path: line-bachan-admin
+          path: line-tokishirazu-llc-bachan
           method: post
           cors: true
   
   
   lineMinarai:
-    handler: bin/line-minarai
+    handler: bin/line
     runtime: go1.x
     environment:
-      CHARA_NAME:  ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHARA_NAME}
-      CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_TOKEN}
-      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
-      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
+      CHARA_NAME:  ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.CHARA_NAME}
+      CHANNEL_SECRET: ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.CHANNEL_SECRET}
+      CHANNEL_TOKEN: ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.CHANNEL_TOKEN}
+      ADMIN_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.ADMIN_GROUP_ID}
+      ORDER_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.ORDER_GROUP_ID}
 
     events:
       - http:
-          path: line-minarai
+          path: line-tokishirazu-llc-minarai
           method: post
           cors: true
   
-  lineMinaraiAdmin:
-    handler: bin/line-minarai-admin
-    runtime: go1.x
-    environment:
-      CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.CHANNEL_TOKEN}
-      ADMIN_CHANNEL_SECRET: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_SECRET}
-      ADMIN_CHANNEL_TOKEN: ${self:custom.otherfile.lineMinarai.${self:provider.stage}.ADMIN_CHANNEL_TOKEN}
-
-    events:
-      - http:
-          path: line-minarai-admin
-          method: post
-          cors: true
   
   

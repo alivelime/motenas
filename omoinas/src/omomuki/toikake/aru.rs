@@ -41,29 +41,36 @@ impl Tumori for Aru {
             .nani
             .iter()
             .find(|n| !n.has(vec!["ばあちゃん", "おばあちゃん", "何か", "何"]));
-        return match mono::get_mono(nani) {
+        return match mono::get_mono(&chara.omise, nani) {
             MonoResult::Category(category) => {
                 Result::Message((chara.kaeshi.toikake.aru.iroiro)(category))
             }
-            MonoResult::Mono(mono) => Result::Mono(
-                if mono.len() == 1 {
-                    (chara.kaeshi.toikake.aru.aru)(mono[0].category.last().unwrap().as_str())
-                } else {
+            MonoResult::Mono(mono, category) => match mono.len() {
+                1 => Result::Mono(
+                    (chara.kaeshi.toikake.aru.aru)(mono[0].category.last().unwrap().as_str()),
+                    mono,
+                ),
+                2..=7 => Result::Mono(
                     (chara.kaeshi.toikake.aru.iroiro)(
                         mono.iter()
                             .map(|m| m.category.last().unwrap().to_string())
                             .collect(),
-                    )
-                },
-                mono,
-            ),
-            MonoResult::Naikedo(nai, nara, aru) => {
-                Result::Message((chara.kaeshi.toikake.aru.naikedo)(
+                    ),
+                    mono,
+                ),
+                _ => Result::Message((chara.kaeshi.toikake.aru.iroiro)(category)),
+            },
+            MonoResult::Naikedo(nai, nara, aru_mono, aru_category) => match aru_mono.len() {
+                1..=7 => Result::Mono(
+                    (chara.kaeshi.toikake.aru.naikedo)(&nai, &nara, &aru_category.join("か\n")),
+                    aru_mono,
+                ),
+                _ => Result::Message((chara.kaeshi.toikake.aru.naikedo)(
                     &nai,
                     &nara,
-                    &aru.join("か\n"),
-                ))
-            }
+                    &aru_category.join("か\n"),
+                )),
+            },
             MonoResult::Nai(mono) => Result::Message((chara.kaeshi.toikake.aru.nai)(&mono.namae())),
         };
     }
