@@ -111,7 +111,13 @@ impl ParseObjects {
 
     fn is_taigen(&self, t: &api::Token) -> bool {
         return t.pos.as_str() == "名詞"
-            && t.features.iter().any(|f| f.contains(&String::from("動作")));
+            && t.features.iter().any(|f| {
+                f.contains(&String::from("動作"))
+                    && match &self.tokens.get((t.id + 1) as usize) {
+                        Some(n) => n.pos != "名詞",
+                        None => true,
+                    }
+            });
     }
     pub fn get_taigen(&self) -> Option<Taigen> {
         for chunk in &self.chunks {
@@ -216,7 +222,7 @@ impl ParseObjects {
             .chunks
             .iter()
             .flat_map(|c| c.tokens.iter())
-            .filter(|t| t.pos.as_str() == "名詞" && self.is_main_meishi(t.id))
+            .filter(|t| self.is_main_meishi(t))
             .map(|t| Nani {
                 donna: self.get_keiyou(t.id),
                 mono: vec![Koto::new(&t.kana, &t.lemma)]
@@ -226,11 +232,15 @@ impl ParseObjects {
             })
             .collect();
     }
-    pub fn is_main_meishi(&self, id: i32) -> bool {
-        return match &self.tokens.get((id + 1) as usize) {
-            Some(t) => &t.pos != "名詞" || self.is_taigen(t),
-            None => true,
-        };
+    pub fn is_main_meishi(&self, dep: &api::Token) -> bool {
+        return self.is_meishi(dep)
+            && match &self.tokens.get((dep.id + 1) as usize) {
+                Some(t) => &t.pos != "名詞" || self.is_taigen(t),
+                None => true,
+            };
+    }
+    pub fn is_meishi(&self, t: &api::Token) -> bool {
+        return t.pos == "名詞" || t.features.iter().any(|f| f.contains(&String::from("名詞")));
     }
 
     pub fn get_toki(&self, chunk_id: i32) -> Toki {
@@ -269,7 +279,7 @@ impl ParseObjects {
             .flat_map(|dls| dls.iter())
             .filter_map(|dl| {
                 let dep = &self.tokens[dl.token_id as usize];
-                return if dep.pos == "名詞" && self.is_main_meishi(dep.id) {
+                return if self.is_main_meishi(dep) {
                     Some(Nani {
                         donna: self.get_keiyou(dep.id),
                         mono: vec![Koto::new(&dep.kana, &dep.lemma)]

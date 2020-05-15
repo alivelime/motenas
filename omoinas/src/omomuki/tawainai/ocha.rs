@@ -15,7 +15,13 @@ pub struct Ocha {
 pub fn new(ocha: &omomuki::Ocha, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
     return Some(Box::new(Ocha {
         yobu: tree
-            .has_lemma(vec!["おーい", "ちょっと", "ばあちゃん", "すみません"])
+            .has_lemma(vec![
+                "おーい",
+                "ちょっと",
+                "おばあちゃん",
+                "ばあちゃん",
+                "すみません",
+            ])
             .is_some(),
         nani: ocha.nani.clone(),
         mono: ocha.nani[0].clone(),
@@ -25,7 +31,7 @@ pub fn new(ocha: &omomuki::Ocha, tree: &cotoha::ParseObjects) -> Option<Box<dyn 
 impl Tumori for Ocha {
     fn kotafu(&self, chara: &hitogata::Hitogata) -> Box<dyn Tumori> {
         if let Some(n) = self.nani.iter().find(|n| mono::is_mono(&chara.omise, n)) {
-            if chara.id == "bachan" {
+            if chara.id.contains(&String::from("/bachan")) {
                 return Box::new(Ocha {
                     mono: n.clone(),
                     yobu: self.yobu,

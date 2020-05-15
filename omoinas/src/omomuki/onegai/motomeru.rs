@@ -21,7 +21,7 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
             {
                 return Some(Box::new(Motomeru {
                     nani: vec![Nani {
-                        mono: vec![Koto::from_str("弁当")],
+                        mono: vec![Koto::from_str("食べ物")],
                         donna: None,
                     }],
                 }));
@@ -77,7 +77,8 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
             _ => {}
         },
         omomuki::Omomuki::Shite(suru) => {
-            if Kotoba::from_vec(vec!["下さる", "見せる", "くれる", "寄越す"]) == suru.doushita.suru
+            if Kotoba::from_vec(vec!["下さる", "見せる", "くれる", "寄越す", "貸す"])
+                == suru.doushita.suru
             {
                 return Some(Box::new(Motomeru {
                     nani: suru.nani.clone(),

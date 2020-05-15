@@ -1,3 +1,4 @@
+pub mod comfull_co_jp;
 pub mod tokishirazu_llc;
 
 use crate::omise::{self, Omise};
@@ -19,7 +20,7 @@ pub fn new(namae: &str) -> Hitogata {
         "comfull.co.jp/sendagi/bachan" => Hitogata {
             id: String::from(namae),
             namae: "コンフルばあちゃん",
-            kaeshi: &tokishirazu_llc::bachan::BACHAN,
+            kaeshi: &comfull_co_jp::bachan::BACHAN,
             omise: omise::new("comfull.co.jp/sendagi"),
         },
         _ => panic!("invalid chara. {}", namae),

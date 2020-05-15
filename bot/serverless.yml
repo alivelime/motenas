@@ -13,6 +13,8 @@ custom:
       dev: ${file(./conf/line-tokishirazu-llc-bachan-dev.yml)}
     lineTokishirazuLlcMinarai:
       dev: ${file(./conf/line-tokishirazu-llc-minarai-dev.yml)}
+    lineComfullCoJpSendagiBachan:
+      dev: ${file(./conf/line-comfull-co-jp-sendagi-bachan-dev.yml)}
   rust:
     dockerTag: 'some-custom-tag'
 
@@ -56,5 +58,20 @@ functions:
           method: post
           cors: true
   
+  lineComfullCoJpSendagiBachan:
+    handler: bin/line
+    runtime: go1.x
+    environment:
+      CHARA_NAME:  ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.CHARA_NAME}
+      CHANNEL_SECRET: ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.CHANNEL_SECRET}
+      CHANNEL_TOKEN: ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.CHANNEL_TOKEN}
+      ADMIN_GROUP_ID:  ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.ADMIN_GROUP_ID}
+      ORDER_GROUP_ID:  ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.ORDER_GROUP_ID}
+
+    events:
+      - http:
+          path: line-comfull-co-jp-sendagi-bachan
+          method: post
+          cors: true
   
   
