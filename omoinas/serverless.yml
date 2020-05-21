@@ -4,6 +4,11 @@ provider:
   runtime: rust
   memorySize: 128
   region: ap-northeast-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: "*" 
 package:
   individually: true
 custom:
@@ -21,6 +26,7 @@ functions:
   ukekotae:
     handler: omoinas.ukekotae
     environment:
+      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
       COTOHA_CLIENT_ID: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_ID}
       COTOHA_CLIENT_SECRET: ${self:custom.otherfile.environment.${self:provider.stage}.COTOHA_CLIENT_SECRET}
     events:

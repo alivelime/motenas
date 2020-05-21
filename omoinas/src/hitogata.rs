@@ -163,6 +163,7 @@ pub struct Wakaran {
 }
 
 pub struct Error {
+    pub token: fn() -> String,
     pub parse: fn() -> String,
     pub sentence: fn() -> String,
     pub noimpl: fn() -> String,

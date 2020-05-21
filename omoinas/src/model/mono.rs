@@ -26,7 +26,7 @@ pub struct Mono {
     pub neuchi: u32,
     pub comment: &'static str,
     pub allergen: Option<Vec<&'static str>>,
-    pub ingredients: Option<Vec<&'static str>>,
+    pub moto: Option<Vec<&'static str>>,
     pub calorie: Option<u32>,
     pub image: &'static str,
     pub url: &'static str,

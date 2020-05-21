@@ -135,10 +135,10 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 }
 
 type Event struct {
-	Text  string `json:"text"`
-	Chara string `json:"chara"`
-	ID    string `json:"id"`
-	App   string `json:"app"`
+	Text    string `json:"text"`
+	CharaID string `json:"chara_id"`
+	ID      string `json:"id"`
+	App     string `json:"app"`
 }
 type Message struct {
 	Type     string     `json:"type"`
@@ -160,7 +160,7 @@ func (r *Line) handleTextChara(message *linebot.TextMessage, replyToken, userID 
 	}
 	r.AdminTextMessage(userID + "\n" + prof.DisplayName + "\n" + message.Text)
 
-	payload, _ := json.Marshal(Event{Text: message.Text, Chara: os.Getenv("CHARA_NAME"), ID: userID, App: "line"})
+	payload, _ := json.Marshal(Event{Text: message.Text, CharaID: os.Getenv("CHARA_NAME"), ID: userID, App: "line"})
 
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
 		FunctionName:   aws.String("arn:aws:lambda:ap-northeast-1:591658611168:function:omoinas-dev-ukekotae"),

@@ -1,6 +1,8 @@
 pub mod comfull_co_jp;
 pub mod tokishirazu_llc;
 
+use chrono::{DateTime, FixedOffset};
+
 use crate::model::mono::Mono;
 
 pub fn new(namae: &str) -> Omise {
@@ -17,6 +19,7 @@ pub fn new(namae: &str) -> Omise {
             yotei: "24時間365日",
             menu: tokishirazu_llc::shinkansen(),
             status: Status::Hima,
+            created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
         },
         "comfull.co.jp/sendagi" => Omise {
             id: String::from(namae),
@@ -30,6 +33,7 @@ pub fn new(namae: &str) -> Omise {
             yotei: "月〜金：11:00〜23:00\n土日祝：11:00〜23:00",
             menu: comfull_co_jp::sendagi(),
             status: Status::Hima,
+            created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
         },
         _ => panic!("missing omise.{}", namae),
     };
@@ -47,6 +51,8 @@ pub struct Omise {
     yotei: &'static str,
     menu: Vec<Mono>,
     status: Status,
+
+    created_at: DateTime<FixedOffset>,
 }
 
 impl Omise {

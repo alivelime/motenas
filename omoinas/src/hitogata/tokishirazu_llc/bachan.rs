@@ -142,6 +142,7 @@ pub const BACHAN: Kaeshi = Kaeshi {
     },
     kitanai: |ng| format!("{}とはなんだい!\nもっと綺麗な言葉をお使い!", ng),
     error: Error {
+        token: || String::from("おや、トークン取得でエラーかい"),
         parse: || String::from("おや、解析APIでエラーかい"),
         sentence: || String::from("おや、文タイプ判別APIでエラーかい"),
         noimpl: || String::from("おや、未実装な反応だね"),

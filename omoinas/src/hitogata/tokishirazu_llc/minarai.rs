@@ -139,6 +139,7 @@ pub const MINARAI: Kaeshi = Kaeshi {
     },
     kitanai: |ng| format!("{}はNGワードです\nブロックしますよ?", ng),
     error: Error {
+        token: || String::from("トークン取得エラーっぽいです"),
         parse: || String::from("解析APIでエラーっぽいです"),
         sentence: || String::from("文タイプ判別APIでエラーみたいです"),
         noimpl: || String::from("未実装な反応です"),
