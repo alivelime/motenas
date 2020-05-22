@@ -1,4 +1,5 @@
 pub mod mono;
+pub mod setting;
 
 use std::cmp::PartialEq;
 
