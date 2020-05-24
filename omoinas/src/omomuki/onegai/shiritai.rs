@@ -1,5 +1,5 @@
-use crate::hitogata;
-use crate::model::Nani;
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::Nani;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
@@ -30,10 +30,10 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Shiritai {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return match self.nani.len() {
             0 => Result::Message((chara.kaeshi.onegai.shiritai.naniga)()),
             _ => Result::Message((chara.kaeshi.onegai.shiritai.kore)(

@@ -1,4 +1,4 @@
-use crate::model::{Kotoba, Nani};
+use crate::model::kotoba::{Kotoba, Nani};
 
 pub enum MonoResult {
     Category(Vec<String>),

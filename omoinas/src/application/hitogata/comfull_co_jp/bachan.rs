@@ -1,6 +1,6 @@
 use rand::seq::SliceRandom;
 
-use crate::hitogata::*;
+use crate::model::hitogata::*;
 
 pub const BACHAN: Kaeshi = Kaeshi {
     aisatsu: Aisatsu {
@@ -131,9 +131,7 @@ pub const BACHAN: Kaeshi = Kaeshi {
                 format!("{}がなんだって?\nきちんとした言葉をお使い!", m)
             }
         },
-        sonota: || {
-            String::from("お弁当、ホットコーヒー、サンドイッチ、ビールにおつまみはいらんかねー?")
-        },
+        sonota: || String::from("ホットコーヒー、ホットサンド、ビールはいらんかねー?"),
         sounanda: || String::from("おや、そうなのかい。"),
         yokatta: || String::from("そうかい、それは良かったねぇ"),
     },

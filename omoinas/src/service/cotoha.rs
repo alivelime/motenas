@@ -1,6 +1,7 @@
 pub mod api;
 
-use crate::model::{Dearu, Doushita, Keiyou, Koto, Nani, Suru, Taigen, Toki};
+use crate::model::kotoba::{Koto, Nani};
+use crate::model::omomuki::{Dearu, Doushita, Keiyou, Suru, Taigen, Toki};
 
 pub struct ParseObjects {
     pub chunks: Vec<api::ParseObject>,

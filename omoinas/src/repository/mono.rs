@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
+use crate::model::kotoba::{Koto, Nani};
 use crate::model::mono::{Desu, Mono, MonoResult};
-use crate::model::{Koto, Nani};
-use crate::omise::Omise;
+use crate::model::omise::Omise;
 
 pub struct MonoRepository<'a> {
     pub monos: Vec<&'a Mono>,

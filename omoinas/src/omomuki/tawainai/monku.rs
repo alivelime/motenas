@@ -1,5 +1,5 @@
-use crate::cotoha;
-use crate::hitogata;
+use crate::service::cotoha;
+use crate::model::hitogata::Hitogata;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
@@ -19,10 +19,10 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Monku {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(omomuki::tawainai::ayamaru::Ayamaru {});
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return Result::Message((chara.kaeshi.error.noimpl)());
     }
 }

@@ -1,6 +1,6 @@
-use crate::hitogata;
-use crate::model::{Koto, Kotoba, Nani};
-use crate::omomuki::{self, Result};
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::{Koto, Kotoba, Nani};
+use crate::omomuki::{self, Omomuki, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -8,9 +8,9 @@ pub struct Motomeru {
     pub nani: Vec<Nani>,
 }
 
-pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
     match omomuki {
-        omomuki::Omomuki::Suru(suru) => {
+        Omomuki::Suru(suru) => {
             if Kotoba::from_vec(vec!["くれる", "貰える"]) == suru.doushita.suru {
                 return Some(Box::new(Motomeru {
                     nani: suru.nani.clone(),
@@ -40,7 +40,7 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
                 }));
             }
         }
-        omomuki::Omomuki::Shitai(shitai) => match shitai.doushita.suru.as_str() {
+        Omomuki::Shitai(shitai) => match shitai.doushita.suru.as_str() {
             "食べる" => {
                 return Some(Box::new(Motomeru {
                     nani: match shitai.nani.len() {
@@ -76,7 +76,7 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
             }
             _ => {}
         },
-        omomuki::Omomuki::Shite(suru) => {
+        Omomuki::Shite(suru) => {
             if Kotoba::from_vec(vec!["下さる", "見せる", "くれる", "寄越す", "貸す"])
                 == suru.doushita.suru
             {
@@ -85,14 +85,14 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
                 }));
             }
         }
-        omomuki::Omomuki::Keiyou(keiyou) => {
+        Omomuki::Keiyou(keiyou) => {
             if Kotoba::from_vec(vec!["欲しい", "ほしい"]) == keiyou.dou {
                 return Some(Box::new(Motomeru {
                     nani: keiyou.nani.clone(),
                 }));
             }
         }
-        omomuki::Omomuki::Taigen(taigen) => {
+        Omomuki::Taigen(taigen) => {
             if Kotoba::from_vec(vec!["頂戴", "ちょうだい"]) == taigen.suru {
                 return Some(Box::new(Motomeru {
                     nani: taigen.nani.clone(),
@@ -105,12 +105,12 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Motomeru {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(omomuki::toikake::aru::Aru {
             nani: self.nani.clone(),
         });
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return Result::Message((chara.kaeshi.error.noimpl)());
     }
 }

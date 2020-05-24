@@ -1,5 +1,5 @@
-use crate::hitogata;
-use crate::model;
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::Nani;
 use crate::model::mono::Desu;
 use crate::omomuki::{self, Result};
 use crate::repository::mono;
@@ -7,8 +7,8 @@ use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Desuka {
-    pub kore: Option<model::Nani>,
-    pub are: model::Nani,
+    pub kore: Option<Nani>,
+    pub are: Nani,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
@@ -25,7 +25,7 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
             if keiyou.hatena {
                 return Some(Box::new(Desuka {
                     kore: keiyou.nani.last().cloned(),
-                    are: model::Nani {
+                    are: Nani {
                         donna: Some(keiyou.dou.clone()),
                         mono: Vec::new(),
                     },
@@ -38,10 +38,10 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Desuka {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return if let Some(kore) = &self.kore {
             match mono::desuka(&chara.omise, &kore, &self.are) {
                 Desu::Wakaran(nai) => Result::Message((chara.kaeshi.toikake.desuka.wakaran)(&nai)),

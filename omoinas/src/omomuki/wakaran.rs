@@ -1,4 +1,4 @@
-use crate::hitogata;
+use crate::model::hitogata::Hitogata;
 use crate::omomuki::Result;
 use crate::Tumori;
 
@@ -10,10 +10,10 @@ pub fn new() -> Box<dyn Tumori> {
 }
 
 impl Tumori for Wakaran {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return Result::Message((chara.kaeshi.wakaran.wakaran)());
     }
 }

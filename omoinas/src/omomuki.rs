@@ -1,8 +1,8 @@
 use log::debug;
 
-use crate::cotoha;
 use crate::model::mono::Mono;
-use crate::model::{Dearu, Keiyou, Kotoba, Nani, Suru, Taigen, Toki};
+use crate::model::omomuki::*;
+use crate::service::cotoha;
 use crate::Tumori;
 
 pub mod aisatsu;
@@ -14,18 +14,6 @@ pub mod toikake;
 pub mod wakaran;
 
 #[derive(Clone, Debug)]
-pub struct Ocha {
-    nani: Vec<Nani>,
-    hatena: bool,
-}
-
-#[derive(Clone, Debug)]
-pub struct Tawainai {
-    itsu: Option<Kotoba>,
-    doko: Option<Kotoba>,
-    hatena: bool,
-}
-#[derive(Clone, Debug)]
 pub enum Omomuki {
     Suru(Suru),
     Shitai(Suru),
@@ -36,7 +24,6 @@ pub enum Omomuki {
     Ocha(Ocha),
     Tawainai(Tawainai),
 }
-
 pub enum Result {
     Message(String),
     Mono(String, Vec<Mono>),

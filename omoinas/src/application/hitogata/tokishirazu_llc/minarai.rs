@@ -1,6 +1,6 @@
 use rand::seq::SliceRandom;
 
-use crate::hitogata::*;
+use crate::model::hitogata::*;
 
 pub const MINARAI: Kaeshi = Kaeshi {
     aisatsu: Aisatsu {

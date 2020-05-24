@@ -1,7 +1,7 @@
-use crate::cotoha;
-use crate::hitogata;
-use crate::model::Koto;
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::Koto;
 use crate::omomuki::Result;
+use crate::service::cotoha;
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -23,10 +23,10 @@ pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Matane {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return Result::Message(if let Some(itsu) = &self.itsu {
             (chara.kaeshi.aisatsu.iku.matane.toki)(itsu.as_str())
         } else {

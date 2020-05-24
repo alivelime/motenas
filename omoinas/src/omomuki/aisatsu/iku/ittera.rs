@@ -1,5 +1,5 @@
-use crate::hitogata;
-use crate::model::{Koto, Nani};
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::{Koto, Nani};
 use crate::omomuki::Result;
 use crate::Tumori;
 
@@ -11,10 +11,10 @@ pub struct Ittera {
 }
 
 impl Tumori for Ittera {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return Result::Message(if let Some(doko) = &self.doko {
             if let Some(itsu) = &self.itsu {
                 (chara.kaeshi.aisatsu.iku.ittera.tokitokoro)(itsu.as_str(), doko.as_str())

@@ -4,7 +4,7 @@ use chrono::{FixedOffset, Utc};
 use rusoto_core::Region;
 use rusoto_dynamodb::{DynamoDb, DynamoDbClient};
 
-use crate::cotoha;
+use crate::service::cotoha;
 use crate::model::setting::CotohaToken;
 
 pub fn get_cotoha_token() -> Option<String> {

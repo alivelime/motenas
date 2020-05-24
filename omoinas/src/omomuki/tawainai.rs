@@ -1,4 +1,4 @@
-use crate::cotoha;
+use crate::service::cotoha;
 use crate::omomuki;
 use crate::Tumori;
 

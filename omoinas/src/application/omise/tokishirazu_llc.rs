@@ -1,5 +1,5 @@
+use crate::model::kotoba::Kotoba;
 use crate::model::mono::Mono;
-use crate::model::Kotoba;
 
 pub fn shinkansen() -> Vec<Mono> {
     return vec![

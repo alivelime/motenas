@@ -1,5 +1,5 @@
-use crate::hitogata;
-use crate::model::Kotoba;
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::Kotoba;
 use crate::omomuki::{self, Result};
 use crate::Tumori;
 
@@ -19,10 +19,10 @@ pub fn new(omomuki: &omomuki::Suru) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Modoru {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(crate::omomuki::aisatsu::kuru::okaeri::Okaeri {});
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return Result::Message((chara.kaeshi.error.noimpl)());
     }
 }

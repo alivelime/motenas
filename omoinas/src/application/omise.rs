@@ -1,9 +1,9 @@
 pub mod comfull_co_jp;
 pub mod tokishirazu_llc;
 
-use chrono::{DateTime, FixedOffset};
+use chrono::DateTime;
 
-use crate::model::mono::Mono;
+use crate::model::omise::*;
 
 pub fn new(namae: &str) -> Omise {
     return match namae {
@@ -38,51 +38,6 @@ pub fn new(namae: &str) -> Omise {
         _ => panic!("missing omise.{}", namae),
     };
 }
-pub struct Client {
-    id: &'static str,
-    namae: &'static str,
-    hp: &'static str,
-}
-pub struct Omise {
-    id: String,
-    client: Client,
-    namae: &'static str,
-    hp: &'static str,
-    yotei: &'static str,
-    menu: Vec<Mono>,
-    status: Status,
-
-    created_at: DateTime<FixedOffset>,
-}
-
-impl Omise {
-    pub fn menu(&self) -> Vec<&Mono> {
-        return self.menu.iter().collect::<Vec<&Mono>>();
-    }
-}
-
-pub enum Status {
-    Yasumi,
-    Hima,
-    Bochibochi,
-    Isogashi,
-    Kashikiri,
-}
-
-/*
-pub struct Address {
-    namae: String,
-    country: String,
-    postcode: u32,
-    prefcode: u32,
-    city: String,
-    address1: String,
-    address2: String,
-    access: String,
-    lat: f64,
-    lng: f64,
-}
-*/
 
 pub fn google_map_url(lat: f64, lng: f64) -> String {
     return format!(

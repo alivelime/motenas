@@ -1,14 +1,13 @@
-use crate::hitogata;
-use crate::model;
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::Nani;
+use crate::model::mono::MonoResult;
 use crate::omomuki::{self, Result};
 use crate::repository::mono;
 use crate::Tumori;
 
-use crate::model::mono::MonoResult;
-
 #[derive(Clone, Debug)]
 pub struct Aru {
-    pub nani: Vec<model::Nani>,
+    pub nani: Vec<Nani>,
 }
 
 pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
@@ -33,10 +32,10 @@ pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
 }
 
 impl Tumori for Aru {
-    fn kotafu(&self, _: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, _: &Hitogata) -> Box<dyn Tumori> {
         return Box::new(self.clone());
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         let nani = self
             .nani
             .iter()

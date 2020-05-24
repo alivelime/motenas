@@ -1,15 +1,15 @@
-use crate::cotoha;
-use crate::hitogata;
-use crate::model;
+use crate::model::hitogata::Hitogata;
+use crate::model::kotoba::Nani;
 use crate::omomuki::{self, Result};
 use crate::repository::mono;
+use crate::service::cotoha;
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Ocha {
     yobu: bool,
-    nani: Vec<model::Nani>,
-    mono: model::Nani,
+    nani: Vec<Nani>,
+    mono: Nani,
 }
 
 pub fn new(ocha: &omomuki::Ocha, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
@@ -29,7 +29,7 @@ pub fn new(ocha: &omomuki::Ocha, tree: &cotoha::ParseObjects) -> Option<Box<dyn 
 }
 
 impl Tumori for Ocha {
-    fn kotafu(&self, chara: &hitogata::Hitogata) -> Box<dyn Tumori> {
+    fn kotafu(&self, chara: &Hitogata) -> Box<dyn Tumori> {
         if let Some(n) = self.nani.iter().find(|n| mono::is_mono(&chara.omise, n)) {
             if chara.id.contains(&String::from("/bachan")) {
                 return Box::new(Ocha {
@@ -45,7 +45,7 @@ impl Tumori for Ocha {
         }
         return Box::new(crate::omomuki::tawainai::nani::Nani {});
     }
-    fn get_kotae(&self, chara: &hitogata::Hitogata) -> Result {
+    fn get_kotae(&self, chara: &Hitogata) -> Result {
         return Result::Message((chara.kaeshi.tawainai.ocha)(&self.mono.namae(), self.yobu));
     }
 }
