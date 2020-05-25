@@ -8,7 +8,7 @@ use lambda_runtime::{error::HandlerError, lambda, Context};
 
 use omoinas::application::hitogata;
 use omoinas::omomuki::{self, Omomuki};
-use omoinas::repository::cache;
+use omoinas::repository::cache::dynamodb as cache;
 use omoinas::service::cotoha;
 
 #[derive(Deserialize, Debug)]
