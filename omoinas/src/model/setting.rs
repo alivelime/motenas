@@ -1,10 +1,10 @@
-pub struct CotohaToken {
+pub struct ParserToken {
     pub name: String,
     pub date: String,
     pub token: String,
 }
 
-impl CotohaToken {
+impl ParserToken {
     pub fn date(&self) -> String {
         return self.date.clone();
     }

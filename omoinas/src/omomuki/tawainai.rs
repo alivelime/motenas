@@ -1,5 +1,4 @@
-use crate::service::cotoha;
-use crate::omomuki;
+use crate::omomuki::Omomuki;
 use crate::Tumori;
 
 pub mod arigato;
@@ -18,22 +17,16 @@ pub mod watashi;
 pub mod yobu;
 pub mod yokatta;
 
-pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = arigato::new(tree) {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if let Some(a) = arigato::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = douitashimashite::new(tree) {
+    if let Some(a) = douitashimashite::new(omomuki) {
         return Some(a);
     }
-    match omomuki {
-        omomuki::Omomuki::Ocha(ocha) => {
-            if let Some(a) = ocha::new(ocha, tree) {
-                return Some(a);
-            }
-        }
-        _ => {}
-    };
-
+    if let Some(a) = ocha::new(omomuki) {
+        return Some(a);
+    }
     if let Some(a) = kizukai::new(omomuki) {
         return Some(a);
     }
@@ -43,10 +36,10 @@ pub fn new(omomuki: &omomuki::Omomuki, tree: &cotoha::ParseObjects) -> Option<Bo
     if let Some(a) = watashi::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = monku::new(tree) {
+    if let Some(a) = monku::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = yobu::new(tree) {
+    if let Some(a) = yobu::new(omomuki) {
         return Some(a);
     }
 

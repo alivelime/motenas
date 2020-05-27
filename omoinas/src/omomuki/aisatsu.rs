@@ -1,18 +1,18 @@
-use crate::service::cotoha;
+use crate::omomuki::Omomuki;
 use crate::Tumori;
 
 pub mod hibi;
 pub mod iku;
 pub mod kuru;
 
-pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = hibi::new(tree) {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if let Some(a) = hibi::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = iku::new(tree) {
+    if let Some(a) = iku::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = kuru::new(tree) {
+    if let Some(a) = kuru::new(omomuki) {
         return Some(a);
     }
 

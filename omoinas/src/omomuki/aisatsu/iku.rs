@@ -1,15 +1,15 @@
-use crate::service::cotoha;
+use crate::omomuki::Omomuki;
 use crate::Tumori;
 
 pub mod ittera;
 pub mod matane;
 pub mod sayonara;
 
-pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = matane::new(tree) {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if let Some(a) = matane::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = sayonara::new(tree) {
+    if let Some(a) = sayonara::new(omomuki) {
         return Some(a);
     }
 

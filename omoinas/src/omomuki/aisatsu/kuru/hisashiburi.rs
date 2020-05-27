@@ -1,13 +1,15 @@
-use crate::service::cotoha;
 use crate::model::hitogata::Hitogata;
-use crate::omomuki::Result;
+use crate::omomuki::{Omomuki, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Hisashiburi {}
 
-pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if tree.has_lemma(vec!["久しぶり", "ひさしぶり"]).is_some() {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if omomuki
+        .has_hitokoto(vec!["久しぶり", "ひさしぶり"])
+        .is_some()
+    {
         return Some(Box::new(Hisashiburi {}));
     }
     return None;

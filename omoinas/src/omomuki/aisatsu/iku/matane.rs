@@ -1,7 +1,6 @@
 use crate::model::hitogata::Hitogata;
 use crate::model::kotoba::Koto;
-use crate::omomuki::Result;
-use crate::service::cotoha;
+use crate::omomuki::{Omomuki, Result, Type};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
@@ -9,13 +8,15 @@ pub struct Matane {
     pub itsu: Option<Koto>,
 }
 
-pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if tree
-        .has_lemma(vec!["また", "ばいばい", "バイバイ", "じゃあ", "さらば"])
-        .is_some()
-    {
-        if let Some(itsu) = tree.get_itsu() {
-            return Some(Box::new(Matane { itsu: Some(itsu) }));
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if let Type::Tawainai(tawainai) = &omomuki.nakami {
+        if omomuki
+            .has(vec!["また", "ばいばい", "バイバイ", "じゃあ", "さらば"])
+            .is_some()
+        {
+            return Some(Box::new(Matane {
+                itsu: tawainai.itsu.clone(),
+            }));
         }
     }
 

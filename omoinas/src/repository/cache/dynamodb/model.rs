@@ -5,7 +5,7 @@ use std::env;
 use chrono::{FixedOffset, Utc};
 use rusoto_dynamodb::{AttributeValue, GetItemInput, PutItemInput};
 
-use crate::model::setting::CotohaToken;
+use crate::model::setting::ParserToken;
 
 fn table_name() -> String {
     return format!("{}_{}", env::var("ENV").unwrap(), "setting");
@@ -14,9 +14,9 @@ fn key_cotoha_token() -> String {
     return String::from("cotoha_token");
 }
 
-impl CotohaToken {
-    pub fn new(token: &String) -> CotohaToken {
-        return CotohaToken {
+impl ParserToken {
+    pub fn new(token: &String) -> ParserToken {
+        return ParserToken {
             name: key_cotoha_token(),
             date: Utc::now()
                 .with_timezone(&FixedOffset::east(9 * 3600))
@@ -25,9 +25,9 @@ impl CotohaToken {
             token: token.clone(),
         };
     }
-    pub fn from(item: HashMap<String, AttributeValue>) -> Option<CotohaToken> {
+    pub fn from(item: HashMap<String, AttributeValue>) -> Option<ParserToken> {
         if item.get("date").is_some() && item["date"].s.is_some() {
-            return Some(CotohaToken {
+            return Some(ParserToken {
                 name: key_cotoha_token(),
                 date: item["date"].s.as_ref().unwrap().to_string(),
                 token: item["token"].s.as_ref().unwrap().to_string(),

@@ -4,48 +4,53 @@ use log::{debug, error};
 
 use chrono::{FixedOffset, Utc};
 use rusoto_core::Region;
-use rusoto_dynamodb::{DynamoDb, DynamoDbClient};
+use rusoto_dynamodb::{DynamoDb as _, DynamoDbClient};
 
-use crate::model::setting::CotohaToken;
-use crate::service::cotoha;
+use crate::model::cache::Cache;
+use crate::model::parser::Parser;
+use crate::model::setting::ParserToken;
 
-pub fn get_cotoha_token() -> Option<String> {
-    let today = Utc::now()
-        .with_timezone(&FixedOffset::east(9 * 3600))
-        .format("%Y%m%d")
-        .to_string();
-    let client = DynamoDbClient::new(Region::ApNortheast1);
-    match client.get_item(CotohaToken::get_item()).sync() {
-        Ok(result) => match result.item {
-            Some(item) => {
-                if let Some(ct) = CotohaToken::from(item) {
-                    if ct.date == today {
-                        return Some(ct.token());
+pub struct DynamoDb {}
+
+impl Cache for DynamoDb {
+    fn get_parser_token<P: Parser>() -> Option<String> {
+        let today = Utc::now()
+            .with_timezone(&FixedOffset::east(9 * 3600))
+            .format("%Y%m%d")
+            .to_string();
+        let client = DynamoDbClient::new(Region::ApNortheast1);
+        match client.get_item(ParserToken::get_item()).sync() {
+            Ok(result) => match result.item {
+                Some(item) => {
+                    if let Some(ct) = ParserToken::from(item) {
+                        if ct.date == today {
+                            return Some(ct.token());
+                        }
+                        debug!("expired cotoha token.");
                     }
-                    debug!("expired cotoha token.");
                 }
+                None => {
+                    debug!("no cotoha token.()");
+                }
+            },
+            Err(err) => {
+                error!("{}", err);
             }
-            None => {
-                debug!("no cotoha token.()");
-            }
-        },
-        Err(err) => {
-            error!("{}", err);
-        }
-    };
+        };
 
-    debug!("get_cotoha_token()");
-    match cotoha::api::get_access_token() {
-        Ok(t) => {
-            match client.put_item(CotohaToken::new(&t).put_item()).sync() {
-                Ok(_) => {}
-                Err(err) => error!("{}", err),
+        debug!("get_cotoha_token()");
+        match P::get_access_token() {
+            Ok(t) => {
+                match client.put_item(ParserToken::new(&t).put_item()).sync() {
+                    Ok(_) => {}
+                    Err(err) => error!("{}", err),
+                }
+                return Some(t);
             }
-            return Some(t);
-        }
-        Err(err) => {
-            error!("{}", err);
-            return None;
+            Err(err) => {
+                error!("{}", err);
+                return None;
+            }
         }
     }
 }

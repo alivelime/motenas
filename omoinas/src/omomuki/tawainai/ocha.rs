@@ -1,31 +1,25 @@
 use crate::model::hitogata::Hitogata;
 use crate::model::kotoba::Nani;
-use crate::omomuki::{self, Result};
+use crate::omomuki::{self, Omomuki, Result, Type};
 use crate::repository::mono;
-use crate::service::cotoha;
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Ocha {
-    yobu: bool,
+    yobareta: bool,
     nani: Vec<Nani>,
     mono: Nani,
 }
 
-pub fn new(ocha: &omomuki::Ocha, tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    return Some(Box::new(Ocha {
-        yobu: tree
-            .has_lemma(vec![
-                "おーい",
-                "ちょっと",
-                "おばあちゃん",
-                "ばあちゃん",
-                "すみません",
-            ])
-            .is_some(),
-        nani: ocha.nani.clone(),
-        mono: ocha.nani[0].clone(),
-    }));
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if let Type::Ocha(ocha) = &omomuki.nakami {
+        return Some(Box::new(Ocha {
+            yobareta: omomuki.yonda,
+            nani: ocha.nani.clone(),
+            mono: ocha.nani[0].clone(),
+        }));
+    }
+    return None;
 }
 
 impl Tumori for Ocha {
@@ -34,7 +28,7 @@ impl Tumori for Ocha {
             if chara.id.contains(&String::from("/bachan")) {
                 return Box::new(Ocha {
                     mono: n.clone(),
-                    yobu: self.yobu,
+                    yobareta: self.yobareta,
                     nani: self.nani.clone(),
                 });
             } else {
@@ -46,6 +40,9 @@ impl Tumori for Ocha {
         return Box::new(crate::omomuki::tawainai::nani::Nani {});
     }
     fn get_kotae(&self, chara: &Hitogata) -> Result {
-        return Result::Message((chara.kaeshi.tawainai.ocha)(&self.mono.namae(), self.yobu));
+        return Result::Message((chara.kaeshi.tawainai.ocha)(
+            &self.mono.namae(),
+            self.yobareta,
+        ));
     }
 }

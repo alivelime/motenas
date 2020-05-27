@@ -1,4 +1,4 @@
-use crate::service::cotoha;
+use crate::omomuki::Omomuki;
 use crate::Tumori;
 
 pub mod konbanwa;
@@ -6,17 +6,17 @@ pub mod konnichiwa;
 pub mod ohayo;
 pub mod oyasumi;
 
-pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = ohayo::new(tree) {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if let Some(a) = ohayo::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = konnichiwa::new(tree) {
+    if let Some(a) = konnichiwa::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = konbanwa::new(tree) {
+    if let Some(a) = konbanwa::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = oyasumi::new(tree) {
+    if let Some(a) = oyasumi::new(omomuki) {
         return Some(a);
     }
 

@@ -1,5 +1,3 @@
-use chrono::{DateTime, FixedOffset};
-
 use crate::model::mono::Mono;
 
 pub struct Client {
@@ -10,13 +8,13 @@ pub struct Client {
 pub struct Omise {
     pub id: String,
     pub client: Client,
-    pub namae: &'static str,
-    pub hp: &'static str,
-    pub yotei: &'static str,
+    pub namae: String,
+    pub hp: String,
+    pub yotei: String,
     pub menu: Vec<Mono>,
     pub status: Status,
 
-    pub created_at: DateTime<FixedOffset>,
+    pub created_at: String,
 }
 
 impl Omise {
@@ -25,6 +23,7 @@ impl Omise {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum Status {
     Yasumi,
     Hima,

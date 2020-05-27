@@ -1,7 +1,7 @@
 use crate::model::hitogata::Hitogata;
 use crate::model::kotoba::Nani;
 use crate::model::mono::Desu;
-use crate::omomuki::{self, Result};
+use crate::omomuki::{Omomuki, Result, Type};
 use crate::repository::mono;
 use crate::Tumori;
 
@@ -11,18 +11,18 @@ pub struct Desuka {
     pub are: Nani,
 }
 
-pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
-    match omomuki {
-        omomuki::Omomuki::Dearu(dearu) => {
-            if dearu.hatena {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    match &omomuki.nakami {
+        Type::Dearu(dearu) => {
+            if omomuki.hatena {
                 return Some(Box::new(Desuka {
                     kore: Some(dearu.kore.clone()),
                     are: dearu.are.clone(),
                 }));
             }
         }
-        omomuki::Omomuki::Keiyou(keiyou) => {
-            if keiyou.hatena {
+        Type::Keiyou(keiyou) => {
+            if omomuki.hatena {
                 return Some(Box::new(Desuka {
                     kore: keiyou.nani.last().cloned(),
                     are: Nani {

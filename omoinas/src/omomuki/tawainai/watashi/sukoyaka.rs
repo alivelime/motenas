@@ -1,14 +1,14 @@
 use crate::model::hitogata::Hitogata;
-use crate::omomuki::{self, Result};
+use crate::omomuki::{self, Omomuki, Result, Type};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Sukoyaka {}
 
-pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
-    match omomuki {
-        omomuki::Omomuki::Dearu(dearu) => {
-            if dearu.are.has(vec!["元気", "大丈夫"]) && !dearu.hatena {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    match &omomuki.nakami {
+        Type::Dearu(dearu) => {
+            if dearu.are.has(vec!["元気", "大丈夫"]) && !omomuki.hatena {
                 return Some(Box::new(Sukoyaka {}));
             }
         }

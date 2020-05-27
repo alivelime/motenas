@@ -1,16 +1,15 @@
-use crate::service::cotoha;
 use crate::model::hitogata::Hitogata;
-use crate::omomuki::{self, Result};
+use crate::omomuki::{self, Omomuki, Result};
 use crate::Tumori;
 
 #[derive(Clone, Debug)]
 pub struct Monku {}
 
-pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if tree
-        .has_lemma(vec!["えー", "うそ", "嘘つき", "違う", "ない", "笑い", "嘘"])
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if omomuki
+        .has(vec!["えー", "うそ", "嘘つき", "違う", "ない", "笑い", "嘘"])
         .is_some()
-        || (tree.has_lemma(vec!["あれ"]).is_some() && tree.is_hatena())
+        || (omomuki.has(vec!["あれ"]).is_some() && omomuki.hatena)
     {
         return Some(Box::new(Monku {}));
     }

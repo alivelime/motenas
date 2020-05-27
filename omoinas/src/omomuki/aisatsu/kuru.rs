@@ -1,4 +1,4 @@
-use crate::service::cotoha;
+use crate::omomuki::Omomuki;
 use crate::Tumori;
 
 pub mod hajimemashite;
@@ -7,14 +7,14 @@ pub mod irasshai;
 pub mod okaeri;
 pub mod tadaima;
 
-pub fn new(tree: &cotoha::ParseObjects) -> Option<Box<dyn Tumori>> {
-    if let Some(a) = hajimemashite::new(tree) {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    if let Some(a) = hajimemashite::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = tadaima::new(tree) {
+    if let Some(a) = tadaima::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = hisashiburi::new(tree) {
+    if let Some(a) = hisashiburi::new(omomuki) {
         return Some(a);
     }
 

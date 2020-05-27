@@ -1,1 +1,1 @@
-pub mod cotoha;
+pub mod parser;

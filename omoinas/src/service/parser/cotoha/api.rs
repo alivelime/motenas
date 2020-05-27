@@ -1,5 +1,6 @@
 use std::env;
 
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
@@ -142,6 +143,7 @@ pub fn parse(
         .cloned()
         .collect::<Vec<Token>>();
 
+    debug!("{:#?}", response.result);
     return Ok((response.result, tokens));
 }
 

@@ -1,8 +1,7 @@
-use log::debug;
-
+use crate::model::kotoba::Koto;
 use crate::model::mono::Mono;
 use crate::model::omomuki::*;
-use crate::service::cotoha;
+use crate::model::parser::Parser;
 use crate::Tumori;
 
 pub mod aisatsu;
@@ -14,7 +13,20 @@ pub mod toikake;
 pub mod wakaran;
 
 #[derive(Clone, Debug)]
-pub enum Omomuki {
+pub struct Omomuki {
+    pub kotoba: Vec<Koto>,
+
+    pub kitanai: Option<String>,
+    pub yonda: bool,
+    pub hatena: bool,
+
+    pub odoroki: Option<Koto>,
+    pub hitokoto: Option<Koto>,
+    pub nakami: Type,
+}
+
+#[derive(Clone, Debug)]
+pub enum Type {
     Suru(Suru),
     Shitai(Suru),
     Shite(Suru),
@@ -30,92 +42,124 @@ pub enum Result {
 }
 
 impl Omomuki {
-    pub fn new(tree: &cotoha::ParseObjects) -> Box<dyn Tumori> {
+    pub fn new<P: Parser>(tree: &P) -> Omomuki {
+        return Omomuki {
+            kotoba: tree.get_kotoba(),
+
+            kitanai: tree.is_kitanai(),
+            yonda: tree.is_yonda(),
+            hatena: tree.is_hatena(),
+
+            odoroki: tree.get_odoroki(),
+            hitokoto: tree.get_hitokoto(),
+            nakami: Self::get_nakami(tree),
+        };
+    }
+    fn get_nakami<P: Parser>(tree: &P) -> Type {
+        // 動詞を探すべ
+        if let Some((suru, shitai, shite)) = tree.get_doushi() {
+            return if shitai {
+                // フレンドしたい
+                Type::Shitai(suru)
+            } else if shite {
+                // 頑張って
+                Type::Shite(suru)
+            } else {
+                Type::Suru(suru)
+            };
+        }
+
+        // 次に体言止めを探すべ
+        if let Some(taigen) = tree.get_taigen() {
+            return Type::Taigen(taigen);
+        }
+        // 形容詞語幹を探す
+        if let Some(dou) = tree.get_keidou() {
+            return Type::Keiyou(dou);
+        }
+        // これはゾンビですか?
+        if let Some(dearu) = tree.get_kore_are() {
+            return Type::Dearu(dearu);
+        }
+
+        // ばあちゃん、お茶
+        let nani = tree.get_meishi();
+        if nani.len() > 0 {
+            return Type::Ocha(Ocha { nani: nani });
+        }
+
+        return Type::Tawainai(Tawainai {
+            itsu: tree.get_itsu(),
+            doko: tree.get_doko(),
+        });
+    }
+    pub fn tumori(&self) -> Box<dyn Tumori> {
         // NGワードは弾く
-        if let Some(a) = kitanai::new(&tree) {
+        if let Some(a) = kitanai::new(&self) {
             return a;
         }
 
         // まんず、あいさつかどうか調べるべ
-        if let Some(a) = aisatsu::new(&tree) {
+        if let Some(a) = aisatsu::new(&self) {
             return a;
         }
 
-        let omomuki = get_omomuki(&tree);
-        debug!("{:#?}", omomuki);
-
         // お願い
-        if let Some(t) = onegai::new(&omomuki) {
+        if let Some(t) = onegai::new(&self) {
             return t;
         }
 
         // 問いかけ
-        if let Some(t) = toikake::new(&omomuki) {
+        if let Some(t) = toikake::new(&self) {
             return t;
         }
 
         // 知らせる
-        if let Some(t) = shirase::new(&omomuki) {
+        if let Some(t) = shirase::new(&self) {
             return t;
         }
 
         // たわいない
-        if let Some(t) = tawainai::new(&omomuki, &tree) {
+        if let Some(t) = tawainai::new(&self) {
             return t;
         }
 
-        return if tree.has_lemma(vec!["?"]).is_some() {
+        return if self.hatena {
             wakaran::new()
         } else {
-            match omomuki {
-                Omomuki::Dearu(dearu) => tawainai::dearu::new(&dearu),
-                Omomuki::Shitai(shitai) => onegai::shitai::new(&shitai),
-                Omomuki::Shite(shite) => onegai::shite::new(&shite),
+            match &self.nakami {
+                Type::Dearu(dearu) => tawainai::dearu::new(&dearu),
+                Type::Shitai(shitai) => onegai::shitai::new(&shitai),
+                Type::Shite(shite) => onegai::shite::new(&shite),
                 _ => Box::new(tawainai::sonota::Sonota {}),
             }
         };
     }
-}
-
-fn get_omomuki(tree: &cotoha::ParseObjects) -> Omomuki {
-    // 動詞を探すべ
-    if let Some((suru, shitai, shite)) = tree.get_doushi() {
-        return if shitai {
-            // フレンドしたい
-            Omomuki::Shitai(suru)
-        } else if shite {
-            // 頑張って
-            Omomuki::Shite(suru)
-        } else {
-            Omomuki::Suru(suru)
-        };
-    }
-
-    // 次に体言止めを探すべ
-    if let Some(taigen) = tree.get_taigen() {
-        return Omomuki::Taigen(taigen);
-    }
-    // 形容詞語幹を探す
-    if let Some(dou) = tree.get_keidou() {
-        return Omomuki::Keiyou(dou);
-    }
-    // これはゾンビですか?
-    if let Some(dearu) = tree.get_kore_are() {
-        return Omomuki::Dearu(dearu);
-    }
-
-    // ばあちゃん、お茶
-    let nani = tree.get_meishi();
-    if nani.len() > 0 {
-        return Omomuki::Ocha(Ocha {
-            nani: nani,
-            hatena: tree.is_hatena(),
+    pub fn has(&self, p: Vec<&str>) -> Option<String> {
+        return self.kotoba.iter().find_map(|k| {
+            if p.contains(&k.moji.as_str()) {
+                Some(k.moji.clone())
+            } else {
+                None
+            }
         });
     }
-
-    return Omomuki::Tawainai(Tawainai {
-        itsu: None,
-        doko: None,
-        hatena: tree.is_hatena(),
-    });
+    pub fn has_hitokoto(&self, p: Vec<&str>) -> Option<String> {
+        return self
+            .hitokoto
+            .iter()
+            .find_map(|k| match p.contains(&k.moji.as_str()) {
+                true => Some(k.moji.clone()),
+                false => None,
+            });
+    }
+    pub fn has_odoroki(&self, p: Vec<&str>) -> Option<String> {
+        return self
+            .odoroki
+            .iter()
+            .find_map(|k| match p.contains(&k.moji.as_str()) {
+                true => Some(k.moji.clone()),
+                false => None,
+            });
+    }
 }

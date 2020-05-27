@@ -1,7 +1,7 @@
 use crate::model::hitogata::Hitogata;
 use crate::model::kotoba::Nani;
 use crate::model::mono::MonoResult;
-use crate::omomuki::{self, Result};
+use crate::omomuki::{Omomuki, Result, Type};
 use crate::repository::mono;
 use crate::Tumori;
 
@@ -10,17 +10,17 @@ pub struct Aru {
     pub nani: Vec<Nani>,
 }
 
-pub fn new(omomuki: &omomuki::Omomuki) -> Option<Box<dyn Tumori>> {
-    match omomuki {
-        omomuki::Omomuki::Suru(suru) => {
-            if suru.doushita.suru == "ある" && suru.hatena {
+pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
+    match &omomuki.nakami {
+        Type::Suru(suru) => {
+            if suru.doushita.suru == "ある" && omomuki.hatena {
                 return Some(Box::new(Aru {
                     nani: suru.nani.clone(),
                 }));
             }
         }
-        omomuki::Omomuki::Keiyou(keiyou) => {
-            if keiyou.dou == "ない" && keiyou.hatena {
+        Type::Keiyou(keiyou) => {
+            if keiyou.dou == "ない" && omomuki.hatena {
                 return Some(Box::new(Aru {
                     nani: keiyou.nani.clone(),
                 }));

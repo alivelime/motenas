@@ -14,12 +14,15 @@ pub fn new(namae: &str) -> Omise {
                 namae: "合同会社ときしらず",
                 hp: "https://www.tokishirazu.llc",
             },
-            namae: "bachan",
-            hp: "https://www.tokishirazu.llc",
-            yotei: "24時間365日",
+            namae: String::from("bachan"),
+            hp: String::from("https://www.tokishirazu.llc"),
+            yotei: String::from("24時間365日"),
             menu: tokishirazu_llc::shinkansen(),
             status: Status::Hima,
-            created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
+            created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00")
+                .unwrap()
+                .format("%Y%m%d")
+                .to_string(),
         },
         "comfull.co.jp/sendagi" => Omise {
             id: String::from(namae),
@@ -28,12 +31,15 @@ pub fn new(namae: &str) -> Omise {
                 namae: "株式会社コンフル",
                 hp: "https://comfull.co.jp",
             },
-            namae: "comfull sendagi",
-            hp: "https://comfull.co.jp",
-            yotei: "月〜金：11:00〜23:00\n土日祝：11:00〜23:00",
+            namae: String::from("comfull sendagi"),
+            hp: String::from("https://comfull.co.jp"),
+            yotei: String::from("月〜金：11:00〜23:00\n土日祝：11:00〜23:00"),
             menu: comfull_co_jp::sendagi(),
             status: Status::Hima,
-            created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
+            created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00")
+                .unwrap()
+                .format("%Y%m%d")
+                .to_string(),
         },
         _ => panic!("missing omise.{}", namae),
     };
