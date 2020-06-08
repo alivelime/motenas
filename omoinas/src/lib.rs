@@ -3,6 +3,7 @@ pub mod model;
 pub mod omomuki;
 pub mod repository;
 pub mod service;
+pub mod util;
 
 use crate::model::hitogata::Hitogata;
 

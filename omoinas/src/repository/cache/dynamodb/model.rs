@@ -6,6 +6,7 @@ use chrono::{FixedOffset, Utc};
 use rusoto_dynamodb::{AttributeValue, GetItemInput, PutItemInput};
 
 use crate::model::setting::ParserToken;
+use crate::util::dynamodb::*;
 
 fn table_name() -> String {
     return format!("{}_{}", env::var("ENV").unwrap(), "setting");
@@ -38,13 +39,7 @@ impl ParserToken {
 
     pub fn get_item() -> GetItemInput {
         let mut key: HashMap<String, AttributeValue> = HashMap::new();
-        key.insert(
-            String::from("name"),
-            AttributeValue {
-                s: Some(key_cotoha_token()),
-                ..Default::default()
-            },
-        );
+        key_insert_str(&mut key, key_cotoha_token(), "name");
         return GetItemInput {
             key: key,
             table_name: table_name(),
@@ -53,27 +48,9 @@ impl ParserToken {
     }
     pub fn put_item(&self) -> PutItemInput {
         let mut item: HashMap<String, AttributeValue> = HashMap::new();
-        item.insert(
-            String::from("name"),
-            AttributeValue {
-                s: Some(key_cotoha_token()),
-                ..Default::default()
-            },
-        );
-        item.insert(
-            String::from("date"),
-            AttributeValue {
-                s: Some(self.date.clone()),
-                ..Default::default()
-            },
-        );
-        item.insert(
-            String::from("token"),
-            AttributeValue {
-                s: Some(self.token.clone()),
-                ..Default::default()
-            },
-        );
+        key_insert_str(&mut item, key_cotoha_token(), "name");
+        key_insert_str(&mut item, self.date.clone(), "date");
+        key_insert_str(&mut item, self.token.clone(), "token");
         return PutItemInput {
             item: item,
             table_name: table_name(),

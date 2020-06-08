@@ -2,7 +2,6 @@ use std::collections::HashSet;
 
 use crate::model::kotoba::{Koto, Nani};
 use crate::model::mono::{Desu, Mono, MonoResult};
-use crate::model::omise::Omise;
 
 pub struct MonoRepository<'a> {
     pub monos: Vec<&'a Mono>,
@@ -122,16 +121,16 @@ impl<'a> MonoRepository<'a> {
     }
 }
 
-pub fn is_mono(omise: &Omise, nani: &Nani) -> bool {
-    let monos = MonoRepository::new(omise.menu());
+pub fn is_mono(menu: Vec<&Mono>, nani: &Nani) -> bool {
+    let monos = MonoRepository::new(menu);
     let korekana = monos.korekana(&nani.mono);
     if korekana.len() > 0 {
         return true;
     }
     return false;
 }
-pub fn get_mono(omise: &Omise, nani: Option<&Nani>) -> MonoResult {
-    let monos = MonoRepository::new(omise.menu());
+pub fn get_mono(menu: Vec<&Mono>, nani: Option<&Nani>) -> MonoResult {
+    let monos = MonoRepository::new(menu);
     if let Some(nani) = nani {
         // 冷たいチョコアイス?
         if let Some(donna) = &nani.donna {
@@ -165,20 +164,20 @@ pub fn get_mono(omise: &Omise, nani: Option<&Nani>) -> MonoResult {
     }
 }
 
-pub fn zakkuri(omise: &Omise, kore: &Nani) -> Desu {
-    let monos = MonoRepository::new(omise.menu());
+pub fn zakkuri(menu: Vec<&Mono>, kore: &Nani) -> Desu {
+    let monos = MonoRepository::new(menu.clone());
     if let Some(category) = monos.category(&kore.namae()) {
         return Desu::IsCategory(category);
     }
-    return match get_mono(omise, Some(&kore)) {
+    return match get_mono(menu, Some(&kore)) {
         MonoResult::Category(category) => Desu::Category(category),
         MonoResult::Mono(mono, category) => Desu::Mono(mono, category),
         MonoResult::Naikedo(nai, _, _, _) => Desu::Wakaran(nai),
         MonoResult::Nai(mono) => Desu::Wakaran(mono.donna_namae()),
     };
 }
-pub fn ikura(omise: &Omise, kore: &Nani) -> Desu {
-    return match get_mono(omise, Some(&kore)) {
+pub fn ikura(menu: Vec<&Mono>, kore: &Nani) -> Desu {
+    return match get_mono(menu, Some(&kore)) {
         MonoResult::Category(category) => Desu::Category(category),
         MonoResult::Mono(mono, _) => Desu::Ikura(mono),
         MonoResult::Naikedo(nai, _, _, _) => Desu::Wakaran(nai),
@@ -186,19 +185,19 @@ pub fn ikura(omise: &Omise, kore: &Nani) -> Desu {
     };
 }
 
-pub fn desuka(omise: &Omise, kore: &Nani, are: &Nani) -> Desu {
+pub fn desuka(menu: Vec<&Mono>, kore: &Nani, are: &Nani) -> Desu {
     if kore.donna_namae() == are.donna_namae() {
         return Desu::Subete();
     }
 
     if are.mono.len() > 0 && are.has(vec!["何"]) {
-        return zakkuri(omise, kore);
+        return zakkuri(menu, kore);
     }
     if are.mono.len() > 0 && are.has(vec!["幾等", "おいくら"]) {
-        return ikura(omise, kore);
+        return ikura(menu, kore);
     }
 
-    let monos = MonoRepository::new(omise.menu());
+    let monos = MonoRepository::new(menu);
 
     // 冷たいチョコアイス?
     let searched = monos.match_all(match &kore.donna {

@@ -40,7 +40,7 @@ impl Tumori for Aru {
             .nani
             .iter()
             .find(|n| !n.has(vec!["ばあちゃん", "おばあちゃん", "何か", "何"]));
-        return match mono::get_mono(&chara.omise, nani) {
+        return match mono::get_mono(chara.omise.menu(), nani) {
             MonoResult::Category(category) => {
                 Result::Message((chara.kaeshi.toikake.aru.iroiro)(category))
             }

@@ -24,7 +24,11 @@ pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
 
 impl Tumori for Ocha {
     fn kotafu(&self, chara: &Hitogata) -> Box<dyn Tumori> {
-        if let Some(n) = self.nani.iter().find(|n| mono::is_mono(&chara.omise, n)) {
+        if let Some(n) = self
+            .nani
+            .iter()
+            .find(|n| mono::is_mono(chara.omise.menu(), n))
+        {
             if chara.id.contains(&String::from("/bachan")) {
                 return Box::new(Ocha {
                     mono: n.clone(),

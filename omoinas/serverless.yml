@@ -33,3 +33,36 @@ functions:
       - http:
           path: /ukekotae
           method: POST
+  tanamono:
+    handler: omoinas.tanamono
+    environment:
+      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
+    events:
+      - http:
+          path: /tanamono
+          method: POST
+
+  resetOmise:
+    handler: omoinas.reset_omise
+    environment:
+      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
+    events:
+      - http:
+          path: /omise/reset
+          method: POST
+          cors: false,
+
+  getOmise:
+    handler: omoinas.get_omise
+    environment:
+      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
+    events:
+      - http:
+          path: /omise/{clientId}/{omiseId}
+          method: GET
+          cors: true,
+          request:
+            parameters:
+              paths:
+                clientId: true,
+                omiseId: true,

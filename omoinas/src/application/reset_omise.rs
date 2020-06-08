@@ -1,13 +1,23 @@
-pub mod comfull_co_jp;
-pub mod tokishirazu_llc;
-
 use chrono::{DateTime, FixedOffset, Utc};
+use serde::{Deserialize, Serialize};
 
-use crate::model::omise::*;
+use crate::model::omise::{Address, Omise, OmiseRepo, Status};
 
-pub fn new(namae: &str) -> Omise {
-    return match namae {
-        "tokishirazu.llc/bachan" => Omise {
+#[derive(Deserialize, Debug)]
+pub struct Event {
+    client_id: Option<String>,
+    omise_id: Option<String>,
+}
+
+#[derive(Serialize, Debug)]
+pub struct Response {
+    r#type: String,
+    omise: Vec<Omise>,
+}
+pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
+    let or = OR::new();
+    let omise = vec![
+        Omise {
             client_id: String::from("tokishirazu.llc"),
             omise_id: String::from("bachan"),
             namae: String::from("bachan"),
@@ -22,7 +32,7 @@ pub fn new(namae: &str) -> Omise {
                 building: String::from("印刷工場1F"),
                 access: String::from("目黒駅から徒歩10分"),
             },
-            oshinagaki: tokishirazu_llc::shinkansen(),
+            oshinagaki: Vec::new(),
 
             ima: Status::Wakaran,
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
@@ -31,7 +41,7 @@ pub fn new(namae: &str) -> Omise {
             created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
         },
-        "comfull.co.jp/sendagi" => Omise {
+        Omise {
             client_id: String::from("comfull.co.jp"),
             omise_id: String::from("sendagi"),
             namae: String::from("コンフル千駄木店"),
@@ -46,7 +56,7 @@ pub fn new(namae: &str) -> Omise {
                 building: String::from("印刷工場1F"),
                 access: String::from("目黒駅から徒歩10分"),
             },
-            oshinagaki: comfull_co_jp::sendagi(),
+            oshinagaki: Vec::new(),
 
             ima: Status::Wakaran,
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
@@ -55,13 +65,14 @@ pub fn new(namae: &str) -> Omise {
             created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
         },
-        _ => panic!("missing omise.{}", namae),
-    };
-}
+    ];
 
-pub fn google_map_url(address: String) -> String {
-    return format!(
-        "https://www.google.com/maps/dir/?api=1&travelmode=transit&destination={}",
-        address,
-    );
+    for o in &omise {
+        or.put(o);
+    }
+
+    return Ok(Response {
+        r#type: String::from("message"),
+        omise: omise,
+    });
 }

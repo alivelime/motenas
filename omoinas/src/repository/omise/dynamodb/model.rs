@@ -6,6 +6,7 @@ use log::error;
 use rusoto_dynamodb::{AttributeValue, GetItemInput, PutItemInput};
 
 use crate::model::omise::{Omise, Status};
+use crate::util::dynamodb::*;
 
 fn table_name() -> String {
     return format!("{}_{}", env::var("ENV").unwrap(), "omise");
@@ -13,46 +14,37 @@ fn table_name() -> String {
 
 impl Omise {
     pub fn from(&mut self, item: HashMap<String, AttributeValue>) -> bool {
-        if item.get("namae").is_some() && item["namae"].s.is_some() {
-            self.namae = item["namae"].s.as_ref().unwrap().to_string();
-        }
-        if item.get("hp").is_some() && item["hp"].s.is_some() {
-            self.hp = item["hp"].s.as_ref().unwrap().to_string();
-        }
-        if item.get("yotei").is_some() && item["yotei"].s.is_some() {
-            self.yotei = item["yotei"].s.as_ref().unwrap().to_string();
-        }
-        if item.get("status").is_some() && item["status"].n.is_some() {
-            self.status = match item["status"].n.as_ref().unwrap().parse::<u32>().unwrap() {
-                0 => Status::Yasumi,
-                1 => Status::Hima,
-                2 => Status::Bochibochi,
-                3 => Status::Isogashi,
-                4 => Status::Kashikiri,
+        item_from_str(&item, &mut self.client_id, "client_id");
+        item_from_str(&item, &mut self.omise_id, "omise_id");
+        item_from_str(&item, &mut self.namae, "namae");
+        item_from_str(&item, &mut self.url, "url");
+        item_from_str(&item, &mut self.yotei, "yotei");
+        item_from_json(&item, &mut self.otokoro, "otokoro");
+        if item.get("ima").is_some() && item["ima"].n.is_some() {
+            self.ima = match item["ima"].n.as_ref().unwrap().parse::<u32>().unwrap() {
+                0 => Status::Wakaran,
+                1 => Status::Yasumi,
+                2 => Status::Hima,
+                3 => Status::Bochibochi,
+                4 => Status::Isogashi,
+                5 => Status::Kashikiri,
                 s => {
-                    error!(
-                        "repository::omise::dynamodb::model::from out of status {}",
-                        s
-                    );
+                    error!("repository::omise::dynamodb::model::from out of ima {}", s);
                     return false;
                 }
             };
         }
-        if item.get("created_at").is_some() && item["created_at"].s.is_some() {
-            self.created_at = item["created_at"].s.as_ref().unwrap().to_string();
-        }
+        item_from_datetime(&item, &mut self.kefu_kara, "kefu_kara");
+        item_from_datetime(&item, &mut self.kefu_made, "kefu_made");
+        item_from_datetime(&item, &mut self.created_at, "created_at");
+        item_from_datetime(&item, &mut self.updated_at, "updated_at");
         return true;
     }
 
     pub fn get_item(&self) -> GetItemInput {
         let mut key: HashMap<String, AttributeValue> = HashMap::new();
-        key.insert(
-            String::from("id"),
-            AttributeValue {
-                s: Some(self.id.clone()),
-                ..Default::default()
-            },
-        );
+        key_insert_str(&mut key, self.client_id.clone(), "client_id");
+        key_insert_str(&mut key, self.omise_id.clone(), "omise_id");
         return GetItemInput {
             key: key,
             table_name: table_name(),
@@ -61,41 +53,17 @@ impl Omise {
     }
     pub fn put_item(&self) -> PutItemInput {
         let mut item: HashMap<String, AttributeValue> = HashMap::new();
-        item.insert(
-            String::from("id"),
-            AttributeValue {
-                s: Some(self.id.clone()),
-                ..Default::default()
-            },
-        );
-        item.insert(
-            String::from("namae"),
-            AttributeValue {
-                s: Some(self.namae.clone()),
-                ..Default::default()
-            },
-        );
-        item.insert(
-            String::from("hp"),
-            AttributeValue {
-                s: Some(self.hp.clone()),
-                ..Default::default()
-            },
-        );
-        item.insert(
-            String::from("yotei"),
-            AttributeValue {
-                s: Some(self.yotei.clone()),
-                ..Default::default()
-            },
-        );
-        item.insert(
-            String::from("status"),
-            AttributeValue {
-                n: Some((self.status.clone() as i32).to_string()),
-                ..Default::default()
-            },
-        );
+        key_insert_str(&mut item, self.client_id.clone(), "client_id");
+        key_insert_str(&mut item, self.omise_id.clone(), "omise_id");
+        key_insert_str(&mut item, self.namae.clone(), "namae");
+        key_insert_str(&mut item, self.url.clone(), "url");
+        key_insert_str(&mut item, self.yotei.clone(), "yotei");
+        key_insert_json(&mut item, &self.otokoro, "otokoro");
+        key_insert_num(&mut item, self.ima.clone() as i32, "ima");
+        key_insert_datetime(&mut item, &self.kefu_kara, "kefu_kara");
+        key_insert_datetime(&mut item, &self.kefu_made, "kefu_made");
+        key_insert_datetime(&mut item, &self.created_at, "created_at");
+        key_insert_datetime(&mut item, &self.updated_at, "updated_at");
         return PutItemInput {
             item: item,
             table_name: table_name(),

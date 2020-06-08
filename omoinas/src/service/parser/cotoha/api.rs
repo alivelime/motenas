@@ -17,7 +17,6 @@ const BASE_URL: &str = "https://api.ce-cotoha.com/api/dev";
 struct TokenResponse {
     access_token: String,
     token_type: String,
-    // #[serde(deserialize_with = "from_str")]
     expires_in: String,
     scope: String,
     issued_at: String,

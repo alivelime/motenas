@@ -43,7 +43,7 @@ impl Tumori for Desuka {
     }
     fn get_kotae(&self, chara: &Hitogata) -> Result {
         return if let Some(kore) = &self.kore {
-            match mono::desuka(&chara.omise, &kore, &self.are) {
+            match mono::desuka(chara.omise.menu(), &kore, &self.are) {
                 Desu::Wakaran(nai) => Result::Message((chara.kaeshi.toikake.desuka.wakaran)(&nai)),
                 Desu::Subete() => Result::Message((chara.kaeshi.toikake.desuka.subete)()),
                 Desu::Doreka() => Result::Message((chara.kaeshi.toikake.desuka.doreka)()),
