@@ -25,16 +25,17 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             yotei: String::from("24時間365日"),
             otokoro: Address {
                 country: String::from("jpn"),
-                postcode: 1530063 as u32,
+                postcode: 1130022 as u32,
                 prefcode: 13 as u32,
-                city: String::from("目黒区"),
-                street: String::from("目黒2-11-3"),
-                building: String::from("印刷工場1F"),
-                access: String::from("目黒駅から徒歩10分"),
+                city: String::from("文京区"),
+                street: String::from("千駄木2-33-8"),
+                building: String::from("TKB千駄木ビル2F-3F"),
+                access: String::from("千代田線千駄木駅から徒歩1分"),
             },
             oshinagaki: Vec::new(),
 
             ima: Status::Wakaran,
+            hitokoto: String::from(""),
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             kefu_made: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
 
@@ -59,6 +60,7 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             oshinagaki: Vec::new(),
 
             ima: Status::Wakaran,
+            hitokoto: String::from(""),
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             kefu_made: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
 

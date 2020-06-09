@@ -17,7 +17,7 @@ pub struct Response {
     message: String,
 }
 pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, HandlerError> {
-    let mut chara = hitogata::new(&e.chara_id);
+    let mut chara = hitogata::new::<OR>(&e.chara_id);
     let or = OR::new();
 
     let res = match e.text.as_str() {

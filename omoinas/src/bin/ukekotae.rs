@@ -7,6 +7,7 @@ use lambda_runtime::{error::HandlerError, lambda, Context};
 
 use omoinas::application::ukekotae::{self, Event, Response};
 use omoinas::repository::cache::dynamodb::DynamoDb;
+use omoinas::repository::omise::dynamodb::OmiseDb;
 use omoinas::service::parser::cotoha::Cotoha;
 
 fn main() {
@@ -15,5 +16,5 @@ fn main() {
 }
 
 fn handler(e: Event, _: Context) -> Result<Response, HandlerError> {
-    return ukekotae::main::<Cotoha, DynamoDb>(e);
+    return ukekotae::main::<Cotoha, DynamoDb, OmiseDb>(e);
 }
