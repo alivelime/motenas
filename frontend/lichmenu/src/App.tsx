@@ -62,10 +62,10 @@ function App() {
           <Route path="/" exact>
             This is minarai chan liff.
           </Route>
-          <Route path="/user/omise/:clientId/:omiseId" exact>
+          <Route path="/:env/user/omise/:clientId/:omiseId/:charaId" exact>
             <UserOmise />
           </Route>
-          <Route path="/user/order/:clientId/:omiseId" exact>
+          <Route path="/:env/user/order/:clientId/:omiseId/:omiseId" exact>
             <p>order</p>
           </Route>
         </Switch>

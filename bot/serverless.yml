@@ -6,17 +6,17 @@ provider:
   region: ap-northeast-1
   stage: ${opt:stage, self:custom.defaultStage}
 
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'lambda:InvokeFunction'
+      Resource:
+        - '*'
+
 custom:
   defaultStage: dev
   otherfile:
-    lineTokishirazuLlcBachan:
-      dev: ${file(./conf/line-tokishirazu-llc-bachan-dev.yml)}
-    lineTokishirazuLlcMinarai:
-      dev: ${file(./conf/line-tokishirazu-llc-minarai-dev.yml)}
-    lineComfullCoJpSendagiBachan:
-      dev: ${file(./conf/line-comfull-co-jp-sendagi-bachan-dev.yml)}
-  rust:
-    dockerTag: 'some-custom-tag'
+    dev: ${file(./conf/line-dev.yml)}
 
 package:
   exclude:
@@ -25,49 +25,41 @@ package:
     - ./bin/**
 
 functions:
-  lineBachan:
-    handler: bin/line
+  lineCheckOmise:
+    handler: bin/line_api
     runtime: go1.x
-    environment:
-      CHARA_NAME:  ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.CHARA_NAME}
-      CHANNEL_SECRET: ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.CHANNEL_TOKEN}
-      ADMIN_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.ADMIN_GROUP_ID}
-      ORDER_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcBachan.${self:provider.stage}.ORDER_GROUP_ID}
-
+    environment: ${self:custom.otherfile.${self:provider.stage}}
     events:
       - http:
-          path: line-tokishirazu-llc-bachan
+          path: line-api/omise/check
+          method: post
+          cors: true
+          origin: '*'
+
+  lineTokishirazuLlcPassengersBachan:
+    handler: bin/line
+    runtime: go1.x
+    environment: ${self:custom.otherfile.${self:provider.stage}}
+    events:
+      - http:
+          path: line-tokishirazu-llc-passengers-bachan
           method: post
           cors: true
   
-  
-  lineMinarai:
+  lineTokishirazuLlcPassengersMinarai:
     handler: bin/line
     runtime: go1.x
-    environment:
-      CHARA_NAME:  ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.CHARA_NAME}
-      CHANNEL_SECRET: ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.CHANNEL_TOKEN}
-      ADMIN_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.ADMIN_GROUP_ID}
-      ORDER_GROUP_ID:  ${self:custom.otherfile.lineTokishirazuLlcMinarai.${self:provider.stage}.ORDER_GROUP_ID}
-
+    environment: ${self:custom.otherfile.${self:provider.stage}}
     events:
       - http:
-          path: line-tokishirazu-llc-minarai
+          path: line-tokishirazu-llc-passengers-minarai
           method: post
           cors: true
   
   lineComfullCoJpSendagiBachan:
     handler: bin/line
     runtime: go1.x
-    environment:
-      CHARA_NAME:  ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.CHARA_NAME}
-      CHANNEL_SECRET: ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.CHANNEL_SECRET}
-      CHANNEL_TOKEN: ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.CHANNEL_TOKEN}
-      ADMIN_GROUP_ID:  ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.ADMIN_GROUP_ID}
-      ORDER_GROUP_ID:  ${self:custom.otherfile.lineComfullCoJpSendagiBachan.${self:provider.stage}.ORDER_GROUP_ID}
-
+    environment: ${self:custom.otherfile.${self:provider.stage}}
     events:
       - http:
           path: line-comfull-co-jp-sendagi-bachan

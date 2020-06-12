@@ -20,8 +20,10 @@ import {
 
 
 interface RouteParams {
+    env: string,
     clientId: string,
     omiseId: string,
+    charaId: string,
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -51,24 +53,26 @@ const useStyles = makeStyles((theme) => ({
 
 
 function UserOmise() {
-  const {clientId, omiseId} = useParams<RouteParams>();
-  const [user, setUser] = useState({id: "",nickname:""})
+  const {env, clientId, omiseId, charaId} = useParams<RouteParams>();
 
-  liff.init({ liffId: process.env.REACT_APP_LIFF_ID as string }).then(() => {
+  liff.ready.then(() => {
+    let accessToken = ""
     if (!liff.isLoggedIn()) {
       // liff.login({})
     } else {
-      liff.getProfile()
-        .then(profile => {
-          setUser({
-            id: profile.userId,
-            nickname: profile.displayName,
-          })
-        })
-        .catch((err) => {
-          console.log('error', err)
-        })
+       accessToken = liff.getAccessToken()
     }
+    let url = `${process.env.REACT_APP_LINE_API_HOST}/${env}/line-api/omise/check`;
+    fetch(url, {
+      method: "POST",
+      mode: "cors",
+      cache: "no-cache",
+      body: JSON.stringify({
+        accessToken: accessToken,
+        charaId: `${clientId}/${omiseId}/${charaId}`,
+      })
+    });
+
   })
 
   const classes = useStyles();
@@ -87,10 +91,10 @@ function UserOmise() {
         <Paper variant="outlined" elevation={3} className={classes.paper}>
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
-              <p>今日は</p>
+              <p>本日の営業時間</p>
             </Grid>
             <Grid item xs={8}>
-              <p>11:00 〜 20:00</p>
+              <p>10:00 〜 22:00</p>
             </Grid>
           </Grid>
           <Divider />
@@ -99,7 +103,15 @@ function UserOmise() {
               <p>混み具合</p>
             </Grid>
             <Grid item xs={8}>
-              <p>空いてるよ{user.id}</p>
+              <p>混んでるよ</p>
+            </Grid>
+          </Grid>
+          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+            <Grid item xs={4} className={classes.head}>
+              <p>一言</p>
+            </Grid>
+            <Grid item xs={8}>
+              <p>喫煙席は空いてます</p>
             </Grid>
           </Grid>
           <Divider />

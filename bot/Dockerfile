@@ -21,3 +21,5 @@ RUN pip3 install boto3
 RUN npm install -g serverless
 
 RUN sls config credentials --provider aws --key $AWS_ACCESS_KEY_ID --secret $AWS_SECRET_ACCESS_KEY
+
+ENV GO111MODULE=on

@@ -17,5 +17,6 @@ services:
       - "3002:3002"
     volumes:
       - ./:/go/src/github.com/alivelime/motenas/bot:cached
+      - ~/pkg:/go/pkg/:cached
     working_dir: /go/src/github.com/alivelime/motenas/bot
 
