@@ -9,7 +9,7 @@ pub fn new<OR: OmiseRepo>(namae: &str) -> Omise {
     match or.get(&ids[0].to_string(), &ids[1].to_string()) {
         Ok(mut omise) => {
             match namae {
-                "tokishirazu.llc/bachan" => {
+                "tokishirazu.llc/passengers" => {
                     omise.oshinagaki = tokishirazu_llc::shinkansen();
                     return omise;
                 }

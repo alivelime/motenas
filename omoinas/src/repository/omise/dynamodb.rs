@@ -2,22 +2,16 @@ pub mod model;
 
 use log::error;
 
-use chrono::{FixedOffset, Utc};
 use rusoto_core::Region;
 use rusoto_dynamodb::{DynamoDb, DynamoDbClient};
 
-use crate::model::omise::{Omise, OmiseRepo, Status};
+use crate::model::omise::{Omise, OmiseRepo};
 
 pub struct OmiseDb {}
 
 impl OmiseRepo for OmiseDb {
     fn new() -> OmiseDb {
         return OmiseDb {};
-    }
-    fn ima(&self, omise: &mut Omise, ima: Status) -> bool {
-        omise.ima = ima;
-        omise.updated_at = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
-        return self.put(omise);
     }
     fn get(&self, client_id: &String, omise_id: &String) -> Result<Omise, String> {
         let mut omise = Omise::new(client_id.clone(), omise_id.clone());

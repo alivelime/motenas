@@ -1,4 +1,3 @@
-use lambda_runtime::error::HandlerError;
 use log::debug;
 use serde::{Deserialize, Serialize};
 
@@ -17,9 +16,9 @@ pub struct Event {
 
 #[derive(Serialize, Debug)]
 pub struct Response {
-    r#type: String,
-    message: String,
-    carousel: Vec<Carousel>,
+    pub r#type: String,
+    pub message: String,
+    pub carousel: Vec<Carousel>,
 }
 #[derive(Serialize, Debug)]
 pub struct Carousel {
@@ -29,7 +28,7 @@ pub struct Carousel {
     text: String,
 }
 
-pub fn main<P: Parser, C: Cache, OR: OmiseRepo>(e: Event) -> Result<Response, HandlerError> {
+pub fn main<P: Parser, C: Cache, OR: OmiseRepo>(e: Event) -> Result<Response, String> {
     let chara = hitogata::new::<OR>(&e.chara_id);
     let (ok, tree) = P::parse::<C>(&e.text);
     if !ok {

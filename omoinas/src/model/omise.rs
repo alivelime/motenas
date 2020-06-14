@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +9,6 @@ pub trait OmiseRepo {
     fn new() -> Self;
     fn get(&self, client_id: &String, omise_id: &String) -> Result<Omise, String>;
     fn put(&self, omise: &Omise) -> bool;
-    fn ima(&self, omise: &mut Omise, status: Status) -> bool;
 }
 
 pub struct Client {
@@ -23,13 +24,18 @@ pub struct Omise {
     pub url: String,
     pub yotei: String,
     pub otokoro: Address,
+
     #[serde(skip)]
     pub oshinagaki: Vec<Mono>,
+    pub omotenashi: HashSet<String>,
 
     pub ima: Status,
     pub hitokoto: String,
+    pub aikotoba: String,
     pub kefu_kara: DateTime<FixedOffset>,
     pub kefu_made: DateTime<FixedOffset>,
+
+    pub tanamono: HashSet<String>,
 
     pub created_at: DateTime<FixedOffset>,
     pub updated_at: DateTime<FixedOffset>,
@@ -44,11 +50,15 @@ impl Omise {
             yotei: String::from(""),
             otokoro: Address::new(),
             oshinagaki: Vec::new(),
+            omotenashi: HashSet::new(),
 
             ima: Status::Wakaran,
             hitokoto: String::from(""),
+            aikotoba: String::from(""),
             kefu_kara: DateTime::parse_from_rfc3339("2020-01-01T00:00:00+09:00").unwrap(),
             kefu_made: DateTime::parse_from_rfc3339("2020-01-01T00:00:00+09:00").unwrap(),
+
+            tanamono: HashSet::new(),
 
             created_at: DateTime::parse_from_rfc3339("2020-01-01T00:00:00+09:00").unwrap(),
             updated_at: DateTime::parse_from_rfc3339("2020-01-01T00:00:00+09:00").unwrap(),

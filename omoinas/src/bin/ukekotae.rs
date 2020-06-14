@@ -16,5 +16,12 @@ fn main() {
 }
 
 fn handler(e: Event, _: Context) -> Result<Response, HandlerError> {
-    return ukekotae::main::<Cotoha, DynamoDb, OmiseDb>(e);
+    return match ukekotae::main::<Cotoha, DynamoDb, OmiseDb>(e) {
+        Ok(r) => Ok(r),
+        Err(err) => Ok(Response {
+            r#type: String::from("message"),
+            message: err,
+            carousel: Vec::new(),
+        }),
+    };
 }

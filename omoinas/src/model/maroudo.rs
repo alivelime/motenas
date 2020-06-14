@@ -8,15 +8,22 @@ pub struct Maroudo {
     pub updatedAt: DateTime<FixedOffset>,
 }
 
+pub struct shina {
+    pub namae: String,
+    pub neuchi: i32,
+    pub num: i32,
+    pub tax_rate: u32,
+    pub status: u64,
+}
 pub struct Denpyo {
     pub omiseId: String,
-    pub id: u64,
     pub maroudoId: String,
+    pub ima: bool,
 
-    pub mono: Vec<(String, u64, u64, String)>,
+    pub shinamono: Vec<shina>,
     pub sum: u64,
-    pub status: u64,
 
     pub createdAt: DateTime<FixedOffset>,
+    pub completedAt: DateTime<FixedOffset>,
     pub updatedAt: DateTime<FixedOffset>,
 }

@@ -7,17 +7,17 @@ use crate::model::omise::OmiseRepo;
 
 pub fn new<OR: OmiseRepo>(namae: &str) -> Hitogata {
     return match namae {
-        "tokishirazu.llc/bachan" => Hitogata {
+        "tokishirazu.llc/passengers/bachan" => Hitogata {
             id: String::from(namae),
             namae: "パッセンジャーズばあちゃん",
             kaeshi: &tokishirazu_llc::bachan::BACHAN,
-            omise: omise::new::<OR>(namae),
+            omise: omise::new::<OR>("tokishirazu.llc/passengers"),
         },
-        "tokishirazu.llc/minarai" => Hitogata {
+        "tokishirazu.llc/passengers/minarai" => Hitogata {
             id: String::from(namae),
             namae: "みならいちゃん",
             kaeshi: &tokishirazu_llc::minarai::MINARAI,
-            omise: omise::new::<OR>(namae),
+            omise: omise::new::<OR>("tokishirazu.llc/passengers"),
         },
         "comfull.co.jp/sendagi/bachan" => Hitogata {
             id: String::from(namae),

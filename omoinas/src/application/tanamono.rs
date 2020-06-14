@@ -1,39 +1,41 @@
-use lambda_runtime::error::HandlerError;
 use serde::{Deserialize, Serialize};
 
-use crate::application::hitogata;
-use crate::model::omise::{OmiseRepo, Status};
+use crate::application::omise;
+use crate::model::omise::OmiseRepo;
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
-    text: String,
-    chara_id: String,
-    id: String,
+    pub client_id: String,
+    pub omise_id: String,
+    pub tanamono: String,
+    pub command: String,
 }
 
 #[derive(Serialize, Debug)]
 pub struct Response {
-    r#type: String,
-    message: String,
+    pub ok: bool,
+    pub message: String,
 }
-pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, HandlerError> {
-    let mut chara = hitogata::new::<OR>(&e.chara_id);
+
+pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
+    let mut omise = omise::new::<OR>(format!("{}/{}", &e.client_id, &e.omise_id).as_str());
     let or = OR::new();
 
-    let res = match e.text.as_str() {
-        "休み" => or.ima(&mut chara.omise, Status::Yasumi),
-        "空いてる" => or.ima(&mut chara.omise, Status::Hima),
-        "ぼちぼち" => or.ima(&mut chara.omise, Status::Bochibochi),
-        "混んでる" => or.ima(&mut chara.omise, Status::Isogashi),
-        "貸切" => or.ima(&mut chara.omise, Status::Kashikiri),
-        _ => false,
+    match e.command.as_str() {
+        "add" => {
+            omise.tanamono.insert(e.tanamono.clone());
+        }
+        "remove" => {
+            omise.tanamono.remove(&e.tanamono);
+        }
+        _ => {}
     };
 
+    if !or.put(&omise) {
+        return Err(String::from("dynamo put error."));
+    }
     return Ok(Response {
-        r#type: String::from("message"),
-        message: match res {
-            true => format!("設定しました"),
-            false => format!("エラーです"),
-        },
+        ok: true,
+        message: String::new(),
     });
 }
