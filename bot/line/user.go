@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -31,20 +32,20 @@ type Carousel struct {
 
 func handleTextChara(r *Line, message *linebot.TextMessage, replyToken, userID string) {
 	// redirect staff
-	prof, err := r.Bot.GetProfile(userID).Do()
+	prof, err := r.bot.GetProfile(userID).Do()
 	if err != nil {
 		log.Printf("can't get prof: %v", err)
 		return
 	}
-	r.StaffTextMessage(userID + "\n" + prof.DisplayName + "\n" + message.Text)
+	r.TextMessageToStaffRoom(userID + "\n" + prof.DisplayName + "\n" + message.Text)
 
 	payload, _ := json.Marshal(Event{
 		Text:    message.Text,
-		CharaID: r.Name,
+		CharaID: r.charaID,
 		ID:      userID, App: "line"})
 
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
-		FunctionName:   aws.String(ARN + "omoinas-dev-ukekotae"),
+		FunctionName:   aws.String(ARN + "omoinas-" + os.Getenv("ENV") + "-ukekotae"),
 		Payload:        payload,
 		InvocationType: aws.String("RequestResponse"),
 	})
@@ -58,7 +59,7 @@ func handleTextChara(r *Line, message *linebot.TextMessage, replyToken, userID s
 	switch result.Type {
 	case "message":
 		r.ReplyTextMessage(replyToken, result.Message)
-		r.StaffTextMessage(result.Message)
+		r.TextMessageToStaffRoom(result.Message)
 	case "carousel":
 		log.Printf("%#v", result.Carousel)
 		var columns []*linebot.CarouselColumn
@@ -66,8 +67,68 @@ func handleTextChara(r *Line, message *linebot.TextMessage, replyToken, userID s
 			columns = append(columns, r.NewCarouselColumn(c.Image, c.Title, c.Text, linebot.NewURIAction("商品情報を見る", c.URL)))
 		}
 		r.ReplyTemplateMessage(replyToken, result.Message, r.NewCarouselTemplate(columns...))
-		r.StaffTemplateMessage(result.Message, r.NewCarouselTemplate(columns...))
+		r.TemplateMessageToStaffRoom(result.Message, r.NewCarouselTemplate(columns...))
 	default:
 		break
+	}
+}
+
+func handleMemberJoined(r *Line, users []linebot.EventSource) {
+	type MemberEvent struct {
+		ClientID string   `json:"client_id"`
+		OmiseID  string   `json:"omise_id"`
+		Command  string   `json:"command"`
+		Tanamono []string `json:"tanamono"`
+	}
+	userIDs := make([]string, len(users))
+	for _, u := range users {
+		userIDs = append(userIDs, u.UserID)
+	}
+	r.LinkRichMenu(userIDs)
+
+	payload, _ := json.Marshal(MemberEvent{
+		ClientID: r.ClientID(),
+		OmiseID:  r.OmiseID(),
+		Command:  "add",
+		Tanamono: userIDs,
+	})
+
+	_, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
+		FunctionName:   aws.String(ARN + "omoinas-" + os.Getenv("ENV") + "-tanamono"),
+		Payload:        payload,
+		InvocationType: aws.String("RequestResponse"),
+	})
+	if err != nil {
+		log.Println(err)
+	}
+
+	r.TextMessageToOrderRoom("こんにちは")
+}
+
+func handleMemberLeft(r *Line, users []linebot.EventSource) {
+	type MemberEvent struct {
+		ClientID string   `json:"client_id"`
+		OmiseID  string   `json:"omise_id"`
+		Command  string   `json:"command"`
+		Tanamono []string `json:"tanamono"`
+	}
+	userIDs := make([]string, len(users))
+	for _, u := range users {
+		userIDs = append(userIDs, u.UserID)
+	}
+	r.LinkRichMenu(userIDs)
+
+	payload, _ := json.Marshal(MemberEvent{
+		Command:  "remove",
+		Tanamono: userIDs,
+	})
+
+	_, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
+		FunctionName:   aws.String(ARN + "omoinas-" + os.Getenv("ENV") + "-tanamono"),
+		Payload:        payload,
+		InvocationType: aws.String("RequestResponse"),
+	})
+	if err != nil {
+		log.Println(err)
 	}
 }

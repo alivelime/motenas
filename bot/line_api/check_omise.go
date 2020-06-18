@@ -19,25 +19,28 @@ func checkOmise(request events.APIGatewayProxyRequest) (string, error) {
 	if err := json.Unmarshal([]byte(request.Body), param); err != nil {
 		return "", err
 	}
+	chara := cebab2Camel(param.CharaID)
+	omise := os.Getenv(chara + "_OMISE_NAME")
+	mainChara := os.Getenv(omise + "_MAIN_CHARA")
 
 	bot, err := NewLine(
-		os.Getenv(cebab2Camel(param.CharaID)+"_CHANNEL_SECRET"),
-		os.Getenv(cebab2Camel(param.CharaID)+"_CHANNEL_TOKEN"),
-		os.Getenv(cebab2Camel(param.CharaID)+"_STAFF_GROUP_ID"),
-		os.Getenv(cebab2Camel(param.CharaID)+"_ORDER_GROUP_ID"),
+		os.Getenv(chara+"_DISPLAY_NAME"),
+		os.Getenv(chara+"_ICON_URL"),
+		os.Getenv(chara+"_CHANNEL_SECRET"),
+		os.Getenv(chara+"_CHANNEL_TOKEN"),
+		os.Getenv(mainChara+"_CHANNEL_SECRET"),
+		os.Getenv(mainChara+"_CHANNEL_TOKEN"),
+		os.Getenv(omise+"_STAFF_GROUP_ID"),
+		os.Getenv(omise+"_ORDER_GROUP_ID"),
 	)
 	if err != nil {
 		log.Println(err)
 		return "", err
 	}
-	log.Printf("chara_id %s", cebab2Camel(param.CharaID))
-	log.Printf("channel_id %s", cebab2Camel(param.CharaID)+"_CHANNEL_ID")
-	log.Printf("channel_secret %s", cebab2Camel(param.CharaID)+"_CHANNEL_SECRET")
-	log.Printf("access_token %s", param.AccessToken)
 
 	client, err := social.New(
-		os.Getenv(cebab2Camel(param.CharaID)+"_CHANNEL_ID"),
-		os.Getenv(cebab2Camel(param.CharaID)+"_CHANNEL_SECRET"),
+		os.Getenv(chara+"_CHANNEL_ID"),
+		os.Getenv(chara+"_CHANNEL_SECRET"),
 	)
 	if err != nil {
 		log.Println(err)
@@ -56,7 +59,7 @@ func checkOmise(request events.APIGatewayProxyRequest) (string, error) {
 	}
 
 	// xxさんがお店情報を見ています
-	bot.StaffTextMessage(name + "さんがお店情報を開いたよ")
+	bot.TextMessageToStaffRoom(name + "さんがお店情報を開いたよ")
 
 	return "{}", nil
 }

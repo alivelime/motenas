@@ -7,14 +7,16 @@ import (
 )
 
 type Line struct {
-	ChannelSecret string
-	ChannelToken  string
-	Bot           *linebot.Client
-	StaffGroupID  string
-	OrderGroupID  string
+	mainBot     *linebot.Client
+	displayName string
+	iconURL     string
+
+	bot          *linebot.Client
+	staffGroupID string
+	orderGroupID string
 }
 
-func NewLine(secret, token, staffGroupID, orderGroupID string) (Line, error) {
+func NewLine(name, icon, secret, token, msecret, mtoken, staffGroupID, orderGroupID string) (Line, error) {
 	bot, err := linebot.New(
 		secret,
 		token,
@@ -22,13 +24,22 @@ func NewLine(secret, token, staffGroupID, orderGroupID string) (Line, error) {
 	if err != nil {
 		return Line{}, err
 	}
+	mainBot, err := linebot.New(
+		msecret,
+		mtoken,
+	)
+	if err != nil {
+		return Line{}, err
+	}
 
 	return Line{
-		ChannelSecret: secret,
-		ChannelToken:  token,
-		Bot:           bot,
-		StaffGroupID:  staffGroupID,
-		OrderGroupID:  orderGroupID,
+		mainBot:     mainBot,
+		displayName: name,
+		iconURL:     icon,
+
+		bot:          bot,
+		staffGroupID: staffGroupID,
+		orderGroupID: orderGroupID,
 	}, nil
 }
 
@@ -36,7 +47,7 @@ func (r *Line) BroadcastTextMessage(message string) error {
 	return r.Broadcast(linebot.NewTextMessage(message))
 }
 func (r *Line) Broadcast(message ...linebot.SendingMessage) error {
-	if _, err := r.Bot.BroadcastMessage(message...).Do(); err != nil {
+	if _, err := r.bot.BroadcastMessage(message...).Do(); err != nil {
 		log.Printf("Broadcast Error: %v", err)
 		return err
 	}
@@ -47,29 +58,36 @@ func (r *Line) PushTextMessage(to, message string) error {
 	return r.PushMessage(to, linebot.NewTextMessage(message))
 }
 func (r *Line) PushMessage(to string, message ...linebot.SendingMessage) error {
-	if _, err := r.Bot.PushMessage(to, message...).Do(); err != nil {
+	if _, err := r.bot.PushMessage(to, message...).Do(); err != nil {
 		log.Printf("Push Message Error: %v", err)
 		return err
 	}
 	return nil
 }
 
-func (r *Line) StaffTextMessage(message string) error {
-	return r.StaffPushMessage(linebot.NewTextMessage(message))
+func (r *Line) TextMessageToStaffRoom(message string) error {
+	return r.PushMessageToStaffRoom(linebot.NewTextMessage(message).WithSender(r.withSender()))
 }
-func (r *Line) StaffTemplateMessage(altText string, template linebot.Template) error {
-	return r.StaffPushMessage(
-		linebot.NewTextMessage(altText),
-		linebot.NewTemplateMessage(altText, template),
+func (r *Line) TemplateMessageToStaffRoom(altText string, template linebot.Template) error {
+	return r.PushMessageToStaffRoom(
+		linebot.NewTextMessage(altText).WithSender(r.withSender()),
+		linebot.NewTemplateMessage(altText, template).WithSender(r.withSender()),
 	)
 }
 
-func (r *Line) StaffPushMessage(message ...linebot.SendingMessage) error {
-	if len(r.StaffGroupID) > 0 {
-		if _, err := r.Bot.PushMessage(r.StaffGroupID, message...).Do(); err != nil {
+func (r *Line) PushMessageToStaffRoom(message ...linebot.SendingMessage) error {
+	if len(r.staffGroupID) > 0 {
+		if _, err := r.mainBot.PushMessage(r.staffGroupID, message...).Do(); err != nil {
 			log.Printf("staff push message Error: %v", err)
 			return err
 		}
 	}
 	return nil
+}
+
+func (r *Line) withSender() *linebot.Sender {
+	return &linebot.Sender{
+		Name:    r.displayName,
+		IconURL: r.iconURL,
+	}
 }

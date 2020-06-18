@@ -13,7 +13,6 @@ pub struct Event {
 
 #[derive(Serialize, Debug)]
 pub struct Response {
-    r#type: String,
     omise: Vec<Omise>,
 }
 pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
@@ -96,8 +95,5 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
         or.put(o);
     }
 
-    return Ok(Response {
-        r#type: String::from("message"),
-        omise: omise,
-    });
+    return Ok(Response { omise: omise });
 }

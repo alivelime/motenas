@@ -7,7 +7,7 @@ use crate::model::omise::OmiseRepo;
 pub struct Event {
     pub client_id: String,
     pub omise_id: String,
-    pub tanamono: String,
+    pub tanamono: Vec<String>,
     pub command: String,
 }
 
@@ -23,10 +23,14 @@ pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
 
     match e.command.as_str() {
         "add" => {
-            omise.tanamono.insert(e.tanamono.clone());
+            for t in e.tanamono {
+                omise.tanamono.insert(t);
+            }
         }
         "remove" => {
-            omise.tanamono.remove(&e.tanamono);
+            for t in &e.tanamono {
+                omise.tanamono.remove(t);
+            }
         }
         _ => {}
     };

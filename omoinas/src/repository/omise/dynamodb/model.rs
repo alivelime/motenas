@@ -20,6 +20,7 @@ impl Omise {
         item_from_str(&item, &mut self.url, "url");
         item_from_str(&item, &mut self.yotei, "yotei");
         item_from_json(&item, &mut self.otokoro, "otokoro");
+        item_from_ss(&item, &mut self.omotenashi, "omotenashi");
         if item.get("ima").is_some() && item["ima"].n.is_some() {
             self.ima = match item["ima"].n.as_ref().unwrap().parse::<u32>().unwrap() {
                 0 => Status::Wakaran,
@@ -34,8 +35,11 @@ impl Omise {
                 }
             };
         }
+        item_from_str(&item, &mut self.hitokoto, "hitokoto");
+        item_from_str(&item, &mut self.aikotoba, "aikotoba");
         item_from_datetime(&item, &mut self.kefu_kara, "kefu_kara");
         item_from_datetime(&item, &mut self.kefu_made, "kefu_made");
+        item_from_ss(&item, &mut self.tanamono, "tanamono");
         item_from_datetime(&item, &mut self.created_at, "created_at");
         item_from_datetime(&item, &mut self.updated_at, "updated_at");
         return true;
@@ -59,9 +63,13 @@ impl Omise {
         key_insert_str(&mut item, self.url.clone(), "url");
         key_insert_str(&mut item, self.yotei.clone(), "yotei");
         key_insert_json(&mut item, &self.otokoro, "otokoro");
+        key_insert_ss(&mut item, self.omotenashi.clone(), "omotenashi");
         key_insert_num(&mut item, self.ima.clone() as i32, "ima");
+        key_insert_str(&mut item, self.hitokoto.clone(), "hitokoto");
+        key_insert_str(&mut item, self.aikotoba.clone(), "aikotoba");
         key_insert_datetime(&mut item, &self.kefu_kara, "kefu_kara");
         key_insert_datetime(&mut item, &self.kefu_made, "kefu_made");
+        key_insert_ss(&mut item, self.tanamono.clone(), "tanamono");
         key_insert_datetime(&mut item, &self.created_at, "created_at");
         key_insert_datetime(&mut item, &self.updated_at, "updated_at");
         return PutItemInput {

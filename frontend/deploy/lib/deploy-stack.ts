@@ -65,7 +65,7 @@ export class DeployStack extends cdk.Stack {
     );
 
     new s3deploy.BucketDeployment(this, 'MinaraichanLiffDeploy', {
-      sources: [s3deploy.Source.asset('../lichmenu/build')],
+      sources: [s3deploy.Source.asset('../richmenu/build')],
       destinationBucket: websiteBucket,
       distribution: websiteDistribution,
       distributionPaths: ['/*'],

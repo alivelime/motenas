@@ -17,7 +17,7 @@ fn main() {
 }
 
 fn handler(r: Request, c: Context) -> Result<impl IntoResponse, HandlerError> {
-    let res: Result<String, String> = match c.function_name.as_str() {
+    let res: Result<String, String> = match c.function_name.split("-").collect::<Vec<&str>>()[2] {
         "getOmise" => match get_omise::main::<OmiseDb>(get_omise::Event {
             client_id: r.path_parameters().get("clientId").unwrap().to_string(),
             omise_id: r.path_parameters().get("omiseId").unwrap().to_string(),
@@ -58,7 +58,10 @@ fn handler(r: Request, c: Context) -> Result<impl IntoResponse, HandlerError> {
             .header("Access-Control-Allow-Credential", "true")
             .header(
                 "Access-Control-Allow-Origin",
-                r.headers().get("Origin").unwrap(),
+                match r.headers().get("Origin") {
+                    Some(o) => o.to_str().unwrap(),
+                    None => "",
+                },
             )
             .header(
                 "Access-Control-Allow-Headers",

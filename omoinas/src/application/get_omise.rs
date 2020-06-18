@@ -11,7 +11,6 @@ pub struct Event {
 
 #[derive(Serialize, Debug)]
 pub struct Response {
-    r#type: String,
     omise: Omise,
 }
 #[derive(Deserialize, Serialize, Debug)]
@@ -49,7 +48,6 @@ pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
 
     return match or.get(&e.client_id, &e.omise_id) {
         Ok(omise) => Ok(Response {
-            r#type: String::from("message"),
             omise: Omise::from(omise),
         }),
         Err(err) => Err(err),
