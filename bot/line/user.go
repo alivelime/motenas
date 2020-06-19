@@ -73,7 +73,7 @@ func handleTextChara(r *Line, message *linebot.TextMessage, replyToken, userID s
 	}
 }
 
-func handleMemberJoined(r *Line, users []linebot.EventSource) {
+func handleMemberJoined(r *Line, users []*linebot.EventSource, replyToken string) {
 	type MemberEvent struct {
 		ClientID string   `json:"client_id"`
 		OmiseID  string   `json:"omise_id"`
@@ -102,10 +102,10 @@ func handleMemberJoined(r *Line, users []linebot.EventSource) {
 		log.Println(err)
 	}
 
-	r.TextMessageToOrderRoom("こんにちは")
+	r.ReplyTextMessage(replyToken, "よろしくね")
 }
 
-func handleMemberLeft(r *Line, users []linebot.EventSource) {
+func handleMemberLeft(r *Line, users []*linebot.EventSource) {
 	type MemberEvent struct {
 		ClientID string   `json:"client_id"`
 		OmiseID  string   `json:"omise_id"`
@@ -119,6 +119,8 @@ func handleMemberLeft(r *Line, users []linebot.EventSource) {
 	r.LinkRichMenu(userIDs)
 
 	payload, _ := json.Marshal(MemberEvent{
+		ClientID: r.ClientID(),
+		OmiseID:  r.OmiseID(),
 		Command:  "remove",
 		Tanamono: userIDs,
 	})

@@ -162,11 +162,20 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 			log.Printf("Join group id : %v", event.Source.GroupID)
 		case linebot.EventTypeMemberJoined:
 			if event.Source.GroupID == r.orderGroupID {
-				handleMemberJoined(r, event.Joined.Members)
+				if event.Joined != nil {
+					// handleMemberJoined(r, event.Joined.Members)
+				} else {
+					handleMemberJoined(r, event.Members, event.ReplyToken)
+				}
 			}
 		case linebot.EventTypeMemberLeft:
+			log.Printf("%#v", event)
 			if event.Source.GroupID == r.orderGroupID {
-				handleMemberLeft(r, event.Left.Members)
+				if event.Left != nil {
+					// handleMemberLeft(r, event.Left.Members)
+				} else {
+					handleMemberLeft(r, event.Members)
+				}
 			}
 		}
 	}
