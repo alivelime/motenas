@@ -35,20 +35,27 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             },
             oshinagaki: Vec::new(),
             omotenashi: vec![
-                String::from("food"),
                 String::from("cafe"),
+                String::from("wifi"),
                 String::from("alcohol"),
                 String::from("non-smoking"),
+                String::from("restroom"),
+                String::from("飲み物"),
+                String::from("お土産"),
+                String::from("弁当"),
+                String::from("軽食"),
+                String::from("お菓子"),
+                String::from("雑誌"),
             ]
             .into_iter()
             .collect(),
             tanamono: HashSet::new(),
 
-            ima: Status::Wakaran,
+            ima: Status::Kashikiri,
             hitokoto: String::from(""),
             aikotoba: String::from("川"),
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
-            kefu_made: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
+            kefu_made: DateTime::parse_from_rfc3339("2020-06-01T24:00:00+09:00").unwrap(),
 
             created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
@@ -70,11 +77,16 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             },
             oshinagaki: Vec::new(),
             omotenashi: vec![
-                String::from("food"),
                 String::from("cafe"),
+                String::from("wifi"),
                 String::from("smoking"),
                 String::from("alcohol"),
                 String::from("non-smoking"),
+                String::from("restroom"),
+                String::from("plug"),
+                String::from("軽食"),
+                String::from("フリードリンク"),
+                String::from("各種レンタル"),
             ]
             .into_iter()
             .collect(),

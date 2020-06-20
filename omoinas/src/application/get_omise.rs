@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
@@ -15,25 +17,34 @@ pub struct Response {
 }
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Omise {
+    #[serde(rename = "clientId")]
     pub client_id: String,
+    #[serde(rename = "omiseId")]
     pub omise_id: String,
     pub namae: String,
     pub url: String,
     pub yotei: String,
     pub otokoro: Address,
 
+    pub omotenashi: HashSet<String>,
+
     pub ima: u32,
     pub hitokoto: String,
+    #[serde(rename = "kefuKara")]
     pub kefu_kara: DateTime<FixedOffset>,
+    #[serde(rename = "kefuMade")]
     pub kefu_made: DateTime<FixedOffset>,
 
+    #[serde(rename = "createdAt")]
     pub created_at: DateTime<FixedOffset>,
+    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<FixedOffset>,
 }
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Address {
     pub country: String,
     pub postcode: u32,
+    #[serde(rename = "forMap")]
     pub for_map: String,
     pub todofuken: String,
     pub prefcode: u32,
@@ -63,6 +74,7 @@ impl Omise {
             url: m.url,
             yotei: m.yotei,
             otokoro: Address::from(m.otokoro),
+            omotenashi: m.omotenashi,
 
             ima: m.ima as u32,
             hitokoto: m.hitokoto,

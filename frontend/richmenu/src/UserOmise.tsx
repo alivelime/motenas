@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   useParams,
 } from 'react-router-dom';
+
+import {getOmise, checkOmise, newOmise } from 'utils/api/omise';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -16,6 +18,9 @@ import {
   faRestroom,
   faSmokingBan,
   faSmoking,
+  faWifi,
+  faBeer,
+  faPlug,
 } from '@fortawesome/free-solid-svg-icons'
 
 
@@ -46,42 +51,44 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 'bold',
   },
   omiseIcon: {
-    fontSize: "2rem",
-    margin: '0 0.2rem',
+    '& > span': {
+      fontSize: "2rem",
+      margin: '0 0.2rem',
+    }
+  },
+  omiseOmotenashi: {
+    '& > span': {
+      fontSize: "1rem",
+      margin: '0 0.2rem',
+    }
   },
 }));
 
 
 function UserOmise() {
   const {env, clientId, omiseId, charaId} = useParams<RouteParams>();
+  const [omise, setOmise] = useState(newOmise());
 
-  liff.ready.then(() => {
-    let accessToken = ""
-    if (!liff.isLoggedIn()) {
-      // liff.login({})
-    } else {
-       accessToken = liff.getAccessToken()
-    }
-    let url = `${process.env.REACT_APP_LINE_API_HOST}/${env}/line-api/omise/check`;
-    fetch(url, {
-      method: "POST",
-      mode: "cors",
-      cache: "no-cache",
-      body: JSON.stringify({
-        accessToken: accessToken,
-        charaId: `${clientId}/${omiseId}/${charaId}`,
-      })
-    });
+  useEffect(() => {
+    liff.ready.then(() => {
+      let accessToken = ""
+      if (!liff.isLoggedIn()) {
+        // liff.login({})
+      } else {
+        accessToken = liff.getAccessToken()
+      }
+      getOmise(env, clientId, omiseId, (omise) => setOmise(omise))
+      checkOmise(env, clientId, omiseId, charaId, accessToken);
+    })
+  },[env, clientId, omiseId, charaId])
 
-  })
 
   const classes = useStyles();
-  const encodedAddress = encodeURIComponent("東京都文京区千駄木2-33-8")
   return (
     <Grid container className={classes.root} spacing={3}>
       <Grid item xs={12} justify="center">
         <Paper variant="outlined" elevation={3} className={classes.paper}>
-          <Typography variant="h1" className={classes.title}>コンフル千駄木店</Typography>
+          <Typography variant="h1" className={classes.title}>{omise.namae}</Typography>
         </Paper>
       </Grid>
       <Grid item xs={12} className={classes.subhead}>
@@ -94,7 +101,7 @@ function UserOmise() {
               <p>本日の営業時間</p>
             </Grid>
             <Grid item xs={8}>
-              <p>10:00 〜 22:00</p>
+              <p>{omise.ima === 1 ? "本日休業" : omise.kefuKara.getHours() +":00 〜 "+omise.kefuMade.getHours()+":00"}</p>
             </Grid>
           </Grid>
           <Divider />
@@ -103,7 +110,17 @@ function UserOmise() {
               <p>混み具合</p>
             </Grid>
             <Grid item xs={8}>
-              <p>混んでるよ</p>
+              <p>{(() => {
+                switch (omise.ima) {
+                  case 0: return "未設定です";
+                  case 1: return "お休みです";
+                  case 2: return "快適です";
+                  case 3: return "賑わっています";
+                  case 4: return "大盛況です";
+                  case 5: return "貸切です";
+                }
+              })()}
+              </p>
             </Grid>
           </Grid>
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
@@ -111,7 +128,7 @@ function UserOmise() {
               <p>一言</p>
             </Grid>
             <Grid item xs={8}>
-              <p>喫煙席は空いてます</p>
+              <p>{omise.hitokoto}</p>
             </Grid>
           </Grid>
           <Divider />
@@ -120,11 +137,29 @@ function UserOmise() {
               <p>その他</p>
             </Grid>
             <Grid item xs={8}>
-              <p>
-                <span className={classes.omiseIcon}><FontAwesomeIcon icon={faCoffee} /></span>
-                <span className={classes.omiseIcon}><FontAwesomeIcon icon={faRestroom} /></span>
-                <span className={classes.omiseIcon}><FontAwesomeIcon icon={faSmoking} /></span>
-                <span className={classes.omiseIcon}><FontAwesomeIcon icon={faSmokingBan} /></span>
+              <p className={classes.omiseIcon}>
+              {omise.omotenashi.map(s => {switch (s) {
+                case "cafe": return <span><FontAwesomeIcon icon={faCoffee} /></span>;
+                case "smoking": return <span><FontAwesomeIcon icon={faSmoking} /></span>;
+                case "non-smoking": return <span><FontAwesomeIcon icon={faSmokingBan} /></span>;
+                case "restroom": return <span><FontAwesomeIcon icon={faRestroom} /></span>;
+                case "wifi": return <span><FontAwesomeIcon icon={faWifi} /></span>;
+                case "alcohol": return <span><FontAwesomeIcon icon={faBeer} /></span>;
+                case "power": return <span><FontAwesomeIcon icon={faPlug} /></span>;
+                default: return null;
+              }})}
+              </p>
+              <p className={classes.omiseOmotenashi}>
+              {omise.omotenashi.map(s => {switch (s) {
+                case "cafe": return null;
+                case "smoking": return null;
+                case "non-smoking": return null;
+                case "restroom": return null;
+                case "wifi": return null;
+                case "alcohol": return null;
+                case "power": return null;
+                default: return <span>{s}</span>;
+              }})}
               </p>
             </Grid>
           </Grid>
@@ -140,7 +175,7 @@ function UserOmise() {
               <p>営業時間</p>
             </Grid>
             <Grid item xs={8}>
-              <p>平日・土日祝　11:00 〜 20:00</p>
+              <p>{omise.yotei}</p>
             </Grid>
           </Grid>
           <Divider />
@@ -149,7 +184,7 @@ function UserOmise() {
               <p>HP</p>
             </Grid>
             <Grid item xs={8}>
-              <p><a href="https://www.comfull.co.jp/">https://www.comfull.co.jp/</a></p>
+              <p><a href="{omise.url}">{omise.url}</a></p>
             </Grid>
           </Grid>
           <Divider />
@@ -158,11 +193,14 @@ function UserOmise() {
               <p>所在地</p>
             </Grid>
             <Grid item xs={8}>
-              <p>東京都文京区千駄木2-33-8 TKB千駄木ビル2F-3F</p>
+              <p>{omise.otokoro.forMap}{omise.otokoro.building}</p>
+              <p>{omise.otokoro.access}</p>
               <Button
                 variant="contained"
                 color="primary"
-                href={"https://www.google.com/maps/dir/?api=1&destination=" + encodedAddress}
+                href={"https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(omise.otokoro.forMap)}
+                target="_blank"
+                rel="noreferrer noopener"
               >
                 行き方を調べる
               </Button>
