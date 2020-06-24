@@ -36,6 +36,12 @@ def main():
 
     line_bot_api = LineBotApi(access_token)
 
+    
+    # line_bot_api.unlink_rich_menu_from_user('U51dbd53df87a0c68fb90bad2af248fc7')
+    # line_bot_api.link_rich_menu_to_user('U51dbd53df87a0c68fb90bad2af248fc7', "richmenu-fc596275e19834630f8d730e42b7e21f")
+    # set_staff_richmenu(line_bot_api, "richmenu-04f8aaf42964b46ec96ee7743c740772" )
+    # return
+
     cancel_staff_richmenu(line_bot_api,table)
     line_bot_api.cancel_default_rich_menu()
 
@@ -53,6 +59,7 @@ def main():
 def cancel_staff_richmenu(line_bot_api, table):
     return
 def set_staff_richmenu(line_bot_api, id):
+    # line_bot_api.link_rich_menu_to_user('U51dbd53df87a0c68fb90bad2af248fc7', id)
     line_bot_api.link_rich_menu_to_user('Ube2da389e4c223405286c03a32fefcb6', id)
     return
 

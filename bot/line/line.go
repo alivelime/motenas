@@ -182,10 +182,16 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 }
 
 func (r *Line) LinkRichMenu(users []string) {
-	_ = r.bot.BulkLinkRichMenu(r.richMenuID, users...)
+	_, err := r.bot.BulkLinkRichMenu(r.richMenuID, users...).Do()
+	if err != nil {
+		log.Println(err)
+	}
 }
 func (r *Line) UnlinkRichMenu(users []string) {
-	_, _ = r.bot.BulkUnlinkRichMenu(users...).Do()
+	_, err := r.bot.BulkUnlinkRichMenu(users...).Do()
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (r *Line) ClientID() string {

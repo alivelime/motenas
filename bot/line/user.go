@@ -81,8 +81,8 @@ func handleMemberJoined(r *Line, users []*linebot.EventSource, replyToken string
 		Tanamono []string `json:"tanamono"`
 	}
 	userIDs := make([]string, len(users))
-	for _, u := range users {
-		userIDs = append(userIDs, u.UserID)
+	for i, u := range users {
+		userIDs[i] = u.UserID
 	}
 	r.LinkRichMenu(userIDs)
 
@@ -113,10 +113,10 @@ func handleMemberLeft(r *Line, users []*linebot.EventSource) {
 		Tanamono []string `json:"tanamono"`
 	}
 	userIDs := make([]string, len(users))
-	for _, u := range users {
-		userIDs = append(userIDs, u.UserID)
+	for i, u := range users {
+		userIDs[i] = u.UserID
 	}
-	r.LinkRichMenu(userIDs)
+	r.UnlinkRichMenu(userIDs)
 
 	payload, _ := json.Marshal(MemberEvent{
 		ClientID: r.ClientID(),
