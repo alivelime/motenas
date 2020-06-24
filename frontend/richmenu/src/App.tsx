@@ -12,16 +12,18 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import UserOmise from './UserOmise';
 // import UserOrder from './UserOrder';
 
+import StaffOmise from './StaffOmise';
+
 const theme = createMuiTheme({
   palette: {
     primary: {
       // light: will be calculated from palette.primary.main,
-      main: '#FDD9D9',
+      main: '#AAD378',
       // dark: will be calculated from palette.primary.main,
       // contrastText: will be calculated to contrast with palette.primary.main
     },
     secondary: {
-      main: '#AAD378',
+      main: '#FDD9D9',
     },
   },
   typography: {
@@ -67,6 +69,10 @@ function App() {
           </Route>
           <Route path="/:env/user/order/:clientId/:omiseId/:omiseId" exact>
             <p>order</p>
+          </Route>
+
+          <Route path="/:env/staff/omise/:clientId/:omiseId" exact>
+            <StaffOmise />
           </Route>
         </Switch>
       </Router>

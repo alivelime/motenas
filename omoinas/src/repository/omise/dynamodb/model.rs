@@ -28,7 +28,8 @@ impl Omise {
                 2 => Status::Hima,
                 3 => Status::Bochibochi,
                 4 => Status::Isogashi,
-                5 => Status::Kashikiri,
+                5 => Status::Ippai,
+                6 => Status::Kashikiri,
                 s => {
                     error!("repository::omise::dynamodb::model::from out of ima {}", s);
                     return false;

@@ -76,6 +76,7 @@ pub enum Status {
     Hima,
     Bochibochi,
     Isogashi,
+    Ippai,
     Kashikiri,
 }
 

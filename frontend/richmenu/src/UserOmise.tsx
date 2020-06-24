@@ -78,7 +78,9 @@ function UserOmise() {
         accessToken = liff.getAccessToken()
       }
       getOmise(env, clientId, omiseId, (omise) => setOmise(omise))
-      checkOmise(env, clientId, omiseId, charaId, accessToken);
+      if (process.env.NODE_ENV === "production") {
+        checkOmise(env, clientId, omiseId, charaId, accessToken);
+      }
     })
   },[env, clientId, omiseId, charaId])
 
@@ -125,7 +127,7 @@ function UserOmise() {
           </Grid>
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
-              <p>一言</p>
+              <p>今日の一言</p>
             </Grid>
             <Grid item xs={8}>
               <p>{omise.hitokoto}</p>
@@ -134,7 +136,7 @@ function UserOmise() {
           <Divider />
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
-              <p>その他</p>
+              <p>おもてなし</p>
             </Grid>
             <Grid item xs={8}>
               <p className={classes.omiseIcon}>
