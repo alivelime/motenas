@@ -46,12 +46,12 @@ def main():
     line_bot_api.cancel_default_rich_menu()
 
     delete_richmenu(line_bot_api)
-    id = create_user_richmenu(line_bot_api, chara_name)
+    id = create_user_richmenu(env, line_bot_api, chara_name)
     upload_user_richmenu_image(line_bot_api, id)
 
     line_bot_api.set_default_rich_menu(id)
     
-    id = create_staff_richmenu(line_bot_api, chara_name)
+    id = create_staff_richmenu(env, line_bot_api, chara_name)
     upload_staff_richmenu_image(line_bot_api, id)
 
     set_staff_richmenu(line_bot_api, id )
@@ -59,8 +59,11 @@ def main():
 def cancel_staff_richmenu(line_bot_api, table):
     return
 def set_staff_richmenu(line_bot_api, id):
-    # line_bot_api.link_rich_menu_to_user('U51dbd53df87a0c68fb90bad2af248fc7', id)
-    line_bot_api.link_rich_menu_to_user('Ube2da389e4c223405286c03a32fefcb6', id)
+    # line_bot_api.link_rich_menu_to_user('', id)
+    line_bot_api.link_rich_menu_to_users([
+        'Ube2da389e4c223405286c03a32fefcb6',
+        'U15022dc52eb46f56a4ea7d7ee3fcaebe',
+    ], id)
     return
 
 
@@ -74,7 +77,7 @@ def delete_richmenu(line_bot_api):
         
     
                     
-def create_user_richmenu(line_bot_api, chara_name):
+def create_user_richmenu(env, line_bot_api, chara_name):
     print("create user richmenu")
     user_menu = RichMenu(
         size=RichMenuSize(width=1200, height=405),
@@ -104,7 +107,7 @@ def create_user_richmenu(line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='omise',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/dev/user/omise/'+chara_name,
+                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/omise/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -116,7 +119,7 @@ def create_user_richmenu(line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='order',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/dev/user/order/'+chara_name,
+                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/order/'+chara_name,
                 ),
             ),
         ]
@@ -130,7 +133,7 @@ def upload_user_richmenu_image(line_bot_api, id):
     with open('script/image/richmenu/user.png', 'rb') as f:
         line_bot_api.set_rich_menu_image(id, 'image/png', f)
 
-def create_staff_richmenu(line_bot_api, chara_name):
+def create_staff_richmenu(env, line_bot_api, chara_name):
     print("create staff richmenu")
     user_menu = RichMenu(
         size=RichMenuSize(width=1200, height=810),
@@ -160,7 +163,7 @@ def create_staff_richmenu(line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='omise',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/dev/user/omise/'+chara_name,
+                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/omise/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -172,7 +175,7 @@ def create_staff_richmenu(line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='order',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/dev/user/order/'+chara_name,
+                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/order/'+chara_name,
                 ),
             ),
             # 下の段
@@ -185,7 +188,7 @@ def create_staff_richmenu(line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='staff_maroudo',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/dev/staff/maroudo/'+chara_name,
+                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/staff/maroudo/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -197,7 +200,7 @@ def create_staff_richmenu(line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='staff_omise',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/dev/staff/maroudo/'+chara_name,
+                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/staff/omise/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -209,7 +212,7 @@ def create_staff_richmenu(line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='staff_order',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/dev/staff/maroudo/'+chara_name,
+                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/staff/order/'+chara_name,
                 ),
             ),
         ]

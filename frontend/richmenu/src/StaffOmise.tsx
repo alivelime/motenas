@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import { useForm, Controller } from "react-hook-form";
 
-import {getOmise} from 'utils/api/omise';
+import {getOmise, Omise} from 'utils/api/omise';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import { Input, Select, MenuItem, TextField } from "@material-ui/core";
+import { Input, Select, Checkbox, MenuItem, TextField} from "@material-ui/core";
+import { FormControlLabel } from "@material-ui/core";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
 
@@ -43,6 +44,9 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     display: "flex",
   },
+  checkboxGroup: {
+    margin: theme.spacing(3),
+  },
   button: {
     display: "flex",
     margin: theme.spacing(2),
@@ -51,9 +55,11 @@ const useStyles = makeStyles((theme) => ({
 
 interface OmiseForm {
   namae: string,
-  ima: string,
+  ima: number,
   hitokoto: string,
-  omotenashi: Array<string>,
+  kefuKara: number,
+  kefuMade: number,
+  omotenashi: Set<string>,
   yotei: string,
   url: string,
   postcode: number,
@@ -64,33 +70,50 @@ interface OmiseForm {
 }
 const defaultValues = {
   namae: "",
-  ima: "{0}",
-  kefuKara: 7,
-  kefuMade: 7,
+  ima: 0,
+  kefuKara: 10,
+  kefuMade: 18,
   hitokoto: "",
-  omotenashi: [""],
+  omotenashi: new Set<string>([]),
   yotei: "",
   url: "",
-  postcode: 0,
-  prefcode: 0,
+  postcode: 1001001,
+  prefcode: 1,
   city: "",
   street: "",
   building: "",
 };
 
+const service = [
+  "cafe",
+  "smoking",
+  "non-smoking",
+  "restroom",
+  "wifi",
+  "alcohol",
+  "power",
+  "軽食",
+  "お菓子",
+  "飲み物",
+  "お土産",
+  "弁当",
+  "フリードリンク",
+  "レンタル",
+  "コピー",
+]
+
 function StaffOmise() {
   const {env, clientId, omiseId, charaId} = useParams<RouteParams>();
 
   const [token, setToken] = useState("");
-  const { register, handleSubmit, reset, control } = useForm({defaultValues});
-
+  const { register, handleSubmit, reset, control, getValues } = useForm({defaultValues});
 
   const onSubmit = (data: any) => console.log(data);
   const load = () => {
-    getOmise(env, clientId, omiseId, (omise) => {
+    getOmise(env, clientId, omiseId, (omise: Omise) => {
       reset({
         namae: omise.namae,
-        ima: "{"+String(omise.ima)+"}",
+        ima: omise.ima,
         kefuKara: omise.kefuKara.getHours(),
         kefuMade: omise.kefuMade.getHours(),
         hitokoto: omise.hitokoto,
@@ -119,11 +142,17 @@ function StaffOmise() {
     })
   },[env, clientId, omiseId, charaId])
 
+  function handleSelect(checkedName: string) {
+    const omotenashi = getValues().omotenashi;
+    return omotenashi.has(checkedName)
+      ? omotenashi.add(checkedName)
+      : omotenashi.delete(checkedName)
+  }
 
   const classes = useStyles();
   return (
     <Grid container className={classes.root} spacing={3}>
-      <Grid item xs={12} justify="center">
+      <Grid item xs={12}>
         <Paper variant="outlined" elevation={3} className={classes.paper}>
           <Typography variant="h1" className={classes.title}>お店情報編集</Typography>
         </Paper>
@@ -143,13 +172,13 @@ function StaffOmise() {
                   <Controller
                     as={
                       <Select>
-                        <MenuItem value="{0}">未設定</MenuItem>
-                        <MenuItem value="{1}">休み</MenuItem>
-                        <MenuItem value="{2}">空いてる</MenuItem>
-                        <MenuItem value="{3}">ぼちぼち</MenuItem>
-                        <MenuItem value="{4}">混雑</MenuItem>
-                        <MenuItem value="{5}">満席</MenuItem>
-                        <MenuItem value="{6}">貸切</MenuItem>
+                        <MenuItem value={0}>未設定</MenuItem>
+                        <MenuItem value={1}>休み</MenuItem>
+                        <MenuItem value={2}>空いてる</MenuItem>
+                        <MenuItem value={3}>ぼちぼち</MenuItem>
+                        <MenuItem value={4}>混雑</MenuItem>
+                        <MenuItem value={5}>満席</MenuItem>
+                        <MenuItem value={6}>貸切</MenuItem>
                       </Select>
                     }
                     control={control}
@@ -167,47 +196,54 @@ function StaffOmise() {
                   <Controller
                     as={
                       <Select name="kara">
-                        <MenuItem value="7">7:00</MenuItem>
-                        <MenuItem value="8">8:00</MenuItem>
-                        <MenuItem value="9">9:00</MenuItem>
-                        <MenuItem value="10">10:00</MenuItem>
-                        <MenuItem value="11">11:00</MenuItem>
-                        <MenuItem value="12">12:00</MenuItem>
-                        <MenuItem value="13">13:00</MenuItem>
-                        <MenuItem value="14">14:00</MenuItem>
-                        <MenuItem value="15">15:00</MenuItem>
-                        <MenuItem value="16">16:00</MenuItem>
-                        <MenuItem value="17">17:00</MenuItem>
-                        <MenuItem value="18">18:00</MenuItem>
-                        <MenuItem value="19">19:00</MenuItem>
-                        <MenuItem value="20">20:00</MenuItem>
+                        <MenuItem value={0}>0:00</MenuItem>
+                        <MenuItem value={1}>1:00</MenuItem>
+                        <MenuItem value={2}>2:00</MenuItem>
+                        <MenuItem value={3}>3:00</MenuItem>
+                        <MenuItem value={4}>4:00</MenuItem>
+                        <MenuItem value={5}>5:00</MenuItem>
+                        <MenuItem value={6}>6:00</MenuItem>
+                        <MenuItem value={7}>7:00</MenuItem>
+                        <MenuItem value={8}>8:00</MenuItem>
+                        <MenuItem value={9}>9:00</MenuItem>
+                        <MenuItem value={10}>10:00</MenuItem>
+                        <MenuItem value={11}>11:00</MenuItem>
+                        <MenuItem value={12}>12:00</MenuItem>
+                        <MenuItem value={13}>13:00</MenuItem>
+                        <MenuItem value={14}>14:00</MenuItem>
+                        <MenuItem value={15}>15:00</MenuItem>
+                        <MenuItem value={16}>16:00</MenuItem>
+                        <MenuItem value={17}>17:00</MenuItem>
+                        <MenuItem value={18}>18:00</MenuItem>
+                        <MenuItem value={19}>19:00</MenuItem>
+                        <MenuItem value={20}>20:00</MenuItem>
                       </Select>
                     }
                     control={control}
-                    name="kefu_kara"
+                    name="kefuKara"
                   />
                   <Controller
                     as={
                       <Select name="made" ref={register}>
-                        <MenuItem value="17">17:00</MenuItem>
-                        <MenuItem value="18">18:00</MenuItem>
-                        <MenuItem value="19">19:00</MenuItem>
-                        <MenuItem value="20">20:00</MenuItem>
-                        <MenuItem value="21">21:00</MenuItem>
-                        <MenuItem value="22">22:00</MenuItem>
-                        <MenuItem value="23">23:00</MenuItem>
-                        <MenuItem value="24">24:00</MenuItem>
-                        <MenuItem value="25">翌1:00</MenuItem>
-                        <MenuItem value="26">翌2:00</MenuItem>
-                        <MenuItem value="27">翌3:00</MenuItem>
-                        <MenuItem value="28">翌4:00</MenuItem>
-                        <MenuItem value="29">翌5:00</MenuItem>
-                        <MenuItem value="30">翌6:00</MenuItem>
-                        <MenuItem value="31">翌7:00</MenuItem>
+                        <MenuItem value={17}>17:00</MenuItem>
+                        <MenuItem value={18}>18:00</MenuItem>
+                        <MenuItem value={19}>19:00</MenuItem>
+                        <MenuItem value={20}>20:00</MenuItem>
+                        <MenuItem value={21}>21:00</MenuItem>
+                        <MenuItem value={22}>22:00</MenuItem>
+                        <MenuItem value={23}>23:00</MenuItem>
+                        <MenuItem value={24}>24:00</MenuItem>
+                        <MenuItem value={25}>翌1:00</MenuItem>
+                        <MenuItem value={26}>翌2:00</MenuItem>
+                        <MenuItem value={27}>翌3:00</MenuItem>
+                        <MenuItem value={28}>翌4:00</MenuItem>
+                        <MenuItem value={29}>翌5:00</MenuItem>
+                        <MenuItem value={30}>翌6:00</MenuItem>
+                        <MenuItem value={31}>翌7:00</MenuItem>
                       </Select>
                     }
                     control={control}
-                    name="kefu_made"
+                    name="kefuMade"
                   />
                 </Grid>
               </Grid>
@@ -240,8 +276,22 @@ function StaffOmise() {
                 <Grid item xs={4} className={classes.head}>
                   <p>おもてなし</p>
                 </Grid>
-                <Grid item xs={8}>
-                  <Input type="checkbox" placeholder="サービス・設備" name="omotenashi" inputRef={register} />
+                <Grid item xs={8} className="classes.checkboxGroup">
+                  {service.map(name => (
+                    <FormControlLabel
+                      control={
+                        <Controller
+                          as={<Checkbox />}
+                          control={control}
+                          checked={getValues().omotenashi.has(name)}
+                          name="omotenashi"
+                          onChange={() => handleSelect(name)}
+                        />
+                      }
+                      key={name}
+                      label={name}
+                    />
+                  ))}
                 </Grid>
               </Grid>
               <Divider />
@@ -284,58 +334,58 @@ function StaffOmise() {
                 <Grid item xs={8}>
                   <Controller
                     as={
-                      <Select name="prefcode" inputRef={register({ required: true })}>
-                        <MenuItem value="1">北海道</MenuItem>
-                        <MenuItem value="2">青森県</MenuItem>
-                        <MenuItem value="3">岩手県</MenuItem>
-                        <MenuItem value="4">宮城県</MenuItem>
-                        <MenuItem value="5">秋田県</MenuItem>
-                        <MenuItem value="6">山形県</MenuItem>
-                        <MenuItem value="7">福島県</MenuItem>
-                        <MenuItem value="8">茨城県</MenuItem>
-                        <MenuItem value="9">栃木県</MenuItem>
-                        <MenuItem value="10">群馬県</MenuItem>
-                        <MenuItem value="11">埼玉県</MenuItem>
-                        <MenuItem value="12">千葉県</MenuItem>
-                        <MenuItem value="13">東京都</MenuItem>
-                        <MenuItem value="14">神奈川県</MenuItem>
-                        <MenuItem value="15">新潟県</MenuItem>
-                        <MenuItem value="16">富山県</MenuItem>
-                        <MenuItem value="17">石川県</MenuItem>
-                        <MenuItem value="18">福井県</MenuItem>
-                        <MenuItem value="19">山梨県</MenuItem>
-                        <MenuItem value="20">長野県</MenuItem>
-                        <MenuItem value="21">岐阜県</MenuItem>
-                        <MenuItem value="22">静岡県</MenuItem>
-                        <MenuItem value="23">愛知県</MenuItem>
-                        <MenuItem value="24">三重県</MenuItem>
-                        <MenuItem value="25">滋賀県</MenuItem>
-                        <MenuItem value="26">京都府</MenuItem>
-                        <MenuItem value="27">大阪府</MenuItem>
-                        <MenuItem value="28">兵庫県</MenuItem>
-                        <MenuItem value="29">奈良県</MenuItem>
-                        <MenuItem value="30">和歌山県</MenuItem>
-                        <MenuItem value="31">鳥取県</MenuItem>
-                        <MenuItem value="32">島根県</MenuItem>
-                        <MenuItem value="33">岡山県</MenuItem>
-                        <MenuItem value="34">広島県</MenuItem>
-                        <MenuItem value="35">山口県</MenuItem>
-                        <MenuItem value="36">徳島県</MenuItem>
-                        <MenuItem value="37">香川県</MenuItem>
-                        <MenuItem value="38">愛媛県</MenuItem>
-                        <MenuItem value="39">高知県</MenuItem>
-                        <MenuItem value="40">福岡県</MenuItem>
-                        <MenuItem value="41">佐賀県</MenuItem>
-                        <MenuItem value="42">長崎県</MenuItem>
-                        <MenuItem value="43">熊本県</MenuItem>
-                        <MenuItem value="44">大分県</MenuItem>
-                        <MenuItem value="45">宮崎県</MenuItem>
-                        <MenuItem value="46">鹿児島県</MenuItem>
-                        <MenuItem value="47">沖縄県</MenuItem>
+                      <Select>
+                        <MenuItem value={1}>北海道</MenuItem>
+                        <MenuItem value={2}>青森県</MenuItem>
+                        <MenuItem value={3}>岩手県</MenuItem>
+                        <MenuItem value={4}>宮城県</MenuItem>
+                        <MenuItem value={5}>秋田県</MenuItem>
+                        <MenuItem value={6}>山形県</MenuItem>
+                        <MenuItem value={7}>福島県</MenuItem>
+                        <MenuItem value={8}>茨城県</MenuItem>
+                        <MenuItem value={9}>栃木県</MenuItem>
+                        <MenuItem value={10}>群馬県</MenuItem>
+                        <MenuItem value={11}>埼玉県</MenuItem>
+                        <MenuItem value={12}>千葉県</MenuItem>
+                        <MenuItem value={13}>東京都</MenuItem>
+                        <MenuItem value={14}>神奈川県</MenuItem>
+                        <MenuItem value={15}>新潟県</MenuItem>
+                        <MenuItem value={16}>富山県</MenuItem>
+                        <MenuItem value={17}>石川県</MenuItem>
+                        <MenuItem value={18}>福井県</MenuItem>
+                        <MenuItem value={19}>山梨県</MenuItem>
+                        <MenuItem value={20}>長野県</MenuItem>
+                        <MenuItem value={21}>岐阜県</MenuItem>
+                        <MenuItem value={22}>静岡県</MenuItem>
+                        <MenuItem value={23}>愛知県</MenuItem>
+                        <MenuItem value={24}>三重県</MenuItem>
+                        <MenuItem value={25}>滋賀県</MenuItem>
+                        <MenuItem value={26}>京都府</MenuItem>
+                        <MenuItem value={27}>大阪府</MenuItem>
+                        <MenuItem value={28}>兵庫県</MenuItem>
+                        <MenuItem value={29}>奈良県</MenuItem>
+                        <MenuItem value={30}>和歌山県</MenuItem>
+                        <MenuItem value={31}>鳥取県</MenuItem>
+                        <MenuItem value={32}>島根県</MenuItem>
+                        <MenuItem value={33}>岡山県</MenuItem>
+                        <MenuItem value={34}>広島県</MenuItem>
+                        <MenuItem value={35}>山口県</MenuItem>
+                        <MenuItem value={36}>徳島県</MenuItem>
+                        <MenuItem value={37}>香川県</MenuItem>
+                        <MenuItem value={38}>愛媛県</MenuItem>
+                        <MenuItem value={39}>高知県</MenuItem>
+                        <MenuItem value={40}>福岡県</MenuItem>
+                        <MenuItem value={41}>佐賀県</MenuItem>
+                        <MenuItem value={42}>長崎県</MenuItem>
+                        <MenuItem value={43}>熊本県</MenuItem>
+                        <MenuItem value={44}>大分県</MenuItem>
+                        <MenuItem value={45}>宮崎県</MenuItem>
+                        <MenuItem value={46}>鹿児島県</MenuItem>
+                        <MenuItem value={47}>沖縄県</MenuItem>
                       </Select>
                     }
                     control={control}
-                    name="prefcode"
+                    name="prefcode"
                     fullWidth
                   />
                 </Grid>
@@ -352,16 +402,7 @@ function StaffOmise() {
               <Divider />
               <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
                 <Grid item xs={4} className={classes.head}>
-                  <p>丁目・番地</p>
-                </Grid>
-                <Grid item xs={8}>
-                  <Input type="text" placeholder="目黒2-11-3" name="street" fullWidth inputRef={register({required: true, maxLength: 32})} />
-                </Grid>
-              </Grid>
-              <Divider />
-              <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
-                <Grid item xs={4} className={classes.head}>
-                  <p>町名・番地</p>
+                  <p>町・丁目・番地</p>
                 </Grid>
                 <Grid item xs={8}>
                   <Input type="text" placeholder="目黒2-11-3" name="street" fullWidth inputRef={register({required: true, maxLength: 32})} />

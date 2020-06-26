@@ -11,7 +11,7 @@ export interface Omise {
   namae: string;
   url: string;
   yotei: string;
-  omotenashi: Array<string>;
+  omotenashi: Set<string>;
   otokoro: Address;
 
   ima: number,
@@ -40,7 +40,7 @@ export function newOmise(): Omise {
     namae: "",
     url: "",
     yotei: "",
-    omotenashi: [],
+    omotenashi: new Set<string>([]),
     otokoro: {
       country: "",
       postcode: 1000001,
@@ -70,7 +70,10 @@ export function getOmise(env: string, clientId: string, omiseId: string, resolve
       cache: "no-cache",
     }
   )
-    .then(res => resolver(res.omise))
+    .then(res => {
+      res.omise.omotenashi = new Set(res.omise.omotenashi)
+      resolver(res.omise)
+    })
     .catch(err => alert(err))
 }
 

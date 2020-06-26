@@ -140,7 +140,7 @@ function UserOmise() {
             </Grid>
             <Grid item xs={8}>
               <p className={classes.omiseIcon}>
-              {omise.omotenashi.map(s => {switch (s) {
+              {Array.from(omise.omotenashi).map(s => {switch (s) {
                 case "cafe": return <span><FontAwesomeIcon icon={faCoffee} /></span>;
                 case "smoking": return <span><FontAwesomeIcon icon={faSmoking} /></span>;
                 case "non-smoking": return <span><FontAwesomeIcon icon={faSmokingBan} /></span>;
@@ -152,7 +152,7 @@ function UserOmise() {
               }})}
               </p>
               <p className={classes.omiseOmotenashi}>
-              {omise.omotenashi.map(s => {switch (s) {
+              {Array.from(omise.omotenashi).map(s => {switch (s) {
                 case "cafe": return null;
                 case "smoking": return null;
                 case "non-smoking": return null;

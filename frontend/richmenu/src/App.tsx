@@ -67,11 +67,11 @@ function App() {
           <Route path="/:env/user/omise/:clientId/:omiseId/:charaId" exact>
             <UserOmise />
           </Route>
-          <Route path="/:env/user/order/:clientId/:omiseId/:omiseId" exact>
+          <Route path="/:env/user/order/:clientId/:omiseId/:charaId" exact>
             <p>order</p>
           </Route>
 
-          <Route path="/:env/staff/omise/:clientId/:omiseId" exact>
+          <Route path="/:env/staff/omise/:clientId/:omiseId/:charaId" exact>
             <StaffOmise />
           </Route>
         </Switch>
