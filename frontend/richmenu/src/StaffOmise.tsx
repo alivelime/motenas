@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import { useForm, Controller } from "react-hook-form";
 
-import {getOmise, Omise} from 'utils/api/omise';
+import {getOmise, Omise, setOmise, OmiseForm} from 'utils/api/omise';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -12,6 +12,9 @@ import { Input, Select, Checkbox, MenuItem, TextField} from "@material-ui/core";
 import { FormControlLabel } from "@material-ui/core";
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
 
 
 interface RouteParams {
@@ -53,22 +56,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface OmiseForm {
-  namae: string,
-  ima: number,
-  hitokoto: string,
-  kefuKara: number,
-  kefuMade: number,
-  omotenashi: Set<string>,
-  yotei: string,
-  url: string,
-  postcode: number,
-  prefcode: number,
-  city: string,
-  street: string,
-  building: string,
-}
-const defaultValues = {
+const defaultValues: OmiseForm = {
   namae: "",
   ima: 0,
   kefuKara: 10,
@@ -103,19 +91,25 @@ const service = [
 ]
 
 function StaffOmise() {
+  console.log("aaaa")
   const {env, clientId, omiseId, charaId} = useParams<RouteParams>();
 
   const [token, setToken] = useState("");
-  const { register, handleSubmit, reset, control, getValues } = useForm({defaultValues});
+  const [omotenashi, setOmotenashi] = useState(new Set<string>([]));
+  const { register, handleSubmit, reset, control, getValues, errors } = useForm({defaultValues});
+  const [status, setStatus] = useState({
+    open: false,
+    type: "success",
+    message: "成功しました。"
+  });
 
-  const onSubmit = (data: any) => console.log(data);
   const load = () => {
     getOmise(env, clientId, omiseId, (omise: Omise) => {
       reset({
         namae: omise.namae,
         ima: omise.ima,
         kefuKara: omise.kefuKara.getHours(),
-        kefuMade: omise.kefuMade.getHours(),
+        kefuMade: (omise.kefuKara.getDay() === omise.kefuMade.getDay() ? omise.kefuMade.getHours() : omise.kefuMade.getDay() + 24),
         hitokoto: omise.hitokoto,
         omotenashi: omise.omotenashi,
         yotei: omise.yotei,
@@ -126,14 +120,22 @@ function StaffOmise() {
         street: omise.otokoro.street,
         building: omise.otokoro.building,
       })
+      setOmotenashi(omise.omotenashi)
+    }, (err: Error) => {
+      setStatus({
+        open: true,
+        type: "error",
+        message: "お店情報取得に失敗しました"
+      });
     })
   };
-
   useEffect(() => {
     liff.ready.then(() => {
       let accessToken = ""
       if (!liff.isLoggedIn()) {
-        // liff.login({})
+        if (process.env.NODE_ENV === "production") {
+          liff.login({})
+        }
       } else {
         accessToken = liff.getAccessToken()
         setToken(accessToken)
@@ -142,16 +144,50 @@ function StaffOmise() {
     })
   },[env, clientId, omiseId, charaId])
 
-  function handleSelect(checkedName: string) {
-    const omotenashi = getValues().omotenashi;
-    return omotenashi.has(checkedName)
-      ? omotenashi.add(checkedName)
-      : omotenashi.delete(checkedName)
+
+  function handleSelect(name: string) {
+    let omotenashi = new Set<string>(getValues().omotenashi)
+     omotenashi.has(name)
+      ? omotenashi.delete(name)
+      : omotenashi.add(name)
+    setOmotenashi(omotenashi)
+    return omotenashi
   }
+
+  const handleClose = () => {
+    setStatus({ ...status, open: false });
+  };
+
+  const onSubmit = (omise: OmiseForm) => {
+    setOmise(env, clientId, omiseId, charaId, omise, token, ()=>{
+      setStatus({
+        open: true,
+        type: "success",
+        message: "お店情報を更新しました"
+      });
+    },
+      (err: Error)=> {
+        setStatus({
+          open: true,
+          type: "error",
+          message: "お店情報を更新できませんでした"
+        });
+      });
+  };
 
   const classes = useStyles();
   return (
     <Grid container className={classes.root} spacing={3}>
+      <Snackbar open={status.open} autoHideDuration={3000} onClose={handleClose}>
+        <MuiAlert
+          onClose={handleClose}
+          severity={status.type === "success" ? "success" : "error"}
+          elevation={6}
+          variant="filled"
+        >
+          {status.message}
+        </MuiAlert>
+      </Snackbar>
       <Grid item xs={12}>
         <Paper variant="outlined" elevation={3} className={classes.paper}>
           <Typography variant="h1" className={classes.title}>お店情報編集</Typography>
@@ -185,6 +221,7 @@ function StaffOmise() {
                     name="ima"
                     fullWidth
                   />
+                  {errors.ima && errors.ima.message}
                 </Grid>
               </Grid>
               <Divider />
@@ -222,6 +259,7 @@ function StaffOmise() {
                     control={control}
                     name="kefuKara"
                   />
+                  - 
                   <Controller
                     as={
                       <Select name="made" ref={register}>
@@ -245,6 +283,8 @@ function StaffOmise() {
                     control={control}
                     name="kefuMade"
                   />
+                  {errors.kefuKara && errors.kefuKara.message}
+                  {errors.kefuMade && errors.kefuMade.message}
                 </Grid>
               </Grid>
               <Divider />
@@ -254,6 +294,7 @@ function StaffOmise() {
                 </Grid>
                 <Grid item xs={8}>
                   <Input type="text" placeholder="お店から一言" name="hitokoto" fullWidth inputRef={register({required: true, maxLength: 144})} />
+                  {errors.hitokoto && errors.hitokoto.message}
                 </Grid>
               </Grid>
             </Paper>
@@ -268,7 +309,8 @@ function StaffOmise() {
                   <p>店舗名</p>
                 </Grid>
                 <Grid item xs={8}>
-                  <Input type="text" placeholder="店舗名" name="namae" fullWidth inputRef={register({required: true, maxLength: 16})} />
+                  <Input type="text" placeholder="店舗名" name="namae" fullWidth inputRef={register({required: "必須です", maxLength: 16})} />
+                  {errors.namae && errors.namae.message}
                 </Grid>
               </Grid>
               <Divider />
@@ -283,7 +325,7 @@ function StaffOmise() {
                         <Controller
                           as={<Checkbox />}
                           control={control}
-                          checked={getValues().omotenashi.has(name)}
+                          checked={omotenashi.has(name)}
                           name="omotenashi"
                           onChange={() => handleSelect(name)}
                         />
@@ -306,6 +348,7 @@ function StaffOmise() {
                     fullWidth
                     inputRef={register({required: true, maxLength: 1024})}
                   />
+                  {errors.yotei && errors.yotei.message}
                 </Grid>
               </Grid>
               <Divider />
@@ -315,6 +358,7 @@ function StaffOmise() {
                 </Grid>
                 <Grid item xs={8}>
                   <Input type="url" placeholder="https://www.google.com/" name="url" fullWidth inputRef={register} />
+                  {errors.url && errors.url.message}
                 </Grid>
               </Grid>
               <Divider />
@@ -323,7 +367,14 @@ function StaffOmise() {
                   <p>郵便番号</p>
                 </Grid>
                 <Grid item xs={8}>
-                  <Input type="number" placeholder="1530063" name="postcode" fullWidth inputRef={register({max: 9999999, min: 1000000})} />
+                  {errors.postcode && errors.postcode.message}
+                  <Input
+                    type="number"
+                    placeholder="1530063"
+                    name="postcode"
+                    fullWidth
+                    inputRef={register({required: true, max: 9999999, min: 1000000})}
+                  />
                 </Grid>
               </Grid>
               <Divider />
@@ -388,6 +439,7 @@ function StaffOmise() {
                     name="prefcode"
                     fullWidth
                   />
+                  {errors.prefcode && errors.prefcode.message}
                 </Grid>
               </Grid>
               <Divider />
@@ -397,15 +449,17 @@ function StaffOmise() {
                 </Grid>
                 <Grid item xs={8}>
                   <Input type="text" placeholder="目黒区" name="city" fullWidth inputRef={register({required: true, maxLength: 16})} />
+                  {errors.city && errors.city.message}
                 </Grid>
               </Grid>
               <Divider />
               <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
                 <Grid item xs={4} className={classes.head}>
-                  <p>町・丁目・番地</p>
+                  <p>丁目・番地</p>
                 </Grid>
                 <Grid item xs={8}>
                   <Input type="text" placeholder="目黒2-11-3" name="street" fullWidth inputRef={register({required: true, maxLength: 32})} />
+                  {errors.street && errors.street.message}
                 </Grid>
               </Grid>
               <Divider />
@@ -415,11 +469,12 @@ function StaffOmise() {
                 </Grid>
                 <Grid item xs={8}>
                   <Input type="text" placeholder="印刷工場1F" name="building" fullWidth inputRef={register} />
+                  {errors.building && errors.building.message}
                 </Grid>
               </Grid>
               <Divider />
               <Grid container spacing={0} justify="flex-end" alignItems="center">
-                <Button className={classes.button} variant="contained" color="secondary" type="submit" onClick={load}>取消</Button>
+                <Button className={classes.button} variant="contained" color="secondary" onClick={load}>取消</Button>
                 <Button className={classes.button} variant="contained" color="primary" type="submit">更新する</Button>
               </Grid>
             </Paper>

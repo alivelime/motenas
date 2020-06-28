@@ -8,6 +8,8 @@ import {
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from "@material-ui/core/CssBaseline";
 
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
 
 import UserOmise from './UserOmise';
 // import UserOrder from './UserOrder';
@@ -68,7 +70,11 @@ function App() {
             <UserOmise />
           </Route>
           <Route path="/:env/user/order/:clientId/:omiseId/:charaId" exact>
-            <p>order</p>
+            <Grid container alignItems="center" justify="center">
+              <Grid item xs={8}>
+                <Paper>7月公開予定</Paper>
+              </Grid>   
+            </Grid>
           </Route>
 
           <Route path="/:env/staff/omise/:clientId/:omiseId/:charaId" exact>

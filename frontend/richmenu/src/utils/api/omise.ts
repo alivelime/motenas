@@ -33,6 +33,22 @@ export interface Address {
   access: string;
 }
 
+export interface OmiseForm {
+  namae: string,
+  ima: number,
+  hitokoto: string,
+  kefuKara: number,
+  kefuMade: number,
+  omotenashi: Set<string>,
+  yotei: string,
+  url: string,
+  postcode: number,
+  prefcode: number,
+  city: string,
+  street: string,
+  building: string,
+}
+
 export function newOmise(): Omise {
   return {
     clientId: "",
@@ -61,7 +77,13 @@ export function newOmise(): Omise {
   };
 }
 
-export function getOmise(env: string, clientId: string, omiseId: string, resolver: (omise: Omise)=>void ) {
+export function getOmise(
+  env: string,
+  clientId: string,
+  omiseId: string,
+  resolve: (omise: Omise)=>void,
+  reject: (err: Error)=>void,
+) {
   fetcher<ResponseOmise>(
     `${process.env.REACT_APP_API_HOST}/${env}/omise/${clientId}/${omiseId}`,
     {
@@ -72,9 +94,38 @@ export function getOmise(env: string, clientId: string, omiseId: string, resolve
   )
     .then(res => {
       res.omise.omotenashi = new Set(res.omise.omotenashi)
-      resolver(res.omise)
+      resolve(res.omise)
     })
-    .catch(err => alert(err))
+    .catch(err => reject(err))
+}
+
+export function setOmise(
+  env: string,
+  clientId: string,
+  omiseId: string,
+  charaId: string,
+  omise: OmiseForm,
+  token: string,
+  resolve: ()=>void,
+  reject: (err: Error
+)=>void) {
+  fetcher<void>(
+    `${process.env.REACT_APP_LINE_API_HOST}/${env}/line-api/omise/set`,
+    {
+      method: "POST",
+      mode: "cors",
+      cache: "no-cache",
+      headers: { 'Authorization': 'Bearer: '+token},
+      body: JSON.stringify({
+        ...omise,
+        charaUri: `${clientId}/${omiseId}/${charaId}`,
+        postcode: Number(omise.postcode),
+        omotenashi: Array.from(omise.omotenashi),
+      }),
+    }
+  )
+    .then(()=>resolve())
+    .catch(err => reject(err))
 }
 
 export function checkOmise(env: string, clientId: string, omiseId: string, charaId: string, accessToken: string) {
@@ -91,5 +142,5 @@ export function checkOmise(env: string, clientId: string, omiseId: string, chara
     }
   )
     .then()
-    .catch(err => alert(err))
+    .catch(err => console.log(err))
 }

@@ -73,11 +73,13 @@ function UserOmise() {
     liff.ready.then(() => {
       let accessToken = ""
       if (!liff.isLoggedIn()) {
-        // liff.login({})
+        if (process.env.NODE_ENV === "production") {
+          // liff.login({})
+        }
       } else {
         accessToken = liff.getAccessToken()
       }
-      getOmise(env, clientId, omiseId, (omise) => setOmise(omise))
+      getOmise(env, clientId, omiseId, (omise) => setOmise(omise),(err: Error)=>{console.log(err)})
       if (process.env.NODE_ENV === "production") {
         checkOmise(env, clientId, omiseId, charaId, accessToken);
       }

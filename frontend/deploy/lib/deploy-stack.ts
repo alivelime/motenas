@@ -7,15 +7,16 @@ import * as iam from '@aws-cdk/aws-iam'
 export class DeployStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    const stage = this.node.getContext('stage')
 
-    const websiteBucket = new s3.Bucket(this, 'MinaraichanLiffBucket', {
+    const websiteBucket = new s3.Bucket(this, `KikinasuLiffBucket-${stage}`, {
       websiteErrorDocument: 'index.html',
       websiteIndexDocument: 'index.html',
     });
 
     const websiteIdentity = new cloudfront.OriginAccessIdentity(
       this,
-      'MinaraichanLiffIdentity',
+      `KikinasuLiffIdentity-${stage}`,
     );
 
     const webSiteBucketPolicyStatement = new iam.PolicyStatement({
@@ -31,7 +32,7 @@ export class DeployStack extends cdk.Stack {
 
     const websiteDistribution = new cloudfront.CloudFrontWebDistribution(
       this,
-      'MinaraichanLiffDistribution',
+      `KikinasuLiffDistribution-${stage}`,
       {
         errorConfigurations: [
           {
@@ -64,7 +65,7 @@ export class DeployStack extends cdk.Stack {
       },
     );
 
-    new s3deploy.BucketDeployment(this, 'MinaraichanLiffDeploy', {
+    new s3deploy.BucketDeployment(this, `KikinasuLiffDeploy-${stage}`, {
       sources: [s3deploy.Source.asset('../richmenu/build')],
       destinationBucket: websiteBucket,
       distribution: websiteDistribution,
