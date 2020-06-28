@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	"github.com/line/line-bot-sdk-go/linebot"
 )
@@ -90,4 +91,11 @@ func (r *Line) withSender() *linebot.Sender {
 		Name:    r.displayName,
 		IconURL: r.iconURL,
 	}
+}
+
+func ClientID(charaID string) string {
+	return strings.Split(charaID, "/")[0]
+}
+func OmiseID(charaID string) string {
+	return strings.Split(charaID, "/")[1]
 }

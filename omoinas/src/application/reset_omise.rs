@@ -13,7 +13,7 @@ pub struct Event {
 
 #[derive(Serialize, Debug)]
 pub struct Response {
-    omise: Vec<Omise>,
+    pub omise: Vec<Omise>,
 }
 pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
     let or = OR::new();

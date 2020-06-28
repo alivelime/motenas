@@ -1,0 +1,113 @@
+package main
+
+import (
+	"encoding/json"
+	"errors"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/lambda"
+	"github.com/kkdai/line-social-sdk-go"
+)
+
+func setOmise(request events.APIGatewayProxyRequest) (string, error) {
+	accessToken := strings.TrimPrefix(request.Headers["Authorization"], "Bearer: ")
+	if accessToken == "" {
+		// 401
+		return "", errors.New("access token is empty.")
+	}
+
+	param := &struct {
+		CharaURI string `json:"charaUri"`
+
+		Namae      string   `json:"namae"`
+		Ima        int      `json:"ima"`
+		Hitokoto   string   `json:"hitokoto"`
+		KefuKara   int      `json:"kefuKara"`
+		KefuMade   int      `json:"kefuMade"`
+		Omotenashi []string `json:"omotenashi"`
+		Yotei      string   `json:"yotei"`
+		URL        string   `json:"url"`
+		Postcode   int      `json:"postcode"`
+		Prefcode   int      `json:"prefcode"`
+		City       string   `json:"city"`
+		Street     string   `json:"street"`
+		Building   string   `json:"building"`
+
+		//  ラムダ用パラメータ
+		ClientID string `json:"clientId"`
+		OmiseID  string `json:"omiseId"`
+		UserID   string `json:"userId"`
+	}{}
+	if err := json.Unmarshal([]byte(request.Body), param); err != nil {
+		return "", err
+	}
+	chara := cebab2Camel(param.CharaURI)
+	omise := os.Getenv(chara + "_OMISE_NAME")
+	mainChara := os.Getenv(omise + "_MAIN_CHARA")
+
+	bot, err := NewLine(
+		os.Getenv(chara+"_DISPLAY_NAME"),
+		os.Getenv(chara+"_ICON_URL"),
+		os.Getenv(chara+"_CHANNEL_SECRET"),
+		os.Getenv(chara+"_CHANNEL_TOKEN"),
+		os.Getenv(mainChara+"_CHANNEL_SECRET"),
+		os.Getenv(mainChara+"_CHANNEL_TOKEN"),
+		os.Getenv(omise+"_STAFF_GROUP_ID"),
+		os.Getenv(omise+"_ORDER_GROUP_ID"),
+	)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	client, err := social.New(
+		os.Getenv(chara+"_CHANNEL_ID"),
+		os.Getenv(chara+"_CHANNEL_SECRET"),
+	)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	// ユーザ名取得
+	prof, err := client.GetUserProfile(accessToken).Do()
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	name := prof.DisplayName
+
+	param.UserID = prof.UserID
+	param.ClientID = ClientID(param.CharaURI)
+	param.OmiseID = OmiseID(param.CharaURI)
+
+	payload, _ := json.Marshal(param)
+	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
+		FunctionName:   aws.String(ARN + "omoinas-" + os.Getenv("ENV") + "-setOmise"),
+		Payload:        payload,
+		InvocationType: aws.String("RequestResponse"),
+	})
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	result := struct {
+		OK      bool   `json:"ok"`
+		Message string `json:"message"`
+	}{}
+	_ = json.Unmarshal(res.Payload, &result)
+	if !result.OK {
+		log.Println(result.Message)
+		return "", errors.New(result.Message)
+	}
+
+	bot.TextMessageToStaffRoom(name + "さんがお店情報を更新したよ")
+
+	return "{}", nil
+}

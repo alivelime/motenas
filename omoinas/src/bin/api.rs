@@ -3,12 +3,10 @@
 use log;
 use simple_logger;
 
-use lambda_http::{lambda, Body, IntoResponse, Request, RequestExt, Response};
+use lambda_http::{lambda, IntoResponse, Request, RequestExt, Response};
 use lambda_runtime::{error::HandlerError, Context};
 
 use omoinas::application::get_omise;
-use omoinas::application::reset_omise;
-use omoinas::application::set_omise_ima;
 use omoinas::repository::omise::dynamodb::OmiseDb;
 
 fn main() {
@@ -24,28 +22,6 @@ fn handler(r: Request, c: Context) -> Result<impl IntoResponse, HandlerError> {
         }) {
             Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
             Err(err) => Err(err),
-        },
-        "setOmiseIma" => match &r.body() {
-            Body::Text(text) => {
-                let mut event: set_omise_ima::Event = serde_json::from_str(text.as_str()).unwrap();
-                event.client_id = r.path_parameters().get("clientId").unwrap().to_string();
-                event.omise_id = r.path_parameters().get("omiseId").unwrap().to_string();
-                match set_omise_ima::main::<OmiseDb>(event) {
-                    Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
-                    Err(err) => Err(err),
-                }
-            }
-            _ => Err(String::from("request body is not text.")),
-        },
-        "resetOmise" => match &r.body() {
-            Body::Text(text) => {
-                let event = serde_json::from_str(text.as_str()).unwrap();
-                match reset_omise::main::<OmiseDb>(event) {
-                    Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
-                    Err(err) => Err(err),
-                }
-            }
-            _ => Err(String::from("request body is not text.")),
         },
         _ => Err(format!("no such method {}", &c.function_name)),
     };

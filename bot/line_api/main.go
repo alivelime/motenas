@@ -36,6 +36,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	switch fn {
 	case "CheckOmise":
 		res, err = checkOmise(request)
+	case "SetOmise":
+		res, err = setOmise(request)
 	default:
 		return events.APIGatewayProxyResponse{
 			Headers:    headers,

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -155,26 +156,35 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 				case r.staffGroupID:
 				case r.orderGroupID:
 				default:
-					handleTextChara(r, message, event.ReplyToken, event.Source.UserID)
+					r.handleTextChara(message, event.ReplyToken, event.Source.UserID)
 				}
 			}
 		case linebot.EventTypeJoin:
 			log.Printf("Join group id : %v", event.Source.GroupID)
+
+		case linebot.EventTypePostback:
+			r.handlePostback(event.ReplyToken, event.Source.UserID, event.Postback.Data)
+
+		case linebot.EventTypeFollow:
+			r.handleFollow(event.Source.UserID)
+		case linebot.EventTypeUnfollow:
+			r.handleUnfollow(event.Source.UserID)
+
 		case linebot.EventTypeMemberJoined:
 			if event.Source.GroupID == r.orderGroupID {
 				if event.Joined != nil {
 					// handleMemberJoined(r, event.Joined.Members)
 				} else {
-					handleMemberJoined(r, event.Members, event.ReplyToken)
+					r.handleMemberJoined(event.Members, event.ReplyToken)
 				}
 			}
 		case linebot.EventTypeMemberLeft:
 			log.Printf("%#v", event)
 			if event.Source.GroupID == r.orderGroupID {
 				if event.Left != nil {
-					// handleMemberLeft(r, event.Left.Members)
+					// r.handleMemberLeft(event.Left.Members)
 				} else {
-					handleMemberLeft(r, event.Members)
+					r.handleMemberLeft(event.Members)
 				}
 			}
 		}
@@ -208,4 +218,8 @@ func (r *Line) withSender() *linebot.Sender {
 		Name:    r.displayName,
 		IconURL: r.iconURL,
 	}
+}
+
+func isDev() bool {
+	return os.Getenv("ENV") == "dev"
 }

@@ -30,7 +30,7 @@ type Carousel struct {
 	Text  string `json:"text"`
 }
 
-func handleTextChara(r *Line, message *linebot.TextMessage, replyToken, userID string) {
+func (r *Line) handleTextChara(message *linebot.TextMessage, replyToken, userID string) {
 	// redirect staff
 	prof, err := r.bot.GetProfile(userID).Do()
 	if err != nil {
@@ -73,7 +73,7 @@ func handleTextChara(r *Line, message *linebot.TextMessage, replyToken, userID s
 	}
 }
 
-func handleMemberJoined(r *Line, users []*linebot.EventSource, replyToken string) {
+func (r *Line) handleMemberJoined(users []*linebot.EventSource, replyToken string) {
 	type MemberEvent struct {
 		ClientID string   `json:"client_id"`
 		OmiseID  string   `json:"omise_id"`
@@ -105,7 +105,7 @@ func handleMemberJoined(r *Line, users []*linebot.EventSource, replyToken string
 	r.ReplyTextMessage(replyToken, "よろしくね")
 }
 
-func handleMemberLeft(r *Line, users []*linebot.EventSource) {
+func (r *Line) handleMemberLeft(users []*linebot.EventSource) {
 	type MemberEvent struct {
 		ClientID string   `json:"client_id"`
 		OmiseID  string   `json:"omise_id"`
@@ -133,4 +133,60 @@ func handleMemberLeft(r *Line, users []*linebot.EventSource) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (r *Line) handlePostback(replyToken, userID, data string) {
+	switch data {
+	case "how_to":
+		r.ReplyTextMessage(replyToken, "メニューの真ん中のボタンでお店の混雑状況が確認できるよ\n\n何があるの?\n とか xxってない?\n とか聞いてみてね。\n今日やってる? 対しては実装中だよ。")
+
+		// redirect staff
+		var message string
+		prof, err := r.bot.GetProfile(userID).Do()
+		if err != nil {
+			log.Printf("can't get prof: %v", err)
+			message = "誰かが「できること」を見たよ。(プロフが取得できませんでした)"
+		} else {
+			if isDev() {
+				message = userID + "\n" + prof.DisplayName + "\n" + "さんが「できること」を見たよ"
+			} else {
+				message = prof.DisplayName + "さんが「できること」を見たよ"
+			}
+		}
+
+		r.TextMessageToStaffRoom(message)
+	case "how_to_omise":
+		r.ReplyTextMessage(replyToken, "メニューの「お店管理」から今日の営業時間と混み具合を入れてください。\n「お店について」ボタンから実際のページを確認できます。")
+
+	}
+}
+
+func (r *Line) handleFollow(userID string) {
+	// redirect staff
+	var message string
+	prof, err := r.bot.GetProfile(userID).Do()
+	if err != nil {
+		log.Printf("can't get prof: %v", err)
+		message = "誰かが友達になったよ。(プロフが取得できませんでした)"
+	} else {
+		if isDev() {
+			message = userID + "\n" + prof.DisplayName + "\n" + "さんが友達になったよ"
+		} else {
+			message = prof.DisplayName + "さんが友達になったよ"
+		}
+	}
+
+	r.TextMessageToStaffRoom(message)
+}
+func (r *Line) handleUnfollow(userID string) {
+	// redirect staff
+	// GetProfile()はエラーとなるので使わないこと
+	var message string
+	if isDev() {
+		message = userID + "\nさんがブロックしたよ"
+	} else {
+		message = "残念なことに、誰かさんからブロックされてしまいました。"
+	}
+
+	r.TextMessageToStaffRoom(message)
 }

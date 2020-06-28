@@ -41,14 +41,14 @@ functions:
       ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
 
   resetOmise:
-    handler: omoinas.api
+    handler: omoinas.reset_omise
     environment:
       ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
-    events:
-      - http:
-          path: /omise/reset
-          method: POST
-          cors: true
+
+  setOmise:
+    handler: omoinas.set_omise
+    environment:
+      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
 
   getOmise:
     handler: omoinas.api
@@ -65,18 +65,4 @@ functions:
                 clientId: true,
                 omiseId: true,
 
-  setOmiseIma:
-    handler: omoinas.api
-    environment:
-      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
-    events:
-      - http:
-          path: /omise/{clientId}/{omiseId}/ima
-          method: POST
-          cors: true
-          request:
-            parameters:
-              paths:
-                clientId: true,
-                omiseId: true,
 
