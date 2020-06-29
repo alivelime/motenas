@@ -57,7 +57,9 @@ const theme = createMuiTheme({
 
 
 function App() {
-  liff.init({ liffId: process.env.REACT_APP_LIFF_ID as string }).then(() => {})
+  liff.init({ liffId: (process.env.REACT_APP_ENV === "prd"
+    ? process.env.REACT_APP_PRD_LIFF_ID
+    : process.env.REACT_APP_DEV_LIFF_ID)as string }).then(() => {})
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
@@ -72,7 +74,7 @@ function App() {
           <Route path="/:env/user/order/:clientId/:omiseId/:charaId" exact>
             <Grid container alignItems="center" justify="center">
               <Grid item xs={8}>
-                <Paper>7月公開予定</Paper>
+                <Paper>只今開発中 : 7月末公開予定?</Paper>
               </Grid>   
             </Grid>
           </Route>

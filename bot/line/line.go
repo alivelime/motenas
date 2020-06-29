@@ -152,11 +152,15 @@ func (r *Line) EventRouter(eve []*linebot.Event) {
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
+				// GroupIDを最初にうっかり空文字でやっちゃうとハマるので。。
+				h := func() { r.handleTextChara(message, event.ReplyToken, event.Source.UserID) }
 				switch event.Source.GroupID {
+				case "":
+					h()
 				case r.staffGroupID:
 				case r.orderGroupID:
 				default:
-					r.handleTextChara(message, event.ReplyToken, event.Source.UserID)
+					h()
 				}
 			}
 		case linebot.EventTypeJoin:

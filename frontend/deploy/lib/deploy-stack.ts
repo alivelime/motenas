@@ -5,9 +5,11 @@ import * as s3deploy from '@aws-cdk/aws-s3-deployment'
 import * as iam from '@aws-cdk/aws-iam'
 
 export class DeployStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
-    const stage = this.node.getContext('stage')
+  constructor(scope: cdk.Construct, id: string, stage: string, props?: cdk.StackProps) {
+    if (!stage) {
+      stage = 'dev'
+    }
+    super(scope, `id-${stage}`, props);
 
     const websiteBucket = new s3.Bucket(this, `KikinasuLiffBucket-${stage}`, {
       websiteErrorDocument: 'index.html',

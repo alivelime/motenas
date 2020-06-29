@@ -10,7 +10,7 @@ use omoinas::application::get_omise;
 use omoinas::repository::omise::dynamodb::OmiseDb;
 
 fn main() {
-    simple_logger::init_with_level(log::Level::Debug).unwrap();
+    simple_logger::init_with_level(log::Level::Info).unwrap();
     lambda!(handler)
 }
 

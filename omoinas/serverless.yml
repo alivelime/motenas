@@ -17,6 +17,7 @@ custom:
   otherfile:
     environment:
       dev: ${file(./conf/dev.yml)}
+      prd: ${file(./conf/prd.yml)}
   rust:
     dockerTag: '0.2.6-rust-1.42.0'
 

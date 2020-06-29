@@ -15,7 +15,7 @@ pub fn new<OR: OmiseRepo>(namae: &str) -> Hitogata {
         },
         "tokishirazu.llc/passengers/minarai" => Hitogata {
             id: String::from(namae),
-            namae: "みならいちゃん",
+            namae: "パッセンジャーズみならいちゃん",
             kaeshi: &tokishirazu_llc::minarai::MINARAI,
             omise: omise::new::<OR>("tokishirazu.llc/passengers"),
         },
@@ -23,6 +23,12 @@ pub fn new<OR: OmiseRepo>(namae: &str) -> Hitogata {
             id: String::from(namae),
             namae: "コンフルばあちゃん",
             kaeshi: &comfull_co_jp::bachan::BACHAN,
+            omise: omise::new::<OR>("comfull.co.jp/sendagi"),
+        },
+        "comfull.co.jp/sendagi/minarai" => Hitogata {
+            id: String::from(namae),
+            namae: "コンフルみならいちゃん",
+            kaeshi: &comfull_co_jp::minarai::MINARAI,
             omise: omise::new::<OR>("comfull.co.jp/sendagi"),
         },
         _ => panic!("invalid chara. {}", namae),

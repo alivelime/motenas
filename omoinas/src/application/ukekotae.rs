@@ -1,4 +1,4 @@
-use log::debug;
+use log::info;
 use serde::{Deserialize, Serialize};
 
 use crate::application::hitogata;
@@ -40,12 +40,12 @@ pub fn main<P: Parser, C: Cache, OR: OmiseRepo>(e: Event) -> Result<Response, St
     };
 
     let omomuki = Omomuki::new(&tree);
-    debug!("{:#?}", omomuki);
+    info!("{:#?}", omomuki);
 
     let uke = omomuki.tumori();
-    debug!("{:#?}", &uke);
+    info!("{:#?}", &uke);
     let kotae = uke.kotafu(&chara);
-    debug!("{:#?}", &kotae);
+    info!("{:#?}", &kotae);
 
     return Ok(match kotae.get_kotae(&chara) {
         omomuki::Result::Message(text) => Response {

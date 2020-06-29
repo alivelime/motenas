@@ -94,7 +94,7 @@ pub fn shinkansen() -> Vec<Mono> {
             allergen: None,
             moto: None,
             calorie: None,
-            image: "https://www.jr-cp.co.jp/services/50/get_image?image_number=1<Paste>",
+            image: "https://www.jr-cp.co.jp/services/50/get_image?image_number=1",
             url: "https://www.jr-cp.co.jp/services/wagon?space=1#wagon_content",
         },
         Mono {
@@ -319,7 +319,7 @@ pub fn shinkansen() -> Vec<Mono> {
             allergen: Some(vec!["大豆", "アーモンド", "ピーナッツ"]),
             moto: Some(vec!["食塩", "アーモンド", "ピーナッツ"]),
             calorie: None,
-            image: "https://www.jr-cp.co.jp/services/27/get_image?image_number=1<Paste>",
+            image: "https://www.jr-cp.co.jp/services/27/get_image?image_number=1",
             url: "https://www.jr-cp.co.jp/services/wagon?space=2#wagon_content",
         },
         Mono {
@@ -387,7 +387,7 @@ pub fn shinkansen() -> Vec<Mono> {
             allergen: None,
             moto: None,
             calorie: None,
-            image: "https://www.jr-cp.co.jp/services/209/get_image?image_number=1<Paste>",
+            image: "https://www.jr-cp.co.jp/services/209/get_image?image_number=1",
             url: "https://www.jr-cp.co.jp/services/wagon?space=2#wagon_content",
         },
         Mono {
@@ -900,7 +900,7 @@ pub fn shinkansen() -> Vec<Mono> {
             allergen: None,
             moto: None,
             calorie: None,
-            image: "https://www.jr-cp.co.jp/services/280/get_image?image_number=1<Paste>",
+            image: "https://www.jr-cp.co.jp/services/280/get_image?image_number=1",
             url: "https://www.jr-cp.co.jp/services/wagon?space=5#wagon_content",
         },
         Mono {
@@ -953,7 +953,7 @@ pub fn shinkansen() -> Vec<Mono> {
             allergen: None,
             moto: None,
             calorie: None,
-            image: "https://www.jr-cp.co.jp/services/17/get_image?image_number=1<Paste>",
+            image: "https://www.jr-cp.co.jp/services/17/get_image?image_number=1",
             url: "https://www.jr-cp.co.jp/services/wagon?space=5#wagon_content",
         },
         Mono {

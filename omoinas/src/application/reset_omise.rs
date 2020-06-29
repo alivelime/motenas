@@ -55,7 +55,7 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             hitokoto: String::from(""),
             aikotoba: String::from("川"),
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
-            kefu_made: DateTime::parse_from_rfc3339("2020-06-01T24:00:00+09:00").unwrap(),
+            kefu_made: DateTime::parse_from_rfc3339("2020-06-02T00:00:00+09:00").unwrap(),
 
             created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
@@ -95,8 +95,8 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             ima: Status::Wakaran,
             hitokoto: String::from(""),
             aikotoba: String::from("ぽんた"),
-            kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
-            kefu_made: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
+            kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T10:00:00+09:00").unwrap(),
+            kefu_made: DateTime::parse_from_rfc3339("2020-06-01T22:00:00+09:00").unwrap(),
 
             created_at: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),

@@ -17,6 +17,7 @@ custom:
   defaultStage: dev
   otherfile:
     dev: ${file(./conf/line-dev.yml)}
+    prd: ${file(./conf/line-prd.yml)}
 
 package:
   exclude:
@@ -74,6 +75,16 @@ functions:
     events:
       - http:
           path: line-comfull-co-jp-sendagi-bachan
+          method: post
+          cors: true
+  
+  lineComfullCoJpSendagiMinarai:
+    handler: bin/line
+    runtime: go1.x
+    environment: ${self:custom.otherfile.${self:provider.stage}}
+    events:
+      - http:
+          path: line-comfull-co-jp-sendagi-minarai
           method: post
           cors: true
   

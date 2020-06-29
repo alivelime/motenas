@@ -1,6 +1,6 @@
 pub mod model;
 
-use log::{debug, error};
+use log::{error, info};
 
 use chrono::{FixedOffset, Utc};
 use rusoto_core::Region;
@@ -26,11 +26,11 @@ impl Cache for DynamoDb {
                         if ct.date == today {
                             return Some(ct.token());
                         }
-                        debug!("expired cotoha token.");
+                        info!("expired cotoha token.");
                     }
                 }
                 None => {
-                    debug!("no cotoha token.()");
+                    info!("no cotoha token.()");
                 }
             },
             Err(err) => {
@@ -38,7 +38,7 @@ impl Cache for DynamoDb {
             }
         };
 
-        debug!("get_cotoha_token()");
+        info!("get_cotoha_token()");
         match P::get_access_token() {
             Ok(t) => {
                 match client.put_item(ParserToken::new(&t).put_item()).sync() {

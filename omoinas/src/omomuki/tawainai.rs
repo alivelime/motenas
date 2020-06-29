@@ -24,9 +24,6 @@ pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
     if let Some(a) = douitashimashite::new(omomuki) {
         return Some(a);
     }
-    if let Some(a) = ocha::new(omomuki) {
-        return Some(a);
-    }
     if let Some(a) = kizukai::new(omomuki) {
         return Some(a);
     }
@@ -40,6 +37,9 @@ pub fn new(omomuki: &Omomuki) -> Option<Box<dyn Tumori>> {
         return Some(a);
     }
     if let Some(a) = yobu::new(omomuki) {
+        return Some(a);
+    }
+    if let Some(a) = ocha::new(omomuki) {
         return Some(a);
     }
 

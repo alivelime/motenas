@@ -119,9 +119,10 @@ function UserOmise() {
                   case 0: return "未設定です";
                   case 1: return "お休みです";
                   case 2: return "快適です";
-                  case 3: return "賑わっています";
-                  case 4: return "大盛況です";
-                  case 5: return "貸切です";
+                  case 3: return "程よい感じです";
+                  case 4: return "賑わっています";
+                  case 5: return "大盛況です";
+                  case 6: return "貸切です";
                 }
               })()}
               </p>

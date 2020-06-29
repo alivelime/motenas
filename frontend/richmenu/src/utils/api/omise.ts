@@ -85,7 +85,9 @@ export function getOmise(
   reject: (err: Error)=>void,
 ) {
   fetcher<ResponseOmise>(
-    `${process.env.REACT_APP_API_HOST}/${env}/omise/${clientId}/${omiseId}`,
+    env === 'prd'
+      ? `${process.env.REACT_APP_PRD_API_HOST}/omise/${clientId}/${omiseId}`
+      : `${process.env.REACT_APP_DEV_API_HOST}/omise/${clientId}/${omiseId}`,
     {
       method: "GET",
       mode: "cors",
@@ -110,7 +112,9 @@ export function setOmise(
   reject: (err: Error
 )=>void) {
   fetcher<void>(
-    `${process.env.REACT_APP_LINE_API_HOST}/${env}/line-api/omise/set`,
+    env === 'prd'
+      ? `${process.env.REACT_APP_PRD_LINE_API_HOST}/line-api/omise/set`
+      : `${process.env.REACT_APP_DEV_LINE_API_HOST}/line-api/omise/set`,
     {
       method: "POST",
       mode: "cors",
@@ -130,7 +134,9 @@ export function setOmise(
 
 export function checkOmise(env: string, clientId: string, omiseId: string, charaId: string, accessToken: string) {
   fetcher<void>(
-    `${process.env.REACT_APP_LINE_API_HOST}/${env}/line-api/omise/check`,
+    env === 'prd'
+      ? `${process.env.REACT_APP_PRD_LINE_API_HOST}/line-api/omise/check`
+      : `${process.env.REACT_APP_DEV_LINE_API_HOST}/line-api/omise/check`,
     {
       method: "POST",
       mode: "cors",

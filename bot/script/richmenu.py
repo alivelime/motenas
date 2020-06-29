@@ -31,38 +31,42 @@ def main():
     omise_id = yml[chara+'_OMISE_NAME']
     order_group_id = yml[omise_id+'_ORDER_GROUP_ID']
     access_token = yml[chara+'_CHANNEL_TOKEN']
-    dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-1')
-    table = dynamodb.Table(env+'omise')
+    # dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-1')
+    # table = dynamodb.Table(env+'omise')
+
+    if env == "dev":
+        LIFF_HOST = 'https://liff.line.me/1654294151-W4nvdn0p/dev'
+    elif env == 'prd':
+        LIFF_HOST = 'https://liff.line.me/1654396683-AKjozgVr/prd'
+    else:
+        LIFF_HOST = ''
+
 
     line_bot_api = LineBotApi(access_token)
 
-    
-    # line_bot_api.unlink_rich_menu_from_user('U51dbd53df87a0c68fb90bad2af248fc7')
-    # line_bot_api.link_rich_menu_to_user('U51dbd53df87a0c68fb90bad2af248fc7', "richmenu-fc596275e19834630f8d730e42b7e21f")
-    # set_staff_richmenu(line_bot_api, "richmenu-04f8aaf42964b46ec96ee7743c740772" )
-    # return
-
-    cancel_staff_richmenu(line_bot_api,table)
     line_bot_api.cancel_default_rich_menu()
 
     delete_richmenu(line_bot_api)
-    id = create_user_richmenu(env, line_bot_api, chara_name)
+    id = create_user_richmenu(LIFF_HOST, line_bot_api, chara_name)
     upload_user_richmenu_image(line_bot_api, id)
 
     line_bot_api.set_default_rich_menu(id)
     
-    id = create_staff_richmenu(env, line_bot_api, chara_name)
+    # メインキャラじゃないならここでリターン
+    return 
+    
+    id = create_staff_richmenu(LIFF_HOST, line_bot_api, chara_name)
     upload_staff_richmenu_image(line_bot_api, id)
 
     set_staff_richmenu(line_bot_api, id )
 
-def cancel_staff_richmenu(line_bot_api, table):
     return
+
 def set_staff_richmenu(line_bot_api, id):
     # line_bot_api.link_rich_menu_to_user('', id)
     line_bot_api.link_rich_menu_to_users([
         'Ube2da389e4c223405286c03a32fefcb6',
-        'U15022dc52eb46f56a4ea7d7ee3fcaebe',
+        # 'U15022dc52eb46f56a4ea7d7ee3fcaebe',
     ], id)
     return
 
@@ -77,7 +81,7 @@ def delete_richmenu(line_bot_api):
         
     
                     
-def create_user_richmenu(env, line_bot_api, chara_name):
+def create_user_richmenu(LIFF_HOST, line_bot_api, chara_name):
     print("create user richmenu")
     user_menu = RichMenu(
         size=RichMenuSize(width=1200, height=405),
@@ -107,7 +111,7 @@ def create_user_richmenu(env, line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='omise',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/omise/'+chara_name,
+                    uri=LIFF_HOST+'/user/omise/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -119,7 +123,7 @@ def create_user_richmenu(env, line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='order',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/order/'+chara_name,
+                    uri=LIFF_HOST+'/user/order/'+chara_name,
                 ),
             ),
         ]
@@ -133,7 +137,7 @@ def upload_user_richmenu_image(line_bot_api, id):
     with open('script/image/richmenu/user.png', 'rb') as f:
         line_bot_api.set_rich_menu_image(id, 'image/png', f)
 
-def create_staff_richmenu(env, line_bot_api, chara_name):
+def create_staff_richmenu(LIFF_HOST, line_bot_api, chara_name):
     print("create staff richmenu")
     user_menu = RichMenu(
         size=RichMenuSize(width=1200, height=810),
@@ -163,7 +167,7 @@ def create_staff_richmenu(env, line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='omise',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/omise/'+chara_name,
+                    uri=LIFF_HOST+'/user/omise/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -175,7 +179,7 @@ def create_staff_richmenu(env, line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='order',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/user/order/'+chara_name,
+                    uri=LIFF_HOST+'/user/order/'+chara_name,
                 ),
             ),
             # 下の段
@@ -188,7 +192,7 @@ def create_staff_richmenu(env, line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='staff_maroudo',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/staff/maroudo/'+chara_name,
+                    uri=LIFF_HOST+'/staff/maroudo/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -200,7 +204,7 @@ def create_staff_richmenu(env, line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='staff_omise',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/staff/omise/'+chara_name,
+                    uri=LIFF_HOST+'/staff/omise/'+chara_name,
                 ),
             ),
             RichMenuArea(
@@ -212,7 +216,7 @@ def create_staff_richmenu(env, line_bot_api, chara_name):
                 ),
                 action=URIAction(
                     label='staff_order',
-                    uri='https://liff.line.me/1654294151-W4nvdn0p/'+env+'/staff/order/'+chara_name,
+                    uri=LIFF_HOST+'/staff/order/'+chara_name,
                 ),
             ),
         ]
