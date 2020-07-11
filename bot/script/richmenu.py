@@ -53,7 +53,7 @@ def main():
     line_bot_api.set_default_rich_menu(id)
     
     # メインキャラじゃないならここでリターン
-    return 
+    # return 
     
     id = create_staff_richmenu(LIFF_HOST, line_bot_api, chara_name)
     upload_staff_richmenu_image(line_bot_api, id)
@@ -67,6 +67,11 @@ def set_staff_richmenu(line_bot_api, id):
     line_bot_api.link_rich_menu_to_users([
         'Ube2da389e4c223405286c03a32fefcb6',
         # 'U15022dc52eb46f56a4ea7d7ee3fcaebe',
+        # 'U82c5d6f8e6c60a393e79ed7294c09202', # 間藤さん
+
+        # 藤井さんと矢部さん
+        'U60b51e87ae2bbf7f08340a6b429ccbf9',
+        'Ua3c455486f0f1f6f73fcce07a161d064',
     ], id)
     return
 

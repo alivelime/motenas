@@ -9,18 +9,38 @@ export interface Omise {
   clientId: string;
   omiseId: string;
   namae: string;
-  url: string;
+  link: Links;
   yotei: string;
+  oshirase: string;
   omotenashi: Set<string>;
+  oshiharai: Set<string>;
   otokoro: Address;
 
-  ima: number,
+  ima: Array<Ima>,
   hitokoto: "",
   kefuKara: Date;
   kefuMade: Date;
   createdAt: Date;
   updatedAt: Date;
+
+  isYasumi(): boolean;
 }
+export interface Links {
+  hp: string,
+  twitter: string,
+  facebook: string,
+  instagram: string,
+  line: string,
+}
+
+// 単に export interface Ima {...} とすると、
+// Attempted import error: 'Ima' is not exported from 'utils/api/omise'.
+// とか言われる。というか今はエラーにならない。。意味わからん。。
+export interface Ima {
+  namae: string,
+  status: string,
+}
+
 export interface Address {
   country: string;
   postcode: number;
@@ -35,13 +55,19 @@ export interface Address {
 
 export interface OmiseForm {
   namae: string,
-  ima: number,
+  ima: Array<Ima>,
   hitokoto: string,
   kefuKara: number,
   kefuMade: number,
   omotenashi: Set<string>,
+  oshiharai: Set<string>,
   yotei: string,
-  url: string,
+  oshirase: string,
+  hp: string,
+  twitter: string,
+  facebook: string,
+  instagram: string,
+  line: string,
   postcode: number,
   prefcode: number,
   city: string,
@@ -54,9 +80,17 @@ export function newOmise(): Omise {
     clientId: "",
     omiseId: "",
     namae: "",
-    url: "",
+    link: {
+      hp: "",
+      twitter: "",
+      facebook: "",
+      instagram: "",
+      line: "",
+    },
     yotei: "",
+    oshirase: "",
     omotenashi: new Set<string>([]),
+    oshiharai: new Set<string>([]),
     otokoro: {
       country: "",
       postcode: 1000001,
@@ -68,12 +102,15 @@ export function newOmise(): Omise {
       building: "",
       access: "",
     },
-    ima: 0,
+    ima: new Array<Ima>(),
     hitokoto: "",
     kefuKara: new Date(),
     kefuMade: new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),
+    isYasumi: function() {
+      return this.ima.every(ima => ima.status === "Yasumi")
+    },
   };
 }
 
@@ -96,6 +133,8 @@ export function getOmise(
   )
     .then(res => {
       res.omise.omotenashi = new Set(res.omise.omotenashi)
+      res.omise.oshiharai = new Set(res.omise.oshiharai)
+      res.omise.isYasumi = newOmise().isYasumi
       resolve(res.omise)
     })
     .catch(err => reject(err))
@@ -125,6 +164,7 @@ export function setOmise(
         charaUri: `${clientId}/${omiseId}/${charaId}`,
         postcode: Number(omise.postcode),
         omotenashi: Array.from(omise.omotenashi),
+        oshiharai: Array.from(omise.oshiharai),
       }),
     }
   )

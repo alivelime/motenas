@@ -75,7 +75,7 @@ function App() {
             <Grid container alignItems="center" justify="center">
               <Grid item xs={8}>
                 <Paper>只今開発中 : 7月末公開予定?</Paper>
-              </Grid>   
+              </Grid>
             </Grid>
           </Route>
 

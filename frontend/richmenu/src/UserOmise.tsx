@@ -12,16 +12,14 @@ import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import Divider from '@material-ui/core/Divider';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faCoffee,
-  faRestroom,
-  faSmokingBan,
-  faSmoking,
-  faWifi,
-  faBeer,
-  faPlug,
-} from '@fortawesome/free-solid-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fab } from '@fortawesome/free-brands-svg-icons';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';;;;
+
+
+library.add(fab, fas, far);
 
 
 interface RouteParams {
@@ -62,6 +60,27 @@ const useStyles = makeStyles((theme) => ({
       margin: '0 0.2rem',
     }
   },
+  linkIcon: {
+    '& > a': {
+      fontSize: "2rem",
+      margin: '0 0.2rem',
+    }
+  },
+  hp: {
+    color: theme.palette.text.primary,
+  },
+  twitter: {
+    color: "#1da1f2",
+  },
+  facebook: {
+    color: "#4267b2",
+  },
+  instagram: {
+    color: "#cf2e92",
+  },
+  line: {
+    color: "#00B900",
+  },
 }));
 
 
@@ -90,7 +109,7 @@ function UserOmise() {
   const classes = useStyles();
   return (
     <Grid container className={classes.root} spacing={3}>
-      <Grid item xs={12} justify="center">
+      <Grid item xs={12}>
         <Paper variant="outlined" elevation={3} className={classes.paper}>
           <Typography variant="h1" className={classes.title}>{omise.namae}</Typography>
         </Paper>
@@ -105,67 +124,44 @@ function UserOmise() {
               <p>本日の営業時間</p>
             </Grid>
             <Grid item xs={8}>
-              <p>{omise.ima === 1 ? "本日休業" : omise.kefuKara.getHours() +":00 〜 "+omise.kefuMade.getHours()+":00"}</p>
+              <p>{omise.isYasumi()
+                ? "本日休業"
+                : omise.kefuKara.getHours() +":00 〜 "
+                +(omise.kefuKara.getDay() === omise.kefuMade.getDay() ? '' : '翌')
+                +omise.kefuMade.getHours()+":00"}</p>
             </Grid>
           </Grid>
           <Divider />
-          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
-            <Grid item xs={4} className={classes.head}>
-              <p>混み具合</p>
-            </Grid>
-            <Grid item xs={8}>
-              <p>{(() => {
-                switch (omise.ima) {
-                  case 0: return "未設定です";
-                  case 1: return "お休みです";
-                  case 2: return "快適です";
-                  case 3: return "程よい感じです";
-                  case 4: return "賑わっています";
-                  case 5: return "大盛況です";
-                  case 6: return "貸切です";
-                }
-              })()}
-              </p>
-            </Grid>
-          </Grid>
+          {
+            omise.ima.map(ima =>
+              <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+                <Grid item xs={4} className={classes.head}>
+                  <p>{ima.namae || "混み具合"}</p>
+                </Grid>
+                <Grid item xs={8}>
+                  <p>
+                    {(() => {
+                      switch (ima.status) {
+                        case "Wakaran": return "未設定です";
+                        case "Yasumi": return "お休みです";
+                        case "Hima": return "快適です";
+                        case "Bochibochi": return "程よい感じです";
+                        case "Isogashi": return "賑わっています";
+                        case "Mansekig": return "大盛況です";
+                        case "Kashikiri": return "貸切です";
+                      }
+                    })()}
+                  </p>
+                </Grid>
+              </Grid>
+              )
+          }
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
               <p>今日の一言</p>
             </Grid>
             <Grid item xs={8}>
               <p>{omise.hitokoto}</p>
-            </Grid>
-          </Grid>
-          <Divider />
-          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
-            <Grid item xs={4} className={classes.head}>
-              <p>おもてなし</p>
-            </Grid>
-            <Grid item xs={8}>
-              <p className={classes.omiseIcon}>
-              {Array.from(omise.omotenashi).map(s => {switch (s) {
-                case "cafe": return <span><FontAwesomeIcon icon={faCoffee} /></span>;
-                case "smoking": return <span><FontAwesomeIcon icon={faSmoking} /></span>;
-                case "non-smoking": return <span><FontAwesomeIcon icon={faSmokingBan} /></span>;
-                case "restroom": return <span><FontAwesomeIcon icon={faRestroom} /></span>;
-                case "wifi": return <span><FontAwesomeIcon icon={faWifi} /></span>;
-                case "alcohol": return <span><FontAwesomeIcon icon={faBeer} /></span>;
-                case "power": return <span><FontAwesomeIcon icon={faPlug} /></span>;
-                default: return null;
-              }})}
-              </p>
-              <p className={classes.omiseOmotenashi}>
-              {Array.from(omise.omotenashi).map(s => {switch (s) {
-                case "cafe": return null;
-                case "smoking": return null;
-                case "non-smoking": return null;
-                case "restroom": return null;
-                case "wifi": return null;
-                case "alcohol": return null;
-                case "power": return null;
-                default: return <span>{s}</span>;
-              }})}
-              </p>
             </Grid>
           </Grid>
         </Paper>
@@ -186,10 +182,88 @@ function UserOmise() {
           <Divider />
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
-              <p>HP</p>
+              <p>お知らせ</p>
             </Grid>
             <Grid item xs={8}>
-              <p><a href="{omise.url}">{omise.url}</a></p>
+              <p>{omise.oshirase}</p>
+            </Grid>
+          </Grid>
+          <Divider />
+          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+            <Grid item xs={4} className={classes.head}>
+              <p>サービス</p>
+            </Grid>
+            <Grid item xs={8}>
+              <p className={classes.omiseIcon}>
+              {Array.from(omise.omotenashi).map(s => {switch (s) {
+                case "cafe": return <span><FontAwesomeIcon icon={["fas", "coffee"]} /></span>;
+                case "smoking": return <span><FontAwesomeIcon icon={["fas", "smoking"]} /></span>;
+                case "non-smoking": return <span><FontAwesomeIcon icon={["fas", "smoking-ban"]} /></span>;
+                case "restroom": return <span><FontAwesomeIcon icon={["fas", "restroom"]} /></span>;
+                case "wifi": return <span><FontAwesomeIcon icon={["fas", "wifi"]} /></span>;
+                case "alcohol": return <span><FontAwesomeIcon icon={["fas", "beer"]} /></span>;
+                case "plug": return <span><FontAwesomeIcon icon={["fas", "plug"]} /></span>;
+                default: return null;
+              }})}
+              </p>
+              <p className={classes.omiseOmotenashi}>
+              {Array.from(omise.omotenashi).map(s => {switch (s) {
+                case "cafe": return null;
+                case "smoking": return null;
+                case "non-smoking": return null;
+                case "restroom": return null;
+                case "wifi": return null;
+                case "alcohol": return null;
+                case "plug": return null;
+                default: return <span>{s}</span>;
+              }})}
+              </p>
+            </Grid>
+          </Grid>
+          <Divider />
+          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+            <Grid item xs={4} className={classes.head}>
+              <p>決済方法</p>
+            </Grid>
+            <Grid item xs={8}>
+              <p className={classes.omiseIcon}>
+              {Array.from(omise.oshiharai).map(s => {switch (s) {
+                case "cash": return <span><FontAwesomeIcon icon={["fas", "yen-sign"]} /></span>;
+                case "visa": return <span><FontAwesomeIcon icon={['fab', 'cc-visa']} /></span>;
+                case "master": return <span><FontAwesomeIcon icon={['fab', 'cc-mastercard']} /></span>;
+                case "jcb": return <span><FontAwesomeIcon icon={['fab', 'cc-jcb']} /></span>;
+                default: return null;
+              }})}
+              </p>
+              <p className={classes.omiseOmotenashi}>
+              {Array.from(omise.oshiharai).map(s => {switch (s) {
+                case "cash": return null
+                case "visa": return null
+                case "master": return null
+                case "jcb": return null
+                default: return <span>{s}</span>;
+              }})}
+              </p>
+            </Grid>
+          </Grid>
+          <Divider />
+          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+            <Grid item xs={4} className={classes.head}>
+              <p>HP/SNS</p>
+            </Grid>
+            <Grid item xs={8}>
+              <p className={classes.linkIcon}>
+                {omise.link.hp &&
+                <a href="{omise.link.hp}"><FontAwesomeIcon icon={["fas", "mobile-alt"]} className={classes.hp}/></a>}
+                {omise.link.twitter &&
+                <a href="{omise.link.twitter}"><FontAwesomeIcon icon={['fab', 'twitter-square']} className={classes.twitter}/></a>}
+                {omise.link.facebook &&
+                <a href="{omise.link.facebook}"><FontAwesomeIcon icon={['fab', 'facebook-square']} className={classes.facebook}/></a>}
+                {omise.link.instagram &&
+                <a href="{omise.link.instagram}"><FontAwesomeIcon icon={['fab', 'instagram-square']} className={classes.instagram}/></a>}
+                {omise.link.line &&
+                <a href="{omise.link.line}"><FontAwesomeIcon icon={['fab', 'line']} className={classes.line} /></a>}
+              </p>
             </Grid>
           </Grid>
           <Divider />

@@ -1,3 +1,4 @@
+use log::error;
 use std::collections::HashSet;
 
 use chrono::{DateTime, FixedOffset};
@@ -21,17 +22,18 @@ pub struct Omise {
     pub client_id: String,
     pub omise_id: String,
     pub namae: String,
-    pub url: String,
+    pub link: Links,
     pub yotei: String,
+    pub oshirase: String,
     pub otokoro: Address,
 
     #[serde(skip)]
     pub oshinagaki: Vec<Mono>,
     pub omotenashi: HashSet<String>,
+    pub oshiharai: HashSet<String>,
 
-    pub ima: Status,
+    pub ima: Vec<Ima>,
     pub hitokoto: String,
-    pub aikotoba: String,
     pub kefu_kara: DateTime<FixedOffset>,
     pub kefu_made: DateTime<FixedOffset>,
 
@@ -46,15 +48,16 @@ impl Omise {
             client_id: client_id,
             omise_id: omise_id,
             namae: String::from(""),
-            url: String::from(""),
+            link: Links::new(),
             yotei: String::from(""),
+            oshirase: String::from(""),
             otokoro: Address::new(),
             oshinagaki: Vec::new(),
             omotenashi: HashSet::new(),
+            oshiharai: HashSet::new(),
 
-            ima: Status::Wakaran,
+            ima: Vec::new(),
             hitokoto: String::from(""),
-            aikotoba: String::from(""),
             kefu_kara: DateTime::parse_from_rfc3339("2020-01-01T00:00:00+09:00").unwrap(),
             kefu_made: DateTime::parse_from_rfc3339("2020-01-01T00:00:00+09:00").unwrap(),
 
@@ -78,6 +81,59 @@ pub enum Status {
     Isogashi,
     Ippai,
     Kashikiri,
+}
+use std::str::FromStr;
+impl FromStr for Status {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Wakaran" => Ok(Status::Wakaran),
+            "Yasumi" => Ok(Status::Yasumi),
+            "Hima" => Ok(Status::Hima),
+            "Bochibochi" => Ok(Status::Bochibochi),
+            "Isogashi" => Ok(Status::Isogashi),
+            "Ippai" => Ok(Status::Ippai),
+            "Kashikiri" => Ok(Status::Kashikiri),
+            _ => {
+                error!("unkown status {}", s);
+                Err(())
+            }
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct Ima {
+    pub namae: String,
+    pub status: Status,
+}
+impl Ima {
+    pub fn new() -> Ima {
+        return Ima {
+            namae: String::from(""),
+            status: Status::Wakaran,
+        };
+    }
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug)]
+pub struct Links {
+    pub hp: String,
+    pub twitter: String,
+    pub facebook: String,
+    pub instagram: String,
+    pub line: String,
+}
+impl Links {
+    pub fn new() -> Links {
+        return Links {
+            hp: String::from(""),
+            twitter: String::from(""),
+            facebook: String::from(""),
+            instagram: String::from(""),
+            line: String::from(""),
+        };
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]

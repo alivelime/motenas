@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use chrono::{DateTime, Datelike, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::model::omise::{OmiseRepo, Status};
+use crate::model::omise::{Ima, Links, OmiseRepo, Status};
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
@@ -16,15 +16,23 @@ pub struct Event {
     user_id: String,
 
     namae: String,
-    ima: i32,
+    ima: Vec<Ima>,
     hitokoto: String,
     #[serde(rename = "kefuKara")]
     kefu_kara: i32,
     #[serde(rename = "kefuMade")]
     kefu_made: i32,
     omotenashi: HashSet<String>,
+    oshiharai: HashSet<String>,
     yotei: String,
-    url: String,
+    oshirase: String,
+
+    hp: String,
+    twitter: String,
+    facebook: String,
+    instagram: String,
+    line: String,
+
     postcode: u32,
     prefcode: u32,
     city: String,
@@ -58,16 +66,7 @@ pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
     }
 
     omise.namae = e.namae;
-    omise.ima = match e.ima {
-        0 => Status::Wakaran,
-        1 => Status::Yasumi,
-        2 => Status::Hima,
-        3 => Status::Bochibochi,
-        4 => Status::Isogashi,
-        5 => Status::Ippai,
-        6 => Status::Kashikiri,
-        _ => return Err(format!("invalid status. {}", &e.ima)),
-    };
+    omise.ima = e.ima;
     omise.hitokoto = e.hitokoto;
 
     let now = Utc::now().with_timezone(&FixedOffset::east(9 * 3600));
@@ -98,7 +97,14 @@ pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
 
     omise.omotenashi = e.omotenashi;
     omise.yotei = e.yotei;
-    omise.url = e.url;
+    omise.oshirase = e.oshirase;
+    omise.link = Links {
+        hp: e.hp,
+        twitter: e.twitter,
+        facebook: e.facebook,
+        instagram: e.instagram,
+        line: e.line,
+    };
     omise.otokoro.postcode = e.postcode;
     omise.otokoro.prefcode = e.prefcode;
     omise.otokoro.city = e.city;

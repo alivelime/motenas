@@ -24,19 +24,29 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 	param := &struct {
 		CharaURI string `json:"charaUri"`
 
-		Namae      string   `json:"namae"`
-		Ima        int      `json:"ima"`
+		Namae string `json:"namae"`
+		Ima   []struct {
+			Namae  string `json:"namae"`
+			Status string `json:"status"`
+		} `json:"ima"`
 		Hitokoto   string   `json:"hitokoto"`
 		KefuKara   int      `json:"kefuKara"`
 		KefuMade   int      `json:"kefuMade"`
 		Omotenashi []string `json:"omotenashi"`
+		Oshiharai  []string `json:"oshiharai"`
 		Yotei      string   `json:"yotei"`
-		URL        string   `json:"url"`
-		Postcode   int      `json:"postcode"`
-		Prefcode   int      `json:"prefcode"`
-		City       string   `json:"city"`
-		Street     string   `json:"street"`
-		Building   string   `json:"building"`
+		Oshirase   string   `json:"oshirase"`
+		HP         string   `json:"hp"`
+		Twitter    string   `json:"twitter"`
+		Facebook   string   `json:"facebook"`
+		Instagram  string   `json:"instagram"`
+		Line       string   `json:"line"`
+
+		Postcode int    `json:"postcode"`
+		Prefcode int    `json:"prefcode"`
+		City     string `json:"city"`
+		Street   string `json:"street"`
+		Building string `json:"building"`
 
 		//  ラムダ用パラメータ
 		ClientID string `json:"clientId"`

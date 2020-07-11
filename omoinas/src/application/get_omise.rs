@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
-use crate::model::omise::{Address as MAddress, Omise as MOmise, OmiseRepo};
+use crate::model::omise::{Address as MAddress, Ima, Links, Omise as MOmise, OmiseRepo};
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
@@ -22,13 +22,15 @@ pub struct Omise {
     #[serde(rename = "omiseId")]
     pub omise_id: String,
     pub namae: String,
-    pub url: String,
+    pub link: Links,
     pub yotei: String,
+    pub oshirase: String,
     pub otokoro: Address,
 
     pub omotenashi: HashSet<String>,
+    pub oshiharai: HashSet<String>,
 
-    pub ima: u32,
+    pub ima: Vec<Ima>,
     pub hitokoto: String,
     #[serde(rename = "kefuKara")]
     pub kefu_kara: DateTime<FixedOffset>,
@@ -71,12 +73,14 @@ impl Omise {
             client_id: m.client_id,
             omise_id: m.omise_id,
             namae: m.namae,
-            url: m.url,
+            link: m.link,
             yotei: m.yotei,
+            oshirase: m.oshirase,
             otokoro: Address::from(m.otokoro),
             omotenashi: m.omotenashi,
+            oshiharai: m.oshiharai,
 
-            ima: m.ima as u32,
+            ima: m.ima,
             hitokoto: m.hitokoto,
             kefu_kara: m.kefu_kara,
             kefu_made: m.kefu_made,

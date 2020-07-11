@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray} from "react-hook-form";
 
-import {getOmise, Omise, setOmise, OmiseForm} from 'utils/api/omise';
+import {getOmise, Omise, setOmise, OmiseForm, Ima} from 'utils/api/omise';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -16,6 +16,14 @@ import Paper from '@material-ui/core/Paper';
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
 
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fab } from '@fortawesome/free-brands-svg-icons';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';;;;
+
+
+library.add(fab, fas, far);
 
 interface RouteParams {
     env: string,
@@ -54,17 +62,50 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     margin: theme.spacing(2),
   },
+  flex: {
+    flex: 1,
+  },
+
+  linkIcon: {
+    margin: '0 0.5rem',
+    '& > span': {
+      fontSize: "2rem",
+    }
+  },
+  hp: {
+    color: theme.palette.text.primary,
+  },
+  twitter: {
+    color: "#1da1f2",
+  },
+  facebook: {
+    color: "#4267b2",
+  },
+  instagram: {
+    color: "#cf2e92",
+  },
+  line: {
+    color: "#00B900",
+  },
 }));
 
 const defaultValues: OmiseForm = {
   namae: "",
-  ima: 0,
+  ima: new Array<Ima>(
+    {namae: "混み具合", status: "Hima"},
+  ),
   kefuKara: 10,
   kefuMade: 18,
   hitokoto: "",
   omotenashi: new Set<string>([]),
+  oshiharai: new Set<string>([]),
   yotei: "",
-  url: "",
+  oshirase: "",
+  hp: "",
+  twitter: "",
+  facebook: "",
+  instagram: "",
+  line: "",
   postcode: 1001001,
   prefcode: 1,
   city: "",
@@ -89,14 +130,26 @@ const service = [
   "レンタル",
   "コピー",
 ]
+const payment = [
+  "jcb",
+  "visa",
+  "master",
+  "cash",
+  "suica",
+]
 
 function StaffOmise() {
-  console.log("aaaa")
+  console.log("render")
   const {env, clientId, omiseId, charaId} = useParams<RouteParams>();
 
   const [token, setToken] = useState("");
   const [omotenashi, setOmotenashi] = useState(new Set<string>([]));
+  const [oshiharai, setOshiharai] = useState(new Set<string>([]));
   const { register, handleSubmit, reset, control, getValues, errors } = useForm({defaultValues});
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "ima"
+  });
   const [status, setStatus] = useState({
     open: false,
     type: "success",
@@ -109,11 +162,17 @@ function StaffOmise() {
         namae: omise.namae,
         ima: omise.ima,
         kefuKara: omise.kefuKara.getHours(),
-        kefuMade: (omise.kefuKara.getDay() === omise.kefuMade.getDay() ? omise.kefuMade.getHours() : omise.kefuMade.getDay() + 24),
+        kefuMade: (omise.kefuKara.getDay() === omise.kefuMade.getDay() ? omise.kefuMade.getHours() : omise.kefuMade.getHours() + 24),
         hitokoto: omise.hitokoto,
         omotenashi: omise.omotenashi,
+        oshiharai: omise.oshiharai,
         yotei: omise.yotei,
-        url: omise.url,
+        oshirase: omise.oshirase,
+        hp: omise.link.hp,
+        twitter: omise.link.twitter,
+        facebook: omise.link.facebook,
+        instagram: omise.link.instagram,
+        line: omise.link.line,
         postcode: omise.otokoro.postcode,
         prefcode: omise.otokoro.prefcode,
         city: omise.otokoro.city,
@@ -121,6 +180,7 @@ function StaffOmise() {
         building: omise.otokoro.building,
       })
       setOmotenashi(omise.omotenashi)
+      setOshiharai(omise.oshiharai)
     }, (err: Error) => {
       setStatus({
         open: true,
@@ -134,10 +194,15 @@ function StaffOmise() {
       let accessToken = ""
       if (!liff.isLoggedIn()) {
         if (process.env.NODE_ENV === "production") {
-          liff.login({})
+          liff.login({redirectUri: window.location.href})
         }
       } else {
         accessToken = liff.getAccessToken()
+        if (env !== "prd") {
+          liff.getProfile().then(profile => {
+            console.log(profile)
+          })
+        }
         setToken(accessToken)
       }
       load()
@@ -145,13 +210,21 @@ function StaffOmise() {
   },[env, clientId, omiseId, charaId])
 
 
-  function handleSelect(name: string) {
-    let omotenashi = new Set<string>(getValues().omotenashi)
+  function handleSelectOmotenashi(name: string) {
+    let omotenashi = new Set<string>(getValues("omotenashi"))
      omotenashi.has(name)
       ? omotenashi.delete(name)
       : omotenashi.add(name)
     setOmotenashi(omotenashi)
     return omotenashi
+  }
+  function handleSelectOshiharai(name: string) {
+    let oshiharai = new Set<string>(getValues("oshiharai"))
+     oshiharai.has(name)
+      ? oshiharai.delete(name)
+      : oshiharai.add(name)
+    setOshiharai(oshiharai)
+    return oshiharai
   }
 
   const handleClose = () => {
@@ -200,30 +273,51 @@ function StaffOmise() {
           </Grid>
           <Grid item xs={12}>
             <Paper variant="outlined" elevation={3} className={classes.paper}>
-              <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
-                <Grid item xs={4} className={classes.head}>
-                  <p>混み具合</p>
-                </Grid>
-                <Grid item xs={8}>
-                  <Controller
-                    as={
-                      <Select>
-                        <MenuItem value={0}>未設定</MenuItem>
-                        <MenuItem value={1}>休み</MenuItem>
-                        <MenuItem value={2}>空いてる</MenuItem>
-                        <MenuItem value={3}>ぼちぼち</MenuItem>
-                        <MenuItem value={4}>混雑</MenuItem>
-                        <MenuItem value={5}>満席</MenuItem>
-                        <MenuItem value={6}>貸切</MenuItem>
-                      </Select>
-                    }
-                    control={control}
-                    name="ima"
-                    fullWidth
-                  />
-                  {errors.ima && errors.ima.message}
-                </Grid>
+							{fields.map((item, i) =>
+								<Grid key={item.id} container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+									<Grid item xs={4} className={classes.head}>
+										<Input
+											type="text"
+											placeholder="区分け"
+											name={`ima[${i}].namae`}
+                      defaultValue={item.namae} // これ必須
+											fullWidth
+											inputRef={register({required: true, maxLength: 144})}
+										/>
+										{errors.ima && errors.ima[i]?.namae?.message}
+									</Grid>
+									<Grid item xs={8}>
+                    <Grid container alignItems="center">
+                      <Controller
+                        as={
+                          <Select>
+                            <MenuItem value={"Wakaran"}>未設定</MenuItem>
+                            <MenuItem value={"Yasumi"}>休み</MenuItem>
+                            <MenuItem value={"Hima"}>空いてる</MenuItem>
+                            <MenuItem value={"Bochibochi"}>ぼちぼち</MenuItem>
+                            <MenuItem value={"Isogashi"}>混雑</MenuItem>
+                            <MenuItem value={"Manseki"}>満席</MenuItem>
+                            <MenuItem value={"Kashikiri"}>貸切</MenuItem>
+                          </Select>
+                        }
+                        className={classes.flex}
+                        control={control}
+                        name={`ima[${i}].status`}
+                        defaultValue={item.status} // これ必須
+                      />
+                      <Button className={classes.button} variant="contained" color="secondary" onClick={() => remove(i)}>削除</Button>
+                    </Grid>
+                    {errors.ima && errors.ima[i]?.status?.message}
+									</Grid>
+								</Grid>
+							)
+							}
+              <Divider />
+              <Grid container spacing={0} justify="flex-end" alignItems="center">
+                混雑区分 : 
+                <Button className={classes.button} variant="contained" color="primary" onClick={() => append({namae: "区分け", status:"Wakaran"})}>追加</Button>
               </Grid>
+
               <Divider />
               <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
                 <Grid item xs={4} className={classes.head}>
@@ -259,7 +353,7 @@ function StaffOmise() {
                     control={control}
                     name="kefuKara"
                   />
-                  - 
+                  -
                   <Controller
                     as={
                       <Select name="made" ref={register}>
@@ -316,7 +410,7 @@ function StaffOmise() {
               <Divider />
               <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
                 <Grid item xs={4} className={classes.head}>
-                  <p>おもてなし</p>
+                  <p>サービス</p>
                 </Grid>
                 <Grid item xs={8} className="classes.checkboxGroup">
                   {service.map(name => (
@@ -327,7 +421,30 @@ function StaffOmise() {
                           control={control}
                           checked={omotenashi.has(name)}
                           name="omotenashi"
-                          onChange={() => handleSelect(name)}
+                          onChange={() => handleSelectOmotenashi(name)}
+                        />
+                      }
+                      key={name}
+                      label={name}
+                    />
+                  ))}
+                </Grid>
+              </Grid>
+              <Divider />
+              <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+                <Grid item xs={4} className={classes.head}>
+                  <p>お支払い</p>
+                </Grid>
+                <Grid item xs={8} className="classes.checkboxGroup">
+                  {payment.map(name => (
+                    <FormControlLabel
+                      control={
+                        <Controller
+                          as={<Checkbox />}
+                          control={control}
+                          checked={oshiharai.has(name)}
+                          name="oshiharai"
+                          onChange={() => handleSelectOshiharai(name)}
                         />
                       }
                       key={name}
@@ -342,7 +459,7 @@ function StaffOmise() {
                   <p>営業時間</p>
                 </Grid>
                 <Grid item xs={8}>
-                  <TextField 
+                  <TextField
                     name="yotei"
                     placeholder="平日:10:00 - 23:00\n土日祝:10:00 - 23:00\n定休日: なし"
                     fullWidth
@@ -354,11 +471,69 @@ function StaffOmise() {
               <Divider />
               <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
                 <Grid item xs={4} className={classes.head}>
-                  <p>ホームページ</p>
+                  <p>お知らせ</p>
                 </Grid>
                 <Grid item xs={8}>
-                  <Input type="url" placeholder="https://www.google.com/" name="url" fullWidth inputRef={register} />
-                  {errors.url && errors.url.message}
+                  <TextField
+                    name="oshirase"
+                    placeholder="コロナウイルスにかかる対応について"
+                    fullWidth
+                    inputRef={register({required: true, maxLength: 1024})}
+                  />
+                  {errors.oshirase && errors.oshirase.message}
+                </Grid>
+              </Grid>
+              <Divider />
+              <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+                <Grid item xs={4} className={classes.head}>
+                  <p>HP・SNS</p>
+                </Grid>
+                <Grid item xs={8}>
+                  <div>
+                    <Grid container alignItems="center">
+                      <p className={classes.linkIcon}>
+                        <span><FontAwesomeIcon icon={["fas", "mobile-alt"]} className={classes.hp}/></span>
+                      </p>
+                      <Input type="hp" placeholder="ホームページのURL" name="hp" className={classes.flex} inputRef={register} />
+                    </Grid>
+                    {errors.hp && errors.hp.message}
+                  </div>
+                  <div>
+                    <Grid container alignItems="center">
+                      <p className={classes.linkIcon}>
+                        <span><FontAwesomeIcon icon={['fab', 'twitter-square']} className={classes.twitter}/></span>
+                      </p>
+                      <Input type="twitter" placeholder="https://www.twitter.com/" name="twitter" className={classes.flex} inputRef={register} />
+                    </Grid>
+                    {errors.twitter && errors.twitter.message}
+                  </div>
+                  <div>
+                    <Grid container alignItems="center">
+                      <p className={classes.linkIcon}>
+                        <span><FontAwesomeIcon icon={['fab', 'facebook-square']} className={classes.facebook}/></span>
+                      </p>
+                      <Input type="facebook" placeholder="https://www.facebook.com/" name="facebook" className={classes.flex} inputRef={register} />
+                    </Grid>
+                    {errors.facebook && errors.facebook.message}
+                  </div>
+                  <div>
+                    <Grid container alignItems="center">
+                      <p className={classes.linkIcon}>
+                        <span><FontAwesomeIcon icon={['fab', 'instagram-square']} className={classes.instagram}/></span>
+                      </p>
+                      <Input type="instagram" placeholder="https://www.instagram.com/" name="instagram" className={classes.flex} inputRef={register} />
+                    </Grid>
+                    {errors.instagram && errors.instagram.message}
+                  </div>
+                  <div>
+                    <Grid container alignItems="center">
+                      <p className={classes.linkIcon}>
+                        <span><FontAwesomeIcon icon={['fab', 'line']} className={classes.line} /></span>
+                      </p>
+                      <Input type="line" placeholder="LINEの友達追加URL" name="line" className={classes.flex} inputRef={register} />
+                    </Grid>
+                    {errors.line && errors.line.message}
+                  </div>
                 </Grid>
               </Grid>
               <Divider />
