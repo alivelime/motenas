@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use chrono::{DateTime, Datelike, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::model::omise::{Ima, Links, OmiseRepo, Status};
+use crate::model::omise::{Ima, Links, OmiseRepo};
 
 #[derive(Deserialize, Debug)]
 pub struct Event {

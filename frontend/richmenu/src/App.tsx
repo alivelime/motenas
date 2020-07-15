@@ -68,10 +68,10 @@ function App() {
           <Route path="/" exact>
             This is minarai chan liff.
           </Route>
-          <Route path="/:env/user/omise/:clientId/:omiseId/:charaId" exact>
+          <Route path="/:env/user/omise/:clientId/:omiseId" exact>
             <UserOmise />
           </Route>
-          <Route path="/:env/user/order/:clientId/:omiseId/:charaId" exact>
+          <Route path="/:env/user/order/:clientId/:omiseId" exact>
             <Grid container alignItems="center" justify="center">
               <Grid item xs={8}>
                 <Paper>只今開発中 : 7月末公開予定?</Paper>
@@ -79,7 +79,7 @@ function App() {
             </Grid>
           </Route>
 
-          <Route path="/:env/staff/omise/:clientId/:omiseId/:charaId" exact>
+          <Route path="/:env/staff/omise/:clientId/:omiseId" exact>
             <StaffOmise />
           </Route>
         </Switch>

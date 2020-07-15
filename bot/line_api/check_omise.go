@@ -13,23 +13,17 @@ import (
 func checkOmise(request events.APIGatewayProxyRequest) (string, error) {
 
 	param := &struct {
-		CharaID     string `json:"charaId"`
+		OmiseURI    string `json:"omiseUri"`
 		AccessToken string `json:"accessToken"`
 	}{}
 	if err := json.Unmarshal([]byte(request.Body), param); err != nil {
 		return "", err
 	}
-	chara := cebab2Camel(param.CharaID)
-	omise := os.Getenv(chara + "_OMISE_NAME")
-	mainChara := os.Getenv(omise + "_MAIN_CHARA")
+	omise := cebab2Camel(param.OmiseURI)
 
 	bot, err := NewLine(
-		os.Getenv(chara+"_DISPLAY_NAME"),
-		os.Getenv(chara+"_ICON_URL"),
-		os.Getenv(chara+"_CHANNEL_SECRET"),
-		os.Getenv(chara+"_CHANNEL_TOKEN"),
-		os.Getenv(mainChara+"_CHANNEL_SECRET"),
-		os.Getenv(mainChara+"_CHANNEL_TOKEN"),
+		os.Getenv(omise+"_CHANNEL_SECRET"),
+		os.Getenv(omise+"_CHANNEL_TOKEN"),
 		os.Getenv(omise+"_STAFF_GROUP_ID"),
 		os.Getenv(omise+"_ORDER_GROUP_ID"),
 	)
@@ -39,8 +33,8 @@ func checkOmise(request events.APIGatewayProxyRequest) (string, error) {
 	}
 
 	client, err := social.New(
-		os.Getenv(chara+"_CHANNEL_ID"),
-		os.Getenv(chara+"_CHANNEL_SECRET"),
+		os.Getenv(omise+"_CHANNEL_ID"),
+		os.Getenv(omise+"_CHANNEL_SECRET"),
 	)
 	if err != nil {
 		log.Println(err)

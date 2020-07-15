@@ -26,7 +26,6 @@ interface RouteParams {
     env: string,
     clientId: string,
     omiseId: string,
-    charaId: string,
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -85,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 function UserOmise() {
-  const {env, clientId, omiseId, charaId} = useParams<RouteParams>();
+  const {env, clientId, omiseId} = useParams<RouteParams>();
   const [omise, setOmise] = useState(newOmise());
 
   useEffect(() => {
@@ -100,10 +99,10 @@ function UserOmise() {
       }
       getOmise(env, clientId, omiseId, (omise) => setOmise(omise),(err: Error)=>{console.log(err)})
       if (process.env.NODE_ENV === "production") {
-        checkOmise(env, clientId, omiseId, charaId, accessToken);
+        checkOmise(env, clientId, omiseId, accessToken);
       }
     })
-  },[env, clientId, omiseId, charaId])
+  },[env, clientId, omiseId])
 
 
   const classes = useStyles();
@@ -147,7 +146,7 @@ function UserOmise() {
                         case "Hima": return "快適です";
                         case "Bochibochi": return "程よい感じです";
                         case "Isogashi": return "賑わっています";
-                        case "Mansekig": return "大盛況です";
+                        case "Manseki": return "満席です";
                         case "Kashikiri": return "貸切です";
                       }
                     })()}
@@ -232,6 +231,11 @@ function UserOmise() {
                 case "visa": return <span><FontAwesomeIcon icon={['fab', 'cc-visa']} /></span>;
                 case "master": return <span><FontAwesomeIcon icon={['fab', 'cc-mastercard']} /></span>;
                 case "jcb": return <span><FontAwesomeIcon icon={['fab', 'cc-jcb']} /></span>;
+                case "amex": return <span><FontAwesomeIcon icon={['fab', 'cc-amex']} /></span>;
+                case "diners": return <span><FontAwesomeIcon icon={['fab', 'cc-diners-club']} /></span>;
+                case "discover": return <span><FontAwesomeIcon icon={['fab', 'cc-discover']} /></span>;
+                case "applepay": return <span><FontAwesomeIcon icon={['fab', 'apple-pay']} /></span>;
+                case "alipay": return <span><FontAwesomeIcon icon={['fab', 'alipay']} /></span>;
                 default: return null;
               }})}
               </p>
@@ -241,6 +245,11 @@ function UserOmise() {
                 case "visa": return null
                 case "master": return null
                 case "jcb": return null
+                case "amex": return null
+                case "diners": return null
+                case "discover": return null
+                case "applepay": return null
+                case "alipay": return null
                 default: return <span>{s}</span>;
               }})}
               </p>

@@ -48,44 +48,23 @@ functions:
           cors: true
           origin: '*'
 
-  lineTokishirazuLlcPassengersBachan:
+  lineTokishirazuLlcPassengers:
     handler: bin/line
     runtime: go1.x
     environment: ${self:custom.otherfile.${self:provider.stage}}
     events:
       - http:
-          path: line-tokishirazu-llc-passengers-bachan
+          path: line-tokishirazu-llc-passengers
           method: post
           cors: true
   
-  lineTokishirazuLlcPassengersMinarai:
+  lineComfullCoJpSendagi:
     handler: bin/line
     runtime: go1.x
     environment: ${self:custom.otherfile.${self:provider.stage}}
     events:
       - http:
-          path: line-tokishirazu-llc-passengers-minarai
+          path: line-comfull-co-jp-sendagi
           method: post
           cors: true
-  
-  lineComfullCoJpSendagiBachan:
-    handler: bin/line
-    runtime: go1.x
-    environment: ${self:custom.otherfile.${self:provider.stage}}
-    events:
-      - http:
-          path: line-comfull-co-jp-sendagi-bachan
-          method: post
-          cors: true
-  
-  lineComfullCoJpSendagiMinarai:
-    handler: bin/line
-    runtime: go1.x
-    environment: ${self:custom.otherfile.${self:provider.stage}}
-    events:
-      - http:
-          path: line-comfull-co-jp-sendagi-minarai
-          method: post
-          cors: true
-  
   

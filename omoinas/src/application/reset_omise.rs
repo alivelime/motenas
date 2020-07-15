@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use chrono::{DateTime, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 
@@ -56,7 +54,7 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             ]
             .into_iter()
             .collect(),
-            oshiharai: vec![String::from("cash"), String::from("suica")]
+            oshiharai: vec![String::from("cash"), String::from("交通系IC")]
                 .into_iter()
                 .collect(),
             tanamono: vec![
@@ -121,7 +119,18 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
                 String::from("visa"),
                 String::from("master"),
                 String::from("jcb"),
-                String::from("suica"),
+                String::from("amex"),
+                String::from("diners"),
+                String::from("discover"),
+                String::from("交通系IC"),
+                String::from("applepay"),
+                String::from("paypay"),
+                String::from("alipay"),
+                String::from("linepay"),
+                String::from("iD"),
+                String::from("quickpay"),
+                String::from("aupay"),
+                String::from("docomo"),
             ]
             .into_iter()
             .collect(),

@@ -2,7 +2,8 @@ use crate::model::omise::*;
 
 pub struct Hitogata {
     pub id: String,
-    pub namae: &'static str,
+    pub namae: String,
+    pub icon: String,
     pub kaeshi: &'static Kaeshi,
     pub omise: Omise,
 }

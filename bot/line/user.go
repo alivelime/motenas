@@ -13,14 +13,16 @@ import (
 )
 
 type Event struct {
-	Text    string `json:"text"`
-	CharaID string `json:"chara_id"`
-	ID      string `json:"id"`
-	App     string `json:"app"`
+	Text     string `json:"text"`
+	OmiseURI string `json:"omise_uri"`
+	ID       string `json:"id"`
+	App      string `json:"app"`
 }
 type Message struct {
 	Type     string     `json:"type"`
 	Message  string     `json:"message"`
+	Name     string     `json:"name"`
+	Icon     string     `json:"icon"`
 	Carousel []Carousel `json:"carousel,omitempty"`
 }
 type Carousel struct {
@@ -40,9 +42,10 @@ func (r *Line) handleTextChara(message *linebot.TextMessage, replyToken, userID 
 	r.TextMessageToStaffRoom(userID + "\n" + prof.DisplayName + "\n" + message.Text)
 
 	payload, _ := json.Marshal(Event{
-		Text:    message.Text,
-		CharaID: r.charaID,
-		ID:      userID, App: "line"})
+		Text:     message.Text,
+		OmiseURI: r.OmiseURI,
+		ID:       userID,
+		App:      "line"})
 
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
 		FunctionName:   aws.String(ARN + "omoinas-" + os.Getenv("ENV") + "-ukekotae"),
@@ -55,6 +58,8 @@ func (r *Line) handleTextChara(message *linebot.TextMessage, replyToken, userID 
 
 	var result Message
 	_ = json.Unmarshal(res.Payload, &result)
+
+	r.Sender(result.Name, result.Icon)
 
 	switch result.Type {
 	case "message":

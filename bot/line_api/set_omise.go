@@ -22,7 +22,7 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 	}
 
 	param := &struct {
-		CharaURI string `json:"charaUri"`
+		OmiseURI string `json:"omiseUri"`
 
 		Namae string `json:"namae"`
 		Ima   []struct {
@@ -56,17 +56,11 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 	if err := json.Unmarshal([]byte(request.Body), param); err != nil {
 		return "", err
 	}
-	chara := cebab2Camel(param.CharaURI)
-	omise := os.Getenv(chara + "_OMISE_NAME")
-	mainChara := os.Getenv(omise + "_MAIN_CHARA")
+	omise := cebab2Camel(param.OmiseURI)
 
 	bot, err := NewLine(
-		os.Getenv(chara+"_DISPLAY_NAME"),
-		os.Getenv(chara+"_ICON_URL"),
-		os.Getenv(chara+"_CHANNEL_SECRET"),
-		os.Getenv(chara+"_CHANNEL_TOKEN"),
-		os.Getenv(mainChara+"_CHANNEL_SECRET"),
-		os.Getenv(mainChara+"_CHANNEL_TOKEN"),
+		os.Getenv(omise+"_CHANNEL_SECRET"),
+		os.Getenv(omise+"_CHANNEL_TOKEN"),
 		os.Getenv(omise+"_STAFF_GROUP_ID"),
 		os.Getenv(omise+"_ORDER_GROUP_ID"),
 	)
@@ -76,8 +70,8 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 	}
 
 	client, err := social.New(
-		os.Getenv(chara+"_CHANNEL_ID"),
-		os.Getenv(chara+"_CHANNEL_SECRET"),
+		os.Getenv(omise+"_CHANNEL_ID"),
+		os.Getenv(omise+"_CHANNEL_SECRET"),
 	)
 	if err != nil {
 		log.Println(err)
@@ -93,8 +87,8 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 	name := prof.DisplayName
 
 	param.UserID = prof.UserID
-	param.ClientID = ClientID(param.CharaURI)
-	param.OmiseID = OmiseID(param.CharaURI)
+	param.ClientID = ClientID(param.OmiseURI)
+	param.OmiseID = OmiseID(param.OmiseURI)
 
 	payload, _ := json.Marshal(param)
 	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{

@@ -1,2 +1,1 @@
-pub mod bachan;
-pub mod minarai;
+pub mod norimaru;

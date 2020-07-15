@@ -144,7 +144,6 @@ export function setOmise(
   env: string,
   clientId: string,
   omiseId: string,
-  charaId: string,
   omise: OmiseForm,
   token: string,
   resolve: ()=>void,
@@ -161,7 +160,7 @@ export function setOmise(
       headers: { 'Authorization': 'Bearer: '+token},
       body: JSON.stringify({
         ...omise,
-        charaUri: `${clientId}/${omiseId}/${charaId}`,
+        omiseUri: `${clientId}/${omiseId}`,
         postcode: Number(omise.postcode),
         omotenashi: Array.from(omise.omotenashi),
         oshiharai: Array.from(omise.oshiharai),
@@ -172,7 +171,7 @@ export function setOmise(
     .catch(err => reject(err))
 }
 
-export function checkOmise(env: string, clientId: string, omiseId: string, charaId: string, accessToken: string) {
+export function checkOmise(env: string, clientId: string, omiseId: string, accessToken: string) {
   fetcher<void>(
     env === 'prd'
       ? `${process.env.REACT_APP_PRD_LINE_API_HOST}/line-api/omise/check`
@@ -183,7 +182,7 @@ export function checkOmise(env: string, clientId: string, omiseId: string, chara
       cache: "no-cache",
       body: JSON.stringify({
         accessToken: accessToken,
-        charaId: `${clientId}/${omiseId}/${charaId}`,
+        omiseUri: `${clientId}/${omiseId}`,
       }),
     }
   )

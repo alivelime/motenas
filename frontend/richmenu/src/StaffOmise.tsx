@@ -29,7 +29,6 @@ interface RouteParams {
     env: string,
     clientId: string,
     omiseId: string,
-    charaId: string,
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -131,16 +130,28 @@ const service = [
   "コピー",
 ]
 const payment = [
+  "cash",
   "jcb",
   "visa",
   "master",
-  "cash",
-  "suica",
+  "amex",
+  "diners",
+  "discover",
+  "交通系IC",
+
+  "applepay",
+  "paypay",
+  "alipay",
+  "linepay",
+  "iD",
+  "aupay",
+  "quickpay",
+  "docomo",
 ]
 
 function StaffOmise() {
   console.log("render")
-  const {env, clientId, omiseId, charaId} = useParams<RouteParams>();
+  const {env, clientId, omiseId} = useParams<RouteParams>();
 
   const [token, setToken] = useState("");
   const [omotenashi, setOmotenashi] = useState(new Set<string>([]));
@@ -207,7 +218,7 @@ function StaffOmise() {
       }
       load()
     })
-  },[env, clientId, omiseId, charaId])
+  },[env, clientId, omiseId])
 
 
   function handleSelectOmotenashi(name: string) {
@@ -232,7 +243,7 @@ function StaffOmise() {
   };
 
   const onSubmit = (omise: OmiseForm) => {
-    setOmise(env, clientId, omiseId, charaId, omise, token, ()=>{
+    setOmise(env, clientId, omiseId, omise, token, ()=>{
       setStatus({
         open: true,
         type: "success",

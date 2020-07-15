@@ -10,14 +10,17 @@ use crate::omomuki::{self, Omomuki};
 #[derive(Deserialize, Debug)]
 pub struct Event {
     text: String,
-    chara_id: String,
+    omise_uri: String,
     id: String,
+    app: String,
 }
 
 #[derive(Serialize, Debug)]
 pub struct Response {
     pub r#type: String,
     pub message: String,
+    pub name: String,
+    pub icon: String,
     pub carousel: Vec<Carousel>,
 }
 #[derive(Serialize, Debug)]
@@ -29,12 +32,14 @@ pub struct Carousel {
 }
 
 pub fn main<P: Parser, C: Cache, OR: OmiseRepo>(e: Event) -> Result<Response, String> {
-    let chara = hitogata::new::<OR>(&e.chara_id);
+    let chara = hitogata::new::<OR>(&e.omise_uri);
     let (ok, tree) = P::parse::<C>(&e.text);
     if !ok {
         return Ok(Response {
             r#type: String::from("message"),
             message: (chara.kaeshi.error.parse)(),
+            name: chara.namae,
+            icon: chara.icon,
             carousel: Vec::new(),
         });
     };
@@ -51,11 +56,15 @@ pub fn main<P: Parser, C: Cache, OR: OmiseRepo>(e: Event) -> Result<Response, St
         omomuki::Result::Message(text) => Response {
             r#type: String::from("message"),
             message: text,
+            name: chara.namae,
+            icon: chara.icon,
             carousel: Vec::new(),
         },
         omomuki::Result::Mono(message, monos) => Response {
             r#type: String::from("carousel"),
             message: message,
+            name: chara.namae,
+            icon: chara.icon,
             carousel: monos
                 .iter()
                 .map(|m| Carousel {

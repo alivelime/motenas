@@ -10,20 +10,19 @@ import (
 )
 
 type Line struct {
-	mainBot     *linebot.Client
 	displayName string
 	iconURL     string
 
+	bot           *linebot.Client
 	ChannelSecret string
 	ChannelToken  string
-	bot           *linebot.Client
-	charaID       string
+	OmiseURI      string
 	staffGroupID  string
 	orderGroupID  string
 	richMenuID    string
 }
 
-func NewLine(display, icon, secret, token, msecret, mtoken, charaID, staffGroupID, orderGroupID, richMenuID string) (Line, error) {
+func NewLine(secret, token, omiseURI, staffGroupID, orderGroupID, richMenuID string) (Line, error) {
 	bot, err := linebot.New(
 		secret,
 		token,
@@ -32,36 +31,28 @@ func NewLine(display, icon, secret, token, msecret, mtoken, charaID, staffGroupI
 		return Line{}, err
 	}
 
-	mainBot, err := linebot.New(
-		msecret,
-		mtoken,
-	)
-	if err != nil {
-		return Line{}, err
-	}
-
 	return Line{
-		mainBot:     mainBot,
-		displayName: display,
-		iconURL:     icon,
-
+		bot:           bot,
 		ChannelSecret: secret,
 		ChannelToken:  token,
-		bot:           bot,
-		charaID:       charaID,
+		OmiseURI:      omiseURI,
 		staffGroupID:  staffGroupID,
 		orderGroupID:  orderGroupID,
 		richMenuID:    richMenuID,
 	}, nil
 }
+func (r *Line) Sender(name, icon string) {
+	r.displayName = name
+	r.iconURL = icon
+}
 func (r *Line) ReplyTextMessage(replyToken, message string) error {
-	return r.Reply(replyToken, linebot.NewTextMessage(message))
+	return r.Reply(replyToken, linebot.NewTextMessage(message).WithSender(r.withSender()))
 }
 
 func (r *Line) ReplyTemplateMessage(replyToken, altText string, template linebot.Template) error {
 	return r.Reply(replyToken,
-		linebot.NewTextMessage(altText),
-		linebot.NewTemplateMessage(altText, template),
+		linebot.NewTextMessage(altText).WithSender(r.withSender()),
+		linebot.NewTemplateMessage(altText, template).WithSender(r.withSender()),
 	)
 }
 
@@ -73,7 +64,7 @@ func (r *Line) Reply(replyToken string, message ...linebot.SendingMessage) error
 	return nil
 }
 func (r *Line) BroadcastTextMessage(message string) error {
-	return r.Broadcast(linebot.NewTextMessage(message))
+	return r.Broadcast(linebot.NewTextMessage(message).WithSender(r.withSender()))
 }
 func (r *Line) Broadcast(message ...linebot.SendingMessage) error {
 	if _, err := r.bot.BroadcastMessage(message...).Do(); err != nil {
@@ -84,7 +75,7 @@ func (r *Line) Broadcast(message ...linebot.SendingMessage) error {
 }
 
 func (r *Line) PushTextMessage(to, message string) error {
-	return r.PushMessage(to, linebot.NewTextMessage(message))
+	return r.PushMessage(to, linebot.NewTextMessage(message).WithSender(r.withSender()))
 }
 func (r *Line) PushMessage(to string, message ...linebot.SendingMessage) error {
 	if _, err := r.bot.PushMessage(to, message...).Do(); err != nil {
@@ -119,7 +110,7 @@ func (r *Line) TemplateMessageToStaffRoom(altText string, template linebot.Templ
 }
 func (r *Line) PushMessageToStaffRoom(message ...linebot.SendingMessage) error {
 	if len(r.staffGroupID) > 0 {
-		if _, err := r.mainBot.PushMessage(r.staffGroupID, message...).Do(); err != nil {
+		if _, err := r.bot.PushMessage(r.staffGroupID, message...).Do(); err != nil {
 			fmt.Printf("push to staff room Error: %v", err)
 			return err
 		}
@@ -138,7 +129,7 @@ func (r *Line) TemplateMessageToOrderRoom(altText string, template linebot.Templ
 }
 func (r *Line) PushMessageToOrderRoom(message ...linebot.SendingMessage) error {
 	if len(r.orderGroupID) > 0 {
-		if _, err := r.mainBot.PushMessage(r.orderGroupID, message...).Do(); err != nil {
+		if _, err := r.bot.PushMessage(r.orderGroupID, message...).Do(); err != nil {
 			fmt.Printf("push to staff room Error: %v", err)
 			return err
 		}
@@ -209,14 +200,12 @@ func (r *Line) UnlinkRichMenu(users []string) {
 }
 
 func (r *Line) ClientID() string {
-	return strings.Split(r.charaID, "/")[0]
+	return strings.Split(r.OmiseURI, "/")[0]
 }
 func (r *Line) OmiseID() string {
-	return strings.Split(r.charaID, "/")[1]
+	return strings.Split(r.OmiseURI, "/")[1]
 }
-func (r *Line) CharaName() string {
-	return strings.Split(r.charaID, "/")[2]
-}
+
 func (r *Line) withSender() *linebot.Sender {
 	return &linebot.Sender{
 		Name:    r.displayName,

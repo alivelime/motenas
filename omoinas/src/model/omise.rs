@@ -79,7 +79,7 @@ pub enum Status {
     Hima,
     Bochibochi,
     Isogashi,
-    Ippai,
+    Manseki,
     Kashikiri,
 }
 use std::str::FromStr;
@@ -92,7 +92,7 @@ impl FromStr for Status {
             "Hima" => Ok(Status::Hima),
             "Bochibochi" => Ok(Status::Bochibochi),
             "Isogashi" => Ok(Status::Isogashi),
-            "Ippai" => Ok(Status::Ippai),
+            "Manseki" => Ok(Status::Manseki),
             "Kashikiri" => Ok(Status::Kashikiri),
             _ => {
                 error!("unkown status {}", s);

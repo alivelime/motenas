@@ -17,18 +17,12 @@ const (
 )
 
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	chara := strings.Split(lambdacontext.FunctionName, "line")[1]
-	omise := os.Getenv(chara + "_OMISE_NAME")
-	main := os.Getenv(omise + "_MAIN_CHARA")
+	omise := strings.Split(lambdacontext.FunctionName, "line")[1]
 
 	line, err := NewLine(
-		os.Getenv(chara+"_DISPLAY_NAME"),
-		os.Getenv(chara+"_ICON_URL"),
-		os.Getenv(chara+"_CHANNEL_SECRET"),
-		os.Getenv(chara+"_CHANNEL_TOKEN"),
-		os.Getenv(main+"_CHANNEL_SECRET"),
-		os.Getenv(main+"_CHANNEL_TOKEN"),
-		os.Getenv(chara+"_CHARA_ID"),
+		os.Getenv(omise+"_CHANNEL_SECRET"),
+		os.Getenv(omise+"_CHANNEL_TOKEN"),
+		os.Getenv(omise+"_OMISE_URI"),
 		os.Getenv(omise+"_STAFF_GROUP_ID"),
 		os.Getenv(omise+"_ORDER_GROUP_ID"),
 		os.Getenv(omise+"_RICH_MENU_ID"),
