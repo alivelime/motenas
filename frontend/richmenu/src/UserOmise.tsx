@@ -263,15 +263,15 @@ function UserOmise() {
             <Grid item xs={8}>
               <p className={classes.linkIcon}>
                 {omise.link.hp &&
-                <a href="{omise.link.hp}"><FontAwesomeIcon icon={["fas", "mobile-alt"]} className={classes.hp}/></a>}
+                <a target="_blank" href={omise.link.hp}><FontAwesomeIcon icon={["fas", "mobile-alt"]} className={classes.hp}/></a>}
                 {omise.link.twitter &&
-                <a href="{omise.link.twitter}"><FontAwesomeIcon icon={['fab', 'twitter-square']} className={classes.twitter}/></a>}
+                <a target="_blank" href={omise.link.twitter}><FontAwesomeIcon icon={['fab', 'twitter-square']} className={classes.twitter}/></a>}
                 {omise.link.facebook &&
-                <a href="{omise.link.facebook}"><FontAwesomeIcon icon={['fab', 'facebook-square']} className={classes.facebook}/></a>}
+                <a target="_blank" href={omise.link.facebook}><FontAwesomeIcon icon={['fab', 'facebook-square']} className={classes.facebook}/></a>}
                 {omise.link.instagram &&
-                <a href="{omise.link.instagram}"><FontAwesomeIcon icon={['fab', 'instagram-square']} className={classes.instagram}/></a>}
+                <a target="_blank" href={omise.link.instagram}><FontAwesomeIcon icon={['fab', 'instagram-square']} className={classes.instagram}/></a>}
                 {omise.link.line &&
-                <a href="{omise.link.line}"><FontAwesomeIcon icon={['fab', 'line']} className={classes.line} /></a>}
+                <a target="_blank" href={omise.link.line}><FontAwesomeIcon icon={['fab', 'line']} className={classes.line} /></a>}
               </p>
             </Grid>
           </Grid>
