@@ -21,4 +21,6 @@ pub trait Parser {
 
     fn get_itsu(&self) -> Option<Koto>;
     fn get_doko(&self) -> Option<Koto>;
+
+    fn has_lemma(&self, p: Vec<&str>) -> Option<String>;
 }

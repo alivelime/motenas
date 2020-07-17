@@ -83,9 +83,12 @@ impl Omomuki {
         }
 
         // ばあちゃん、お茶
-        let nani = tree.get_meishi();
-        if nani.len() > 0 {
-            return Type::Ocha(Ocha { nani: nani });
+        // あとでタイプ自体を整理する
+        if !tree.has_lemma(vec!["また"]).is_some() {
+            let nani = tree.get_meishi();
+            if nani.len() > 0 {
+                return Type::Ocha(Ocha { nani: nani });
+            }
         }
 
         return Type::Tawainai(Tawainai {

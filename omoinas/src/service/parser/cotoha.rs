@@ -289,6 +289,16 @@ impl Parser for Cotoha {
         }
         return None;
     }
+
+    fn has_lemma(&self, p: Vec<&str>) -> Option<String> {
+        return self
+            .tokens
+            .iter()
+            .find_map(|t| match p.contains(&t.lemma.as_str()) {
+                true => Some(t.lemma.clone()),
+                false => None,
+            });
+    }
 }
 
 impl Cotoha {
@@ -435,15 +445,6 @@ impl Cotoha {
             }
         }
         return s;
-    }
-    fn has_lemma(&self, p: Vec<&str>) -> Option<String> {
-        return self
-            .tokens
-            .iter()
-            .find_map(|t| match p.contains(&t.lemma.as_str()) {
-                true => Some(t.lemma.clone()),
-                false => None,
-            });
     }
 }
 

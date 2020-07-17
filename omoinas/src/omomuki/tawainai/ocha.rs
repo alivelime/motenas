@@ -29,7 +29,7 @@ impl Tumori for Ocha {
             .iter()
             .find(|n| mono::is_mono(chara.omise.menu(), n))
         {
-            if chara.id.contains(&String::from("/bachan")) {
+            if chara.id.contains(&String::from("tokishirazu")) {
                 return Box::new(Ocha {
                     mono: n.clone(),
                     yobareta: self.yobareta,
