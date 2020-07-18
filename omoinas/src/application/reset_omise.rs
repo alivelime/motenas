@@ -1,5 +1,6 @@
 use chrono::{DateTime, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
+use std::env;
 
 use crate::model::omise::*;
 
@@ -25,7 +26,11 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
                 twitter: String::from("https://twitter.com/purejapaneseonl"),
                 facebook: String::from("https://www.facebook.com/profile.php?id=100009973449056"),
                 instagram: String::from(""),
-                line: String::from("https://lin.ee/moLu1Kr"),
+                line: if env::var("ENV").unwrap() == "dev" {
+                    String::from("https://lin.ee/moLu1Kr")
+                } else {
+                    String::from("https://lin.ee/E5krmZP")
+                },
             },
             yotei: String::from("24時間365日"),
             oshirase: String::from("コロナの影響により、一部商品が画像表示されません。"),
@@ -66,10 +71,16 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             .into_iter()
             .collect(),
 
-            ima: vec![Ima {
-                namae: String::from(""),
-                status: Status::Kashikiri,
-            }],
+            ima: vec![
+                Ima {
+                    namae: String::from("グリーン席"),
+                    status: Status::Bochibochi,
+                },
+                Ima {
+                    namae: String::from("普通席"),
+                    status: Status::Manseki,
+                },
+            ],
             hitokoto: String::from(""),
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T00:00:00+09:00").unwrap(),
             kefu_made: DateTime::parse_from_rfc3339("2020-06-02T00:00:00+09:00").unwrap(),
@@ -83,12 +94,16 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
             namae: String::from("コンフル千駄木店"),
             link: Links {
                 hp: String::from("https://comfull.co.jp"),
-                twitter: String::from(""),
+                twitter: String::from("https://twitter.com/cowork_comfull"),
                 facebook: String::from(""),
                 instagram: String::from(""),
-                line: String::from(""),
+                line: if env::var("ENV").unwrap() == "dev" {
+                    String::from("https://lin.ee/msYlf1q")
+                } else {
+                    String::from("https://lin.ee/Rli2RvT")
+                },
             },
-            yotei: String::from("月〜金：11:00〜23:00\n土日祝：11:00〜23:00"),
+            yotei: String::from("月〜金：11:00〜22:00\n土日祝：11:00〜22:00"),
             oshirase: String::from("コロナに伴う営業時間変更のお知らせ"),
             otokoro: Address {
                 country: String::from("jpn"),
@@ -152,7 +167,7 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
                     status: Status::Hima,
                 },
             ],
-            hitokoto: String::from(""),
+            hitokoto: String::from("今日も営業中です"),
             kefu_kara: DateTime::parse_from_rfc3339("2020-06-01T10:00:00+09:00").unwrap(),
             kefu_made: DateTime::parse_from_rfc3339("2020-06-01T22:00:00+09:00").unwrap(),
 

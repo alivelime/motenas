@@ -104,7 +104,6 @@ function UserOmise() {
     })
   },[env, clientId, omiseId])
 
-
   const classes = useStyles();
   return (
     <Grid container className={classes.root} spacing={3}>
@@ -143,8 +142,8 @@ function UserOmise() {
                       switch (ima.status) {
                         case "Wakaran": return "未設定です";
                         case "Yasumi": return "お休みです";
-                        case "Hima": return "快適です";
-                        case "Bochibochi": return "程よい感じです";
+                        case "Hima": return "空いています";
+                        case "Bochibochi": return "普通です";
                         case "Isogashi": return "賑わっています";
                         case "Manseki": return "満席です";
                         case "Kashikiri": return "貸切です";
@@ -163,6 +162,15 @@ function UserOmise() {
               <p>{omise.hitokoto}</p>
             </Grid>
           </Grid>
+          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+            <Grid item xs={4} className={classes.head}>
+              <p>更新日時</p>
+            </Grid>
+            <Grid item xs={8}>
+              <p>{omise.updatedAt.toLocaleString("ja-JP")}</p>
+            </Grid>
+          </Grid>
+          <Divider />
         </Paper>
       </Grid>
       <Grid item xs={12} className={classes.subhead}>
@@ -258,20 +266,30 @@ function UserOmise() {
           <Divider />
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
-              <p>HP/SNS</p>
+              <p>リンク</p>
             </Grid>
             <Grid item xs={8}>
               <p className={classes.linkIcon}>
                 {omise.link.hp &&
-                <a target="_blank" href={omise.link.hp}><FontAwesomeIcon icon={["fas", "mobile-alt"]} className={classes.hp}/></a>}
+                <a target="_blank" href={omise.link.hp} rel="noreferrer noopener">
+                  <FontAwesomeIcon icon={["fas", "mobile-alt"]} className={classes.hp}/>
+                </a>}
                 {omise.link.twitter &&
-                <a target="_blank" href={omise.link.twitter}><FontAwesomeIcon icon={['fab', 'twitter-square']} className={classes.twitter}/></a>}
+                <a target="_blank" href={omise.link.twitter} rel="noreferrer noopener">
+                  <FontAwesomeIcon icon={['fab', 'twitter-square']} className={classes.twitter}/>
+                </a>}
                 {omise.link.facebook &&
-                <a target="_blank" href={omise.link.facebook}><FontAwesomeIcon icon={['fab', 'facebook-square']} className={classes.facebook}/></a>}
+                <a target="_blank" href={omise.link.facebook} rel="noreferrer noopener">
+                  <FontAwesomeIcon icon={['fab', 'facebook-square']} className={classes.facebook}/>
+                </a>}
                 {omise.link.instagram &&
-                <a target="_blank" href={omise.link.instagram}><FontAwesomeIcon icon={['fab', 'instagram-square']} className={classes.instagram}/></a>}
+                <a target="_blank" href={omise.link.instagram} rel="noreferrer noopener">
+                  <FontAwesomeIcon icon={['fab', 'instagram-square']} className={classes.instagram}/>
+                </a>}
                 {omise.link.line &&
-                <a target="_blank" href={omise.link.line}><FontAwesomeIcon icon={['fab', 'line']} className={classes.line} /></a>}
+                <a target="_blank" href={omise.link.line} rel="noreferrer noopener">
+                  <FontAwesomeIcon icon={['fab', 'line']} className={classes.line} />
+                </a>}
               </p>
             </Grid>
           </Grid>
@@ -283,15 +301,38 @@ function UserOmise() {
             <Grid item xs={8}>
               <p>{omise.otokoro.forMap}{omise.otokoro.building}</p>
               <p>{omise.otokoro.access}</p>
-              <Button
-                variant="contained"
-                color="primary"
-                href={"https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(omise.otokoro.forMap)}
-                target="_blank"
-                rel="noreferrer noopener"
+              <p>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  href={"https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(omise.otokoro.forMap)}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  行き方を調べる
+                </Button>
+              </p>
+              <p>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    if (liff.isApiAvailable('shareTargetPicker')) {
+                      liff.shareTargetPicker([
+                        {
+                          type: "text",
+                          text: `${omise.namae}\n\nお店情報${window.location.href}\n\nLINEアカウント\n${omise.link.line}`,
+                        }
+                      ])
+                    } else {
+                      alert("Lineで友達になって頂き、「お店情報」メニューから再度アクセスしてください。")
+                    }
+                  }}
+                  className={classes.line}
+                  startIcon={<FontAwesomeIcon icon={['fab', 'line']} className={classes.line} />}
               >
-                行き方を調べる
+                友達に教える
               </Button>
+            </p>
             </Grid>
           </Grid>
         </Paper>
