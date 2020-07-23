@@ -173,7 +173,7 @@ function StaffOmise() {
         namae: omise.namae,
         ima: omise.ima,
         kefuKara: omise.kefuKara.getHours(),
-        kefuMade: (omise.kefuKara.getDay() === omise.kefuMade.getDay() ? omise.kefuMade.getHours() : omise.kefuMade.getHours() + 24),
+        kefuMade: (omise.kefuKara.getDate() === omise.kefuMade.getDate() ? omise.kefuMade.getHours() : omise.kefuMade.getHours() + 24),
         hitokoto: omise.hitokoto,
         omotenashi: omise.omotenashi,
         oshiharai: omise.oshiharai,

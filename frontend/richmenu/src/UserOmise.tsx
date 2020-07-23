@@ -4,6 +4,7 @@ import {
 } from 'react-router-dom';
 
 import {getOmise, checkOmise, newOmise } from 'utils/api/omise';
+import {formatYmdHi, tomorrow} from 'utils/time';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -42,6 +43,15 @@ const useStyles = makeStyles((theme) => ({
   },
   subhead: {
     textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  yasumi: {
+    color: theme.palette.error.main,
+    fontWeight: 'bold',
+  },
+  right: {
+    textAlign: 'right',
+    fontWeight: 'bold',
   },
   head: {
     fontSize: "1rem",
@@ -113,47 +123,70 @@ function UserOmise() {
         </Paper>
       </Grid>
       <Grid item xs={12} className={classes.subhead}>
-        <Typography variant="h3">今日やってる?</Typography>
+        <Typography variant="h3">
+          {(omise.kefuKara < omise.updatedAt && omise.updatedAt < omise.kefuMade )
+            ? `${omise.updatedAt.getMonth() + 1}月${omise.updatedAt.getDate()}日`
+            : `${tomorrow(omise.updatedAt).getMonth() + 1}月${tomorrow(omise.updatedAt).getDate()}日`
+          }の営業状況
+        </Typography>
       </Grid>
       <Grid item xs={12}>
         <Paper variant="outlined" elevation={3} className={classes.paper}>
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
-              <p>本日の営業時間</p>
+              <p>時間</p>
             </Grid>
             <Grid item xs={8}>
-              <p>{omise.isYasumi()
-                ? "本日休業"
-                : omise.kefuKara.getHours() +":00 〜 "
+              {omise.isYasumi() && <p className={classes.yasumi}>本日休業</p>}
+              {omise.isYasumi() &&
+                (Date.now() < omise.kefuKara.getTime() || omise.kefuMade.getTime() < Date.now()) &&
+                  <p className={classes.yasumi}>営業時間外</p>
+              }
+              {!omise.isYasumi() &&
+                omise.kefuKara.getHours() +":00 〜 "
                 +(omise.kefuKara.getDay() === omise.kefuMade.getDay() ? '' : '翌')
-                +omise.kefuMade.getHours()+":00"}</p>
+                +omise.kefuMade.getHours()+":00"}
             </Grid>
           </Grid>
           <Divider />
-          {
-            omise.ima.map(ima =>
-              <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
-                <Grid item xs={4} className={classes.head}>
-                  <p>{ima.namae || "混み具合"}</p>
-                </Grid>
-                <Grid item xs={8}>
-                  <p>
-                    {(() => {
-                      switch (ima.status) {
-                        case "Wakaran": return "未設定です";
-                        case "Yasumi": return "お休みです";
-                        case "Hima": return "空いています";
-                        case "Bochibochi": return "普通です";
-                        case "Isogashi": return "賑わっています";
-                        case "Manseki": return "満席です";
-                        case "Kashikiri": return "貸切です";
-                      }
-                    })()}
-                  </p>
-                </Grid>
+          {omise.isYasumi() || 
+            <Grid container className={classes.root} spacing={0} alignItems="center" justify="center">
+              <Grid item xs={12} className={classes.subhead}>
+                <p>空席情報</p>
               </Grid>
-              )
+            </Grid>
           }
+          {omise.isYasumi() || 
+            <Divider />
+          }
+          {omise.isYasumi() || omise.ima.map(ima =>
+            <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+              <Grid item xs={4} className={classes.head}>
+                <p>{ima.namae || "混み具合"}</p>
+              </Grid>
+              <Grid item xs={8}>
+                <p>
+                  {(() => {
+                    switch (ima.status) {
+                      case "Wakaran": return "未設定です";
+                      case "Yasumi": return "お休みです";
+                      case "Hima": return "空いています";
+                      case "Bochibochi": return "普通です";
+                      case "Isogashi": return "賑わっています";
+                      case "Manseki": return "満席です";
+                      case "Kashikiri": return "貸切です";
+                    }
+                  })()}
+                </p>
+              </Grid>
+            </Grid>
+          )}
+          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
+            <Grid item xs={12} className={classes.right}>
+              <p>{formatYmdHi(omise.updatedAt)} 更新</p>
+            </Grid>
+          </Grid>
+          <Divider />
           <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
             <Grid item xs={4} className={classes.head}>
               <p>今日の一言</p>
@@ -162,17 +195,9 @@ function UserOmise() {
               <p>{omise.hitokoto}</p>
             </Grid>
           </Grid>
-          <Grid container className={classes.root} spacing={0} justify="flex-start" alignItems="center">
-            <Grid item xs={4} className={classes.head}>
-              <p>更新日時</p>
-            </Grid>
-            <Grid item xs={8}>
-              <p>{omise.updatedAt.toLocaleString("ja-JP")}</p>
-            </Grid>
-          </Grid>
-          <Divider />
         </Paper>
       </Grid>
+      <Divider />
       <Grid item xs={12} className={classes.subhead}>
         <Typography variant="h3">お店について</Typography>
       </Grid>

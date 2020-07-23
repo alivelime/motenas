@@ -28,8 +28,8 @@ pub const NORIMARU: Kaeshi = Kaeshi {
             },
             oyasumi: AisatsuHibiOyasumi {
                 mayonaka: || String::from("おやすみなさい。お疲れ様でした！"),
-                ohayo: || String::from("おやすみなさい。お疲れ様でした！<Paste>"),
-                konnichiwa: || String::from("おやすみなさい。お疲れ様でした！<Paste>"),
+                ohayo: || String::from("おやすみなさい。お疲れ様でした！"),
+                konnichiwa: || String::from("おやすみなさい。お疲れ様でした！"),
                 oyasumi: || String::from("おやすみなさい。お疲れ様でした！"),
             },
         },
@@ -48,7 +48,7 @@ pub const NORIMARU: Kaeshi = Kaeshi {
             },
         },
         kuru: AisatsuKuru {
-            hajimemashite: || String::from("はじめまして！\ncomfullののりまるです！"),
+            hajimemashite: || String::from("はじめまして！\nコンフルです！"),
             hisashiburi: || String::from("お久しぶりです！お元気してますか？"),
             okaeri: || String::from("お帰りなさいませ！"),
             irasshai: || String::from("いらっしゃいませ！\nいつもありがとうございます！"),
