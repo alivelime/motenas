@@ -8,6 +8,7 @@ use lambda_runtime::{error::HandlerError, Context};
 
 use omoinas::application::get_omise;
 use omoinas::repository::omise::dynamodb::OmiseDb;
+// use omoinas::application::get_omise_denpyo;
 
 fn main() {
     simple_logger::init_with_level(log::Level::Info).unwrap();
@@ -23,6 +24,15 @@ fn handler(r: Request, c: Context) -> Result<impl IntoResponse, HandlerError> {
             Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
             Err(err) => Err(err),
         },
+        /*
+        "getOmiseDenpyo" => match get_omise_denpyo::main::<OmiseDb>(get_omise_denpyo::Event {
+            client_id: r.path_parameters().get("clientId").unwrap().to_string(),
+            omise_id: r.path_parameters().get("omiseId").unwrap().to_string(),
+        }) {
+            Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
+            Err(err) => Err(err),
+        },
+        */
         _ => Err(format!("no such method {}", &c.function_name)),
     };
 

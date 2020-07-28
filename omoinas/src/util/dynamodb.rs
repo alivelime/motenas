@@ -58,7 +58,7 @@ where
         },
     );
 }
-pub fn key_insert_num(key: &mut HashMap<String, AttributeValue>, m: i32, n: &str) {
+pub fn key_insert_num(key: &mut HashMap<String, AttributeValue>, m: i64, n: &str) {
     key.insert(
         String::from(n),
         AttributeValue {
@@ -76,6 +76,22 @@ pub fn key_insert_datetime(
         String::from(n),
         AttributeValue {
             s: Some(m.to_rfc3339()),
+            ..Default::default()
+        },
+    );
+}
+pub fn key_insert_datetime_option(
+    key: &mut HashMap<String, AttributeValue>,
+    m: &Option<DateTime<FixedOffset>>,
+    n: &str,
+) {
+    key.insert(
+        String::from(n),
+        AttributeValue {
+            s: match m {
+                Some(d) => Some(d.to_rfc3339()),
+                None => Some(String::from("")),
+            },
             ..Default::default()
         },
     );
