@@ -26,18 +26,21 @@ pub fn main<DR: DenpyoRepo>(_: Event) -> Result<Response, String> {
                 neuchi: 270,
                 num: 1,
                 tax_rate: 10,
+                status: Status::Open,
+                memo: String::from(""),
             },
             Shina {
                 namae: String::from("ホットコーヒー"),
                 neuchi: 230,
                 num: 1,
                 tax_rate: 10,
+                status: Status::Open,
+                memo: String::from("砂糖とミルクはいらないです"),
             },
         ],
         sum: 550,
 
         created_at: DateTime::parse_from_rfc3339("2020-07-28T00:00:00+09:00").unwrap(),
-        completed_at: None,
         updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
     }];
 

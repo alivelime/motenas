@@ -1,3 +1,4 @@
+pub mod get_denpyo;
 pub mod get_omise;
 pub mod hitogata;
 pub mod omise;

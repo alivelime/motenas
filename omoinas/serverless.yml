@@ -71,3 +71,19 @@ functions:
     environment:
       ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
 
+  getDenpyo:
+    handler: omoinas.api
+    environment:
+      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
+    events:
+      - http:
+          path: /omise/{clientId}/{omiseId}/maroudo/{maroudoId}/denpyo
+          method: GET
+          cors: true
+          request:
+            parameters:
+              paths:
+                clientId: true,
+                omiseId: true,
+                maroudoId: true,
+

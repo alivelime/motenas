@@ -36,6 +36,11 @@ pub fn item_from_ss(item: &HashMap<String, AttributeValue>, m: &mut HashSet<Stri
         }
     }
 }
+pub fn item_from_num(item: &HashMap<String, AttributeValue>, m: &mut i64, n: &str) {
+    if item.get(n).is_some() && item[n].s.is_some() {
+        *m = item[n].n.as_ref().unwrap().parse::<i64>().unwrap();
+    }
+}
 
 pub fn key_insert_str(key: &mut HashMap<String, AttributeValue>, m: String, n: &str) {
     key.insert(
