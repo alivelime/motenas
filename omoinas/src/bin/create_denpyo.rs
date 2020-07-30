@@ -5,8 +5,8 @@ use simple_logger;
 
 use lambda_runtime::{error::HandlerError, lambda, Context};
 
-use omoinas::application::reset_omise::{self, Event, Response};
-use omoinas::repository::omise::dynamodb::OmiseDb;
+use omoinas::application::create_denpyo::{self, Event, Response};
+use omoinas::repository::denpyo::dynamodb::DenpyoDb;
 
 fn main() {
     simple_logger::init_with_level(log::Level::Info).unwrap();
@@ -14,5 +14,5 @@ fn main() {
 }
 
 fn handler(e: Event, _: Context) -> Result<Response, HandlerError> {
-    return Ok(reset_omise::main::<OmiseDb>(e)?);
+    return Ok(create_denpyo::main::<DenpyoDb>(e)?);
 }

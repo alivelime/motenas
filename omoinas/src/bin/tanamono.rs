@@ -14,11 +14,5 @@ fn main() {
 }
 
 fn handler(e: Event, _: Context) -> Result<Response, HandlerError> {
-    return match tanamono::main::<OmiseDb>(e) {
-        Ok(r) => Ok(r),
-        Err(err) => Ok(Response {
-            ok: false,
-            message: err,
-        }),
-    };
+    return Ok(tanamono::main::<OmiseDb>(e)?);
 }

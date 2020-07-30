@@ -2,6 +2,7 @@ use chrono::{DateTime, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 use std::env;
 
+use crate::model::error::ApplicationError;
 use crate::model::omise::*;
 
 #[derive(Deserialize, Debug)]
@@ -14,7 +15,7 @@ pub struct Event {
 pub struct Response {
     pub omise: Vec<Omise>,
 }
-pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
+pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, ApplicationError> {
     let or = OR::new();
     let omise = vec![
         Omise {
@@ -177,7 +178,7 @@ pub fn main<OR: OmiseRepo>(_: Event) -> Result<Response, String> {
     ];
 
     for o in &omise {
-        or.put(o);
+        or.put(o)?;
     }
 
     return Ok(Response { omise: omise });

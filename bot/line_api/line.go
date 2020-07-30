@@ -71,6 +71,26 @@ func (r *Line) PushMessageToStaffRoom(message ...linebot.SendingMessage) error {
 	return nil
 }
 
+func (r *Line) TextMessageToOrderRoom(message string) error {
+	return r.PushMessageToOrderRoom(linebot.NewTextMessage(message))
+}
+func (r *Line) TemplateMessageToOrderRoom(altText string, template linebot.Template) error {
+	return r.PushMessageToOrderRoom(
+		linebot.NewTextMessage(altText),
+		linebot.NewTemplateMessage(altText, template),
+	)
+}
+
+func (r *Line) PushMessageToOrderRoom(message ...linebot.SendingMessage) error {
+	if len(r.orderGroupID) > 0 {
+		if _, err := r.bot.PushMessage(r.orderGroupID, message...).Do(); err != nil {
+			log.Printf("order push message Error: %v", err)
+			return err
+		}
+	}
+	return nil
+}
+
 /*
 func (r *Line) withSender() *linebot.Sender {
 	return &linebot.Sender{

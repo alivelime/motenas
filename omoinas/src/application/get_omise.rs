@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
+use crate::model::error::ApplicationError;
 use crate::model::omise::{Address as MAddress, Ima, Links, Omise as MOmise, OmiseRepo};
 
 #[derive(Deserialize, Debug)]
@@ -56,7 +57,7 @@ pub struct Address {
     pub access: String,
 }
 
-pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
+pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, ApplicationError> {
     let or = OR::new();
 
     return match or.get(&e.client_id, &e.omise_id) {

@@ -23,7 +23,7 @@ fn handler(r: Request, c: Context) -> Result<impl IntoResponse, HandlerError> {
             omise_id: r.path_parameters().get("omiseId").unwrap().to_string(),
         }) {
             Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
-            Err(err) => Err(err),
+            Err(err) => Err(err.to_string()),
         },
         "getDenpyo" => {
             match get_denpyo::main::<DenpyoDb>(get_denpyo::Event {
@@ -32,7 +32,7 @@ fn handler(r: Request, c: Context) -> Result<impl IntoResponse, HandlerError> {
                 maroudo_id: r.path_parameters().get("maroudoId").unwrap().to_string(),
             }) {
                 Ok(res) => Ok(serde_json::to_string(&res).unwrap()),
-                Err(err) => Err(err),
+                Err(err) => Err(err.to_string()),
             }
         }
         _ => Err(format!("no such method {}", &c.function_name)),

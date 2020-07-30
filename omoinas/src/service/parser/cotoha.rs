@@ -413,6 +413,7 @@ impl Cotoha {
             .collect();
     }
 
+    /*
     fn get_mokuteki(&self) -> Option<Koto> {
         return self
             .chunks
@@ -423,6 +424,7 @@ impl Cotoha {
                 _ => None,
             });
     }
+    */
 
     fn get_keiyou(&self, tid: i32) -> Option<Koto> {
         return self.tokens[tid as usize]

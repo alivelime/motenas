@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use chrono::{DateTime, Datelike, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::model::error::ApplicationError;
 use crate::model::omise::{Ima, Links, OmiseRepo};
 
 #[derive(Deserialize, Debug)]
@@ -12,8 +13,8 @@ pub struct Event {
     client_id: String,
     #[serde(rename = "omiseId")]
     omise_id: String,
-    #[serde(rename = "userId")]
-    user_id: String,
+    #[serde(rename = "tanamonoId")]
+    tanamono_id: String,
 
     namae: String,
     ima: Vec<Ima>,
@@ -41,28 +42,19 @@ pub struct Event {
 }
 
 #[derive(Serialize, Debug)]
-pub struct Response {
-    pub ok: bool,
-    pub message: String,
-}
+pub struct Response {}
 
-pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
+pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, ApplicationError> {
     let or = OR::new();
-    let mut omise = match or.get(&e.client_id, &e.omise_id) {
-        Ok(o) => o,
-        Err(e) => {
-            error!("{}", e);
-            return Err(e.to_string());
-        }
-    };
+    let mut omise = or.get(&e.client_id, &e.omise_id)?;
 
     // 権限チェック
-    if !omise.tanamono.contains(&e.user_id) {
+    if !omise.tanamono.contains(&e.tanamono_id) {
         error!(
             "{}/{} is not in {} tanamono.",
-            &e.client_id, &e.omise_id, &e.user_id
+            &e.client_id, &e.omise_id, &e.tanamono_id
         );
-        return Err(format!("permission denied."));
+        return Err(ApplicationError::PermissionDenied);
     }
 
     omise.namae = e.namae;
@@ -112,11 +104,7 @@ pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
     omise.otokoro.building = e.building;
     omise.updated_at = now;
 
-    if !or.put(&omise) {
-        return Err(String::from("dynamo put error."));
-    }
-    return Ok(Response {
-        ok: true,
-        message: String::new(),
-    });
+    or.put(&omise)?;
+
+    return Ok(Response {});
 }

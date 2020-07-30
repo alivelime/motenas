@@ -16,3 +16,5 @@ reqwest = {version = "0.10.0", features=["json","blocking"]}
 chrono = "0.4"
 rusoto_core = "0.42"
 rusoto_dynamodb = "0.42"
+thiserror = "1.0"
+

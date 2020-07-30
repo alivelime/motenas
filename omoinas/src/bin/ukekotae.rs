@@ -16,14 +16,5 @@ fn main() {
 }
 
 fn handler(e: Event, _: Context) -> Result<Response, HandlerError> {
-    return match ukekotae::main::<Cotoha, DynamoDb, OmiseDb>(e) {
-        Ok(r) => Ok(r),
-        Err(err) => Ok(Response {
-            r#type: String::from("message"),
-            message: err,
-            name: String::from("エラー"),
-            icon: String::from("https://obs.line-scdn.net/0hkqtt2knTNF5JDRyRjohLCWlQPzx6bypVa2t8PGkNbm1sNXNmc2h_bWxfbTkwPHIKID95aAINYjxsPncNMGoobGlaajxn/f256x256"),
-            carousel: Vec::new(),
-        }),
-    };
+    return Ok(ukekotae::main::<Cotoha, DynamoDb, OmiseDb>(e)?);
 }

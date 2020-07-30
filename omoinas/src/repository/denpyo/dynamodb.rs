@@ -6,6 +6,7 @@ use rusoto_core::Region;
 use rusoto_dynamodb::{DynamoDb, DynamoDbClient};
 
 use crate::model::denpyo::{Denpyo, DenpyoRepo};
+use crate::model::error::ApplicationError;
 
 pub struct DenpyoDb {}
 
@@ -27,18 +28,22 @@ impl DenpyoRepo for DenpyoDb {
             })
             .sync()
             */
-    fn get(&self, omise_uri: String, maroudo_id: String) -> Result<Option<Denpyo>, String> {
+    fn get(
+        &self,
+        omise_uri: String,
+        maroudo_id: String,
+    ) -> Result<Option<Denpyo>, ApplicationError> {
         let mut denpyo = Denpyo::new(omise_uri, maroudo_id);
         let client = DynamoDbClient::new(Region::ApNortheast1);
-        match client.get_item(denpyo.get_item()).sync() {
+        return match client.get_item(denpyo.get_item()).sync() {
             Ok(result) => match result.item {
                 Some(item) => {
                     denpyo.from(item);
-                    return Ok(Some(denpyo));
+                    Ok(Some(denpyo))
                 }
                 None => {
                     // なくても良い
-                    return Ok(None);
+                    Ok(None)
                 }
             },
             Err(err) => {
@@ -46,19 +51,18 @@ impl DenpyoRepo for DenpyoDb {
                     "repository::denpyo::dynamodb::get() client.get_item() : {}",
                     err
                 );
-                return Err(err.to_string());
+                Err(ApplicationError::DynamoDbGetItem(err))
             }
-        }
+        };
     }
-    fn put(&self, denpyo: &Denpyo) -> bool {
+    fn put(&self, denpyo: &Denpyo) -> Result<bool, ApplicationError> {
         let client = DynamoDbClient::new(Region::ApNortheast1);
-        match client.put_item(denpyo.put_item()).sync() {
-            Ok(_) => {}
+        return match client.put_item(denpyo.put_item()).sync() {
+            Ok(_) => Ok(true),
             Err(err) => {
                 error!("repository::denpyo::dynamodb::put() {}", err);
-                return false;
+                Err(ApplicationError::DynamoDbPutItem(err))
             }
-        }
-        return true;
+        };
     }
 }

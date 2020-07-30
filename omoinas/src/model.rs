@@ -1,5 +1,6 @@
 pub mod cache;
 pub mod denpyo;
+pub mod error;
 pub mod hitogata;
 pub mod kotoba;
 pub mod maroudo;

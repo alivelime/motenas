@@ -2,6 +2,7 @@ use chrono::{DateTime, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::model::denpyo::*;
+use crate::model::error::ApplicationError;
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
@@ -13,7 +14,7 @@ pub struct Event {
 pub struct Response {
     pub denpyo: Vec<Denpyo>,
 }
-pub fn main<DR: DenpyoRepo>(_: Event) -> Result<Response, String> {
+pub fn main<DR: DenpyoRepo>(_: Event) -> Result<Response, ApplicationError> {
     let dr = DR::new();
     let denpyo = vec![Denpyo {
         omise_uri: String::from("tokishirazu.llc/passengers"),
@@ -39,13 +40,14 @@ pub fn main<DR: DenpyoRepo>(_: Event) -> Result<Response, String> {
             },
         ],
         sum: 550,
+        memo: String::from("これはテストデータ"),
 
         created_at: DateTime::parse_from_rfc3339("2020-07-28T00:00:00+09:00").unwrap(),
         updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
     }];
 
     for d in &denpyo {
-        dr.put(d);
+        dr.put(d)?;
     }
 
     return Ok(Response { denpyo: denpyo });

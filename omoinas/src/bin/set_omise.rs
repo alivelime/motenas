@@ -14,11 +14,5 @@ fn main() {
 }
 
 fn handler(e: Event, _: Context) -> Result<Response, HandlerError> {
-    return match set_omise::main::<OmiseDb>(e) {
-        Ok(r) => Ok(r),
-        Err(err) => Ok(Response {
-            ok: false,
-            message: err,
-        }),
-    };
+    return Ok(set_omise::main::<OmiseDb>(e)?);
 }

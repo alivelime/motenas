@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::model::denpyo::*;
+use crate::model::error::ApplicationError;
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
@@ -14,7 +15,7 @@ pub struct Response {
     denpyo: Option<Denpyo>,
 }
 
-pub fn main<DR: DenpyoRepo>(e: Event) -> Result<Response, String> {
+pub fn main<DR: DenpyoRepo>(e: Event) -> Result<Response, ApplicationError> {
     let dr = DR::new();
 
     return match dr.get(format!("{}/{}", e.client_id, e.omise_id), e.maroudo_id) {

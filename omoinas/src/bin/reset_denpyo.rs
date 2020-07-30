@@ -14,8 +14,5 @@ fn main() {
 }
 
 fn handler(e: Event, _: Context) -> Result<Response, HandlerError> {
-    return match reset_denpyo::main::<DenpyoDb>(e) {
-        Ok(r) => Ok(r),
-        Err(_) => Ok(Response { denpyo: Vec::new() }),
-    };
+    return Ok(reset_denpyo::main::<DenpyoDb>(e)?);
 }

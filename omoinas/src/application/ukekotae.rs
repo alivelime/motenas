@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::application::hitogata;
 use crate::model::cache::Cache;
+use crate::model::error::ApplicationError;
 use crate::model::omise::OmiseRepo;
 use crate::model::parser::Parser;
 use crate::omomuki::{self, Omomuki};
@@ -31,7 +32,7 @@ pub struct Carousel {
     text: String,
 }
 
-pub fn main<P: Parser, C: Cache, OR: OmiseRepo>(e: Event) -> Result<Response, String> {
+pub fn main<P: Parser, C: Cache, OR: OmiseRepo>(e: Event) -> Result<Response, ApplicationError> {
     let chara = hitogata::new::<OR>(&e.omise_uri);
     let (ok, tree) = P::parse::<C>(&e.text);
     if !ok {

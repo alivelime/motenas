@@ -4,12 +4,13 @@ use std::collections::HashSet;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
+use crate::model::error::ApplicationError;
 use crate::model::mono::Mono;
 
 pub trait OmiseRepo {
     fn new() -> Self;
-    fn get(&self, client_id: &String, omise_id: &String) -> Result<Omise, String>;
-    fn put(&self, omise: &Omise) -> bool;
+    fn get(&self, client_id: &String, omise_id: &String) -> Result<Omise, ApplicationError>;
+    fn put(&self, omise: &Omise) -> Result<bool, ApplicationError>;
 }
 
 pub struct Client {

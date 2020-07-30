@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::application::omise;
+use crate::model::error::ApplicationError;
 use crate::model::omise::OmiseRepo;
 
 #[derive(Deserialize, Debug)]
@@ -12,12 +13,9 @@ pub struct Event {
 }
 
 #[derive(Serialize, Debug)]
-pub struct Response {
-    pub ok: bool,
-    pub message: String,
-}
+pub struct Response {}
 
-pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
+pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, ApplicationError> {
     let mut omise = omise::new::<OR>(format!("{}/{}", &e.client_id, &e.omise_id).as_str());
     let or = OR::new();
 
@@ -35,11 +33,6 @@ pub fn main<OR: OmiseRepo>(e: Event) -> Result<Response, String> {
         _ => {}
     };
 
-    if !or.put(&omise) {
-        return Err(String::from("dynamo put error."));
-    }
-    return Ok(Response {
-        ok: true,
-        message: String::new(),
-    });
+    or.put(&omise)?;
+    return Ok(Response {});
 }

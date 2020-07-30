@@ -1,10 +1,16 @@
 use chrono::{DateTime, FixedOffset, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::model::error::ApplicationError;
+
 pub trait DenpyoRepo {
     fn new() -> Self;
-    fn put(&self, denpyo: &Denpyo) -> bool;
-    fn get(&self, omsier_uri: String, maroudo_id: String) -> Result<Option<Denpyo>, String>;
+    fn put(&self, denpyo: &Denpyo) -> Result<bool, ApplicationError>;
+    fn get(
+        &self,
+        omsier_uri: String,
+        maroudo_id: String,
+    ) -> Result<Option<Denpyo>, ApplicationError>;
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -35,6 +41,7 @@ pub struct Denpyo {
 
     pub shinamono: Vec<Shina>,
     pub sum: i64,
+    pub memo: String,
 
     #[serde(rename = "createdAt")]
     pub created_at: DateTime<FixedOffset>,
@@ -50,6 +57,7 @@ impl Denpyo {
             id: String::from(""),
             shinamono: vec![],
             sum: 0,
+            memo: String::from(""),
             created_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
             updated_at: Utc::now().with_timezone(&FixedOffset::east(9 * 3600)),
         };
