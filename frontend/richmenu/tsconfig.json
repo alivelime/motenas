@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "types": [
-      "liff-type"
     ],
     "esModuleInterop": true,
     "jsx": "react",

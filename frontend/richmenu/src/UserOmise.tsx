@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {
   useParams,
 } from 'react-router-dom';
+import liff from '@line/liff';
 
 import {getOmise, checkOmise, newOmise } from 'utils/api/omise';
 import {formatYmdHi, tomorrow} from 'utils/time';
@@ -99,7 +100,7 @@ function UserOmise() {
 
   useEffect(() => {
     liff.ready.then(() => {
-      let accessToken = ""
+      let accessToken: string | null = ""
       if (!liff.isLoggedIn()) {
         if (process.env.NODE_ENV === "production") {
           // liff.login({})

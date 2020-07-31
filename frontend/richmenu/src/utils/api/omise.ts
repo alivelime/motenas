@@ -145,7 +145,7 @@ export function setOmise(
   clientId: string,
   omiseId: string,
   omise: OmiseForm,
-  token: string,
+  token: string | null,
   resolve: ()=>void,
   reject: (err: Error
 )=>void) {
@@ -171,7 +171,7 @@ export function setOmise(
     .catch(err => reject(err))
 }
 
-export function checkOmise(env: string, clientId: string, omiseId: string, accessToken: string) {
+export function checkOmise(env: string, clientId: string, omiseId: string, accessToken: string | null) {
   fetcher<void>(
     env === 'prd'
       ? `${process.env.REACT_APP_PRD_LINE_API_HOST}/line-api/omise/check`

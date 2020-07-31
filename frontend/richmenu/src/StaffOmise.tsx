@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
 import { useForm, Controller, useFieldArray} from "react-hook-form";
+import liff from '@line/liff';
 
 import {getOmise, Omise, setOmise, OmiseForm, Ima} from 'utils/api/omise';
 
@@ -153,7 +154,7 @@ function StaffOmise() {
   console.log("render")
   const {env, clientId, omiseId} = useParams<RouteParams>();
 
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState<string | null>("");
   const [omotenashi, setOmotenashi] = useState(new Set<string>([]));
   const [oshiharai, setOshiharai] = useState(new Set<string>([]));
   const { register, handleSubmit, reset, control, getValues, errors } = useForm({defaultValues});
@@ -202,7 +203,7 @@ function StaffOmise() {
   };
   useEffect(() => {
     liff.ready.then(() => {
-      let accessToken = ""
+      let accessToken: string | null = ""
       if (!liff.isLoggedIn()) {
         if (process.env.NODE_ENV === "production") {
           liff.login({redirectUri: window.location.href})

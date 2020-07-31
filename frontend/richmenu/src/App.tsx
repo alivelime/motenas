@@ -4,6 +4,7 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
+import liff from '@line/liff';
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -12,7 +13,7 @@ import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 
 import UserOmise from './UserOmise';
-// import UserOrder from './UserOrder';
+import UserOrder from './UserOrder';
 
 import StaffOmise from './StaffOmise';
 
@@ -72,11 +73,7 @@ function App() {
             <UserOmise />
           </Route>
           <Route path="/:env/user/order/:clientId/:omiseId" exact>
-            <Grid container alignItems="center" justify="center">
-              <Grid item xs={8}>
-                <Paper>只今開発中 : 7月末公開予定?</Paper>
-              </Grid>
-            </Grid>
+            <UserOrder />
           </Route>
 
           <Route path="/:env/staff/omise/:clientId/:omiseId" exact>
