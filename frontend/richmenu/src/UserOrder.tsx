@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import QrReader from 'react-qr-reader'
+import React, { useState } from 'react'
+
+import QrReader from 'components/QrReader'
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -27,8 +28,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-function UserOmise() {
+function UserOrder() {
   const [qr, setQr] = useState(false);
+  const [qrDebug, setQrDebug] = useState(false);
   const [qrText, setQrText] = useState<string | null>("");
 
   const classes = useStyles();
@@ -36,17 +38,43 @@ function UserOmise() {
     <Grid container className={classes.root} spacing={3} justify="center" alignItems="center">
       <Grid item xs={12}>
         <Paper variant="outlined" elevation={3} className={classes.paper}>
-          {qr
-            ? <QrReader
-              delay={1000}
-              resolution={1920}
-              onError={(err)=>{alert(err.toString()); setQr(false)}}
-              onScan={(text) => {if (text != null) {setQrText(text); setQr(false);}}}
-              style={{ width: '100%' }}
+          {qr &&
+            <QrReader
+              debug={false}
+              delay={100}
+              resolution={600}
+              onError={(err)=>{alert(err); setQr(false)}}
+              onScan={(text) => {if (text != null) {setQr(false); setQrText(text);}}}
+              constraints={{
+                width: {ideal: 1920},
+                  height: {ideal: 1080},
+                  facingMode: {ideal: 'environment'},
+              }}
             />
-            : <Button variant="contained" color="primary" onClick={()=>{setQr(true)}}>
-              QRコードを読み込む
-            </Button>
+          }
+          {qrDebug &&
+            <QrReader
+              debug={true}
+              delay={100}
+              resolution={600}
+              onError={(err)=>{alert(err); setQr(false); setQrDebug(false)}}
+              onScan={(text) => {if (text != null) {setQr(false); setQrDebug(false); setQrText(text);}}}
+              constraints={{
+                width: {ideal: 1920},
+                height: {ideal: 1080},
+                facingMode: {ideal: 'environment'},
+              }}
+            />
+          }
+          {!qr && !qrDebug &&
+              <p><Button variant="contained" color="primary" onClick={()=>{setQr(true); setQrDebug(false)}}>
+                QRコードを読み込む
+            </Button></p>
+          }
+          {!qr && !qrDebug &&
+              <p><Button variant="contained" color="secondary" onClick={()=>{setQr(false); setQrDebug(true)}}>
+                デバッグ用
+            </Button></p>
           }
           <p>{qrText}</p>
         </Paper>
@@ -55,5 +83,5 @@ function UserOmise() {
   );
 }
 
-export default UserOmise;
+export default UserOrder;
 

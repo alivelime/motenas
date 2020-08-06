@@ -1,10 +1,13 @@
 .PHONY: build build-prd deploy deploy-prd
 
+install:
+	nodebrew use v12.x && npm install && npm install -g aws-cdk
+
 build:
-	REACT_APP_ENV=dev npm run build
+	nodebrew use v12.x && REACT_APP_ENV=dev npm run build
 
 build-prd:
-	REACT_APP_ENV=prd npm run build
+	nodebrew use v12.x && REACT_APP_ENV=prd npm run build
 
 deploy: build
 	cd ../deploy && npm run build && cdk deploy -c stage=dev --require-approval never
