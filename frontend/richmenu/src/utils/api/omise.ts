@@ -33,9 +33,6 @@ export interface Links {
   line: string,
 }
 
-// 単に export interface Ima {...} とすると、
-// Attempted import error: 'Ima' is not exported from 'utils/api/omise'.
-// とか言われる。というか今はエラーにならない。。意味わからん。。
 export interface Ima {
   namae: string,
   status: string,

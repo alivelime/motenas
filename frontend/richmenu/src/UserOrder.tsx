@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, memo, useMemo, useCallback } from 'react'
 
 import QrReader from 'components/QrReader'
+import { newOkusuri } from 'utils/okusuri'
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -25,58 +26,102 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.secondary,
     textAlign: 'center',
   },
+  message: {
+    top: 0,
+    left: 0,
+    position: 'absolute',
+    width: '100%',
+    display: 'block',
+  },
 }));
 
+const QrReaderMemo = memo(QrReader)
 
 function UserOrder() {
+  const classes = useStyles();
+
   const [qr, setQr] = useState(false);
   const [qrDebug, setQrDebug] = useState(false);
-  const [qrText, setQrText] = useState<string | null>("");
+  const [okusuri, setOkusuri] = useState(newOkusuri());
 
-  const classes = useStyles();
+  const constraints = useMemo(() => ({
+    width: {ideal: 1920},
+    height: {ideal: 1080},
+    facingMode: {ideal: 'environment'},
+  }), [])
+  const onScan = useCallback((text: string | null) => {
+    if (text != null) {
+      setOkusuri(okusuri => {
+        let o = {...okusuri}
+        o.add(text)
+
+        if (o.isEnd) {
+          setQr(false)
+          setQrDebug(false)
+        }
+        return o
+      })
+    }
+  }, [])
+  const onError = useCallback((err: Error) => {
+    alert(err)
+    setQr(false)
+    setQrDebug(false)
+
+    setOkusuri(newOkusuri())
+  }, [])
   return (
     <Grid container className={classes.root} spacing={3} justify="center" alignItems="center">
       <Grid item xs={12}>
         <Paper variant="outlined" elevation={3} className={classes.paper}>
-          {qr &&
-            <QrReader
-              debug={false}
-              delay={100}
-              resolution={600}
-              onError={(err)=>{alert(err); setQr(false)}}
-              onScan={(text) => {if (text != null) {setQr(false); setQrText(text);}}}
-              constraints={{
-                width: {ideal: 1920},
-                  height: {ideal: 1080},
-                  facingMode: {ideal: 'environment'},
-              }}
-            />
-          }
-          {qrDebug &&
-            <QrReader
-              debug={true}
-              delay={100}
-              resolution={600}
-              onError={(err)=>{alert(err); setQr(false); setQrDebug(false)}}
-              onScan={(text) => {if (text != null) {setQr(false); setQrDebug(false); setQrText(text);}}}
-              constraints={{
-                width: {ideal: 1920},
-                height: {ideal: 1080},
-                facingMode: {ideal: 'environment'},
-              }}
-            />
+          {(qr || qrDebug) &&
+            <div className={classes.message}>{okusuri.getMessage()}</div>
           }
           {!qr && !qrDebug &&
-              <p><Button variant="contained" color="primary" onClick={()=>{setQr(true); setQrDebug(false)}}>
+          <p><Button
+              variant="contained"
+              color="primary"
+              onClick={()=>{
+                setQr(true)
+                setQrDebug(false)
+                setOkusuri(newOkusuri())
+              }}>
                 QRコードを読み込む
             </Button></p>
           }
           {!qr && !qrDebug &&
-              <p><Button variant="contained" color="secondary" onClick={()=>{setQr(false); setQrDebug(true)}}>
+          <p><Button
+              variant="contained"
+              color="secondary"
+              onClick={()=>{
+                setQr(false)
+                setQrDebug(true)
+                setOkusuri(newOkusuri())
+              }}>
                 デバッグ用
             </Button></p>
           }
-          <p>{qrText}</p>
+          <p>{okusuri.print()}</p>
+          {qr &&
+            <QrReaderMemo
+              debug={false}
+              delay={100}
+              resolution={600}
+              onError={onError}
+              onScan={onScan}
+              constraints={constraints}
+            />
+          }
+          {qrDebug &&
+            <QrReaderMemo
+              debug={true}
+              delay={100}
+              resolution={600}
+              onError={onError}
+              onScan={onScan}
+              constraints={constraints}
+            />
+          }
         </Paper>
       </Grid>
     </Grid>
