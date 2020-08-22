@@ -34,9 +34,9 @@ def main():
     # table = dynamodb.Table(env+'omise')
 
     if env == "dev":
-        LIFF_HOST = 'https://liff.line.me/1654294151-W4nvdn0p/dev'
+        LIFF_HOST = 'https://liff.line.me/1654294151-W4nvdn0p'
     elif env == 'prd':
-        LIFF_HOST = 'https://liff.line.me/1654396683-AKjozgVr/prd'
+        LIFF_HOST = 'https://liff.line.me/1654396683-AKjozgVr'
     else:
         LIFF_HOST = ''
 

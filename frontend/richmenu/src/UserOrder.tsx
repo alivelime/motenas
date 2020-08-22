@@ -1,7 +1,11 @@
-import React, { useState, memo, useMemo, useCallback } from 'react'
+import React, { useState, memo, useMemo, useCallback, useEffect } from 'react'
+import { useParams } from 'react-router-dom';
+import liff from '@line/liff';
 
 import QrReader from 'components/QrReader'
 import { newOkusuri } from 'utils/okusuri'
+import { callbackUserUrl, cloudfrontUrl } from 'utils/callback'
+import { isLocal } from 'utils/env'
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -12,7 +16,6 @@ import Divider from '@material-ui/core/Divider';
 
 
 interface RouteParams {
-    env: string,
     clientId: string,
     omiseId: string,
 }
@@ -39,10 +42,28 @@ const QrReaderMemo = memo(QrReader)
 
 function UserOrder() {
   const classes = useStyles();
+  const {clientId, omiseId} = useParams<RouteParams>();
 
+  const [isInClient, setIsInClient] = useState(false);
   const [qr, setQr] = useState(false);
   const [qrDebug, setQrDebug] = useState(false);
   const [okusuri, setOkusuri] = useState(newOkusuri());
+
+  useEffect(() => {
+    liff.ready.then(() => {
+      let accessToken: string | null = ""
+      if (liff.isInClient()) {
+        // LINE内ブラウザでは使えないので外部ブラウザで開いてもらう
+        setIsInClient(true)
+      } else {
+        // 外部ブラウザ
+        setIsInClient(false)
+        if (!liff.isLoggedIn() && !isLocal()) {
+          liff.login({redirectUri: callbackUserUrl('order', clientId, omiseId)})
+        }
+      }
+    })
+  },[clientId, omiseId])
 
   const constraints = useMemo(() => ({
     width: {ideal: 1920},
@@ -58,6 +79,8 @@ function UserOrder() {
         if (o.isEnd) {
           setQr(false)
           setQrDebug(false)
+
+          // accessToken = liff.getAccessToken()
         }
         return o
       })
@@ -73,6 +96,23 @@ function UserOrder() {
   return (
     <Grid container className={classes.root} spacing={3} justify="center" alignItems="center">
       <Grid item xs={12}>
+        {isInClient ?
+        <div>
+          <p>セキュリティ保護の為、ブラウザを起動します</p>
+          <p><Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                liff.openWindow({
+                  url: cloudfrontUrl(),
+                  external: true,
+                })
+                liff.closeWindow()
+              }}
+            >
+              ブラウザで開く
+          </Button></p>
+        </div> :
         <Paper variant="outlined" elevation={3} className={classes.paper}>
           {(qr || qrDebug) &&
             <div className={classes.message}>{okusuri.getMessage()}</div>
@@ -123,6 +163,7 @@ function UserOrder() {
             />
           }
         </Paper>
+        }
       </Grid>
     </Grid>
   );

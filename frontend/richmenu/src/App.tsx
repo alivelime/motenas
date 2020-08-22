@@ -2,12 +2,16 @@ import React from 'react';
 import {
   BrowserRouter as Router,
   Route,
+  Redirect,
   Switch,
 } from 'react-router-dom';
 import liff from '@line/liff';
+import queryString from 'query-string';
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from "@material-ui/core/CssBaseline";
+
+import { LiffId } from './utils/env';
 
 import UserOmise from './UserOmise';
 import UserOrder from './UserOrder';
@@ -55,9 +59,7 @@ const theme = createMuiTheme({
 
 
 function App() {
-  liff.init({ liffId: (process.env.REACT_APP_ENV === "prd"
-    ? process.env.REACT_APP_PRD_LIFF_ID
-    : process.env.REACT_APP_DEV_LIFF_ID)as string }).then(() => {})
+  liff.init({ liffId: LiffId()}).then(() => {})
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
@@ -66,14 +68,20 @@ function App() {
           <Route path="/" exact>
             This is minarai chan liff.
           </Route>
-          <Route path="/:env/user/omise/:clientId/:omiseId" exact>
+          <Route path="/callback" exact render={(props) => {
+            const qs = queryString.parse(props.location.search)
+            console.log(`/${qs.target}/${qs.page}/${qs.clientId}/${qs.omiseId}${window.location.search}`)
+            return <Redirect to={`/${qs.target}/${qs.page}/${qs.clientId}/${qs.omiseId}${window.location.search}`} />
+          }} />
+
+          <Route path="/user/omise/:clientId/:omiseId" exact>
             <UserOmise />
           </Route>
-          <Route path="/:env/user/order/:clientId/:omiseId" exact>
-            <UserOrder />
+          <Route path="/user/order/:clientId/:omiseId" exact>
+            <UserOrder/>
           </Route>
 
-          <Route path="/:env/staff/omise/:clientId/:omiseId" exact>
+          <Route path="/staff/omise/:clientId/:omiseId">
             <StaffOmise />
           </Route>
         </Switch>

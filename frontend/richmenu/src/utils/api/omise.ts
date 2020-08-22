@@ -1,5 +1,5 @@
 import fetcher from 'utils/fetcher'
-
+import { isPrd } from 'utils/env'
 
 interface ResponseOmise {
   omise: Omise;
@@ -112,14 +112,13 @@ export function newOmise(): Omise {
 }
 
 export function getOmise(
-  env: string,
   clientId: string,
   omiseId: string,
   resolve: (omise: Omise)=>void,
   reject: (err: Error)=>void,
 ) {
   fetcher<ResponseOmise>(
-    env === 'prd'
+    isPrd()
       ? `${process.env.REACT_APP_PRD_API_HOST}/omise/${clientId}/${omiseId}`
       : `${process.env.REACT_APP_DEV_API_HOST}/omise/${clientId}/${omiseId}`,
     {
@@ -138,7 +137,6 @@ export function getOmise(
 }
 
 export function setOmise(
-  env: string,
   clientId: string,
   omiseId: string,
   omise: OmiseForm,
@@ -147,7 +145,7 @@ export function setOmise(
   reject: (err: Error
 )=>void) {
   fetcher<void>(
-    env === 'prd'
+    isPrd()
       ? `${process.env.REACT_APP_PRD_LINE_API_HOST}/line-api/omise/set`
       : `${process.env.REACT_APP_DEV_LINE_API_HOST}/line-api/omise/set`,
     {
@@ -168,9 +166,9 @@ export function setOmise(
     .catch(err => reject(err))
 }
 
-export function checkOmise(env: string, clientId: string, omiseId: string, accessToken: string | null) {
+export function checkOmise(clientId: string, omiseId: string, accessToken: string | null) {
   fetcher<void>(
-    env === 'prd'
+    isPrd()
       ? `${process.env.REACT_APP_PRD_LINE_API_HOST}/line-api/omise/check`
       : `${process.env.REACT_APP_DEV_LINE_API_HOST}/line-api/omise/check`,
     {

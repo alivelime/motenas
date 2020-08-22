@@ -4,6 +4,8 @@ import { useForm, Controller, useFieldArray} from "react-hook-form";
 import liff from '@line/liff';
 
 import {getOmise, Omise, setOmise, OmiseForm, Ima} from 'utils/api/omise';
+import { callbackStaffUrl } from 'utils/callback'
+import { isLocal } from 'utils/env'
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -27,7 +29,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';;;;
 library.add(fab, fas, far);
 
 interface RouteParams {
-    env: string,
     clientId: string,
     omiseId: string,
 }
@@ -152,7 +153,7 @@ const payment = [
 
 function StaffOmise() {
   console.log("render")
-  const {env, clientId, omiseId} = useParams<RouteParams>();
+  const {clientId, omiseId} = useParams<RouteParams>();
 
   const [token, setToken] = useState<string | null>("");
   const [omotenashi, setOmotenashi] = useState(new Set<string>([]));
@@ -169,7 +170,7 @@ function StaffOmise() {
   });
 
   const load = () => {
-    getOmise(env, clientId, omiseId, (omise: Omise) => {
+    getOmise(clientId, omiseId, (omise: Omise) => {
       reset({
         namae: omise.namae,
         ima: omise.ima,
@@ -205,21 +206,16 @@ function StaffOmise() {
     liff.ready.then(() => {
       let accessToken: string | null = ""
       if (!liff.isLoggedIn()) {
-        if (process.env.NODE_ENV === "production") {
-          liff.login({redirectUri: window.location.href})
+        if (!isLocal()) {
+          liff.login({redirectUri:callbackStaffUrl('omise', clientId, omiseId)})
         }
       } else {
         accessToken = liff.getAccessToken()
-        if (env !== "prd") {
-          liff.getProfile().then(profile => {
-            console.log(profile)
-          })
-        }
         setToken(accessToken)
       }
       load()
     })
-  },[env, clientId, omiseId])
+  },[clientId, omiseId])
 
 
   function handleSelectOmotenashi(name: string) {
@@ -244,7 +240,7 @@ function StaffOmise() {
   };
 
   const onSubmit = (omise: OmiseForm) => {
-    setOmise(env, clientId, omiseId, omise, token, ()=>{
+    setOmise(clientId, omiseId, omise, token, ()=>{
       setStatus({
         open: true,
         type: "success",

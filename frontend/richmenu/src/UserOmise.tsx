@@ -6,6 +6,7 @@ import liff from '@line/liff';
 
 import {getOmise, checkOmise, newOmise } from 'utils/api/omise';
 import {formatYmdHi, tomorrow} from 'utils/time';
+import { isLocal } from 'utils/env'
 
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -25,7 +26,6 @@ library.add(fab, fas, far);
 
 
 interface RouteParams {
-    env: string,
     clientId: string,
     omiseId: string,
 }
@@ -95,25 +95,21 @@ const useStyles = makeStyles((theme) => ({
 
 
 function UserOmise() {
-  const {env, clientId, omiseId} = useParams<RouteParams>();
+  const {clientId, omiseId} = useParams<RouteParams>();
   const [omise, setOmise] = useState(newOmise());
 
   useEffect(() => {
     liff.ready.then(() => {
       let accessToken: string | null = ""
-      if (!liff.isLoggedIn()) {
-        if (process.env.NODE_ENV === "production") {
-          // liff.login({})
-        }
-      } else {
+      if (liff.isLoggedIn()) {
         accessToken = liff.getAccessToken()
       }
-      getOmise(env, clientId, omiseId, (omise) => setOmise(omise),(err: Error)=>{console.log(err)})
-      if (process.env.NODE_ENV === "production") {
-        checkOmise(env, clientId, omiseId, accessToken);
+      getOmise(clientId, omiseId, (omise) => setOmise(omise),(err: Error)=>{console.log(err)})
+      if (!isLocal()) {
+        checkOmise(clientId, omiseId, accessToken);
       }
     })
-  },[env, clientId, omiseId])
+  },[clientId, omiseId])
 
   const classes = useStyles();
   return (
