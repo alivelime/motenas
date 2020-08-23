@@ -20,7 +20,12 @@ export interface OkusuriData {
   okusuriName: string,
 }
 
-export function newOkusuri(): Okusuri {
+export function newOkusuri(f: boolean): Okusuri {
+  if (f) {
+    const speach = new SpeechSynthesisUtterance("一番左のQRにかざしてください");
+    speechSynthesis.speak(speach);
+  }
+
   return {
     version: "",
     text: "",
@@ -61,27 +66,23 @@ export function newOkusuri(): Okusuri {
         this.isEnd = true
       }
       this.count++
+
+      const speach = new SpeechSynthesisUtterance(this.getMessage())
+      speechSynthesis.speak(speach)
     },
     print: function(): string {
-      return this.text !== ""
-        ? `レコード数 ${this.data.length} `
-        + this.data.map(d => d.okusuriName).join(",")
-        + ` JAHISTC${this.version}` + this.text
-        : ""
+      return this.text === ""
+        ? ""
+        : ` JAHISTC${this.version}` + this.text
     },
     getMessage: function(): string {
-
-      let text = ""
        if (this.text === "") {
-        text = "一番左のQRにかざしてください"
+        return "一番左のQRにかざしてください"
       } else if (this.isEnd) {
-        text = "全て読み取りました"
+        return "全て読み取りました"
       } else {
-        text = `次のQRにかざしてください。読込QR ${this.count}つ`
+        return `次のQRにかざしてください。読込QR ${this.count}つ`
       }
-      const speach = new SpeechSynthesisUtterance(text);
-      speechSynthesis.speak(speach);
-      return text
     },
   }
 }

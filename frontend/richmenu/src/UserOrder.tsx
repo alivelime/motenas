@@ -52,7 +52,7 @@ function UserOrder() {
   const [isInClient, setIsInClient] = useState(false);
   const [qr, setQr] = useState(false);
   const [qrDebug, setQrDebug] = useState(false);
-  const [okusuri, setOkusuri] = useState(newOkusuri());
+  const [okusuri, setOkusuri] = useState(newOkusuri(false));
 
   useEffect(() => {
     liff.ready.then(() => {
@@ -102,7 +102,7 @@ function UserOrder() {
     setQr(false)
     setQrDebug(false)
 
-    setOkusuri(newOkusuri())
+    setOkusuri(newOkusuri(false))
   }, [])
   return (
     <Grid container className={classes.root} spacing={3} justify="center" alignItems="center">
@@ -146,7 +146,7 @@ function UserOrder() {
                 onClick={()=>{
                   setQr(true)
                   setQrDebug(false)
-                  setOkusuri(newOkusuri())
+                  setOkusuri(newOkusuri(true))
                 }}>
                   QRコードを読み込む
               </Button></p>
@@ -158,7 +158,7 @@ function UserOrder() {
                 onClick={()=>{
                   setQr(false)
                   setQrDebug(true)
-                  setOkusuri(newOkusuri())
+                  setOkusuri(newOkusuri(true))
                 }}>
                   デバッグ用
               </Button></p>
