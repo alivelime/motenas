@@ -66,6 +66,11 @@ functions:
                 clientId: true,
                 omiseId: true,
 
+  createDenpyo:
+    handler: omoinas.create_denpyo
+    environment:
+      ENV: ${self:custom.otherfile.environment.${self:provider.stage}.ENV}
+
   resetDenpyo:
     handler: omoinas.reset_denpyo
     environment:

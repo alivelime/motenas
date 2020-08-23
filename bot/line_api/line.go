@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -100,9 +101,21 @@ func (r *Line) withSender() *linebot.Sender {
 }
 */
 
-func ClientID(omiseURI string) string {
-	return strings.Split(omiseURI, "/")[0]
+func cabab2Snake(s string) string {
+	s = strings.ReplaceAll(s, ".", "_")
+	s = strings.ReplaceAll(s, "/", "_")
+	s = strings.ToUpper(s)
+	return s
 }
-func OmiseID(omiseURI string) string {
-	return strings.Split(omiseURI, "/")[1]
+func cebab2Camel(s string) string {
+	var cc string
+	s = strings.ReplaceAll(s, ".", "/")
+	for _, w := range strings.Split(s, "/") {
+		cc += strings.ToUpper(string(w[0])) + w[1:]
+	}
+	return cc
+}
+
+func omiseURI(c, o string) string {
+	return fmt.Sprintf("%s/%s", c, o)
 }

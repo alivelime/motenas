@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -14,6 +15,7 @@ const (
 
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
+	log.Printf("request header : ", request.Headers["origin"])
 	headers := map[string]string{
 		"Content-Type":                    "application/json",
 		"Access-Control-Allow-Origin":     request.Headers["origin"],
@@ -41,6 +43,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	case "EnterOmise":
 		res, err = enterOmise(request)
 	default:
+		log.Printf("call %s", fn)
 		return events.APIGatewayProxyResponse{
 			Headers:    headers,
 			Body:       "no method",

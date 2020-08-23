@@ -19,3 +19,9 @@ export function cloudfrontUrl(): string {
     : process.env.REACT_APP_PRD_CLOUDFRONT_HOST
     }${window.location.pathname}`
 }
+export function liffUrl(): string {
+  return `${isDev()
+    ? process.env.REACT_APP_DEV_LIFF_HOST
+    : process.env.REACT_APP_PRD_LIFF_HOST
+  }${window.location.pathname}`
+}

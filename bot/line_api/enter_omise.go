@@ -23,18 +23,18 @@ func enterOmise(request events.APIGatewayProxyRequest) (string, error) {
 	}
 
 	param := &struct {
-		OmiseURI string `json:"omiseUri"`
+		// 引数
 		ID       string `json:"id"`
+		ClientID string `json:"clientId"`
+		OmiseID  string `json:"omiseId"`
 
 		//  ラムダ用パラメータ
-		ClientID  string `json:"clientId"`
-		OmiseID   string `json:"omiseId"`
 		MaroudoID string `json:"maroudoId"`
 	}{}
 	if err := json.Unmarshal([]byte(request.Body), param); err != nil {
 		return "", err
 	}
-	omise := cebab2Camel(param.OmiseURI)
+	omise := cebab2Camel(omiseURI(param.ClientID, param.OmiseID))
 
 	bot, err := NewLine(
 		os.Getenv(omise+"_CHANNEL_SECRET"),
@@ -65,11 +65,9 @@ func enterOmise(request events.APIGatewayProxyRequest) (string, error) {
 	name := prof.DisplayName
 
 	param.MaroudoID = prof.UserID
-	param.ClientID = ClientID(param.OmiseURI)
-	param.OmiseID = OmiseID(param.OmiseURI)
 
 	payload, _ := json.Marshal(param)
-	res, err := lambda.New(session.New()).Invoke(&lambda.InvokeInput{
+	_, err = lambda.New(session.New()).Invoke(&lambda.InvokeInput{
 		FunctionName:   aws.String(ARN + "omoinas-" + os.Getenv("ENV") + "-createDenpyo"),
 		Payload:        payload,
 		InvocationType: aws.String("RequestResponse"),
@@ -79,18 +77,8 @@ func enterOmise(request events.APIGatewayProxyRequest) (string, error) {
 		return "", err
 	}
 
-	result := struct {
-		OK      bool   `json:"ok"`
-		Message string `json:"message"`
-	}{}
-	_ = json.Unmarshal(res.Payload, &result)
-	if !result.OK {
-		log.Println(result.Message)
-		return "", errors.New(result.Message)
-	}
-
-	bot.PushTextMessage(prof.UserID, fmt.Sprintf("%sさんいらっしゃいませ。", name))
-	bot.TextMessageToOrderRoom(fmt.Sprintf("%sさんが入店しました\n伝票番号: %s", name, param.ID))
+	bot.PushTextMessage(prof.UserID, fmt.Sprintf("お薬を登録したよ\n", param.ID))
+	bot.TextMessageToOrderRoom(fmt.Sprintf("%sさんがお薬を読み取ったよ\n%s", name, param.ID))
 
 	return "{}", nil
 }

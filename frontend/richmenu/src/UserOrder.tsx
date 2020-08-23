@@ -4,7 +4,8 @@ import liff from '@line/liff';
 
 import QrReader from 'components/QrReader'
 import { newOkusuri } from 'utils/okusuri'
-import { callbackUserUrl, cloudfrontUrl } from 'utils/callback'
+import { enterOmise } from 'utils/api/denpyo'
+import { callbackUserUrl, cloudfrontUrl, liffUrl } from 'utils/callback'
 import { isLocal } from 'utils/env'
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -36,6 +37,10 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     display: 'block',
   },
+  title: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
 }));
 
 const QrReaderMemo = memo(QrReader)
@@ -51,7 +56,6 @@ function UserOrder() {
 
   useEffect(() => {
     liff.ready.then(() => {
-      let accessToken: string | null = ""
       if (liff.isInClient()) {
         // LINE内ブラウザでは使えないので外部ブラウザで開いてもらう
         setIsInClient(true)
@@ -80,12 +84,19 @@ function UserOrder() {
           setQr(false)
           setQrDebug(false)
 
-          // accessToken = liff.getAccessToken()
+          const token = liff.getAccessToken()
+          enterOmise(clientId, omiseId, o.print(), token,
+            ()=>{
+              alert("サーバに保存しました")
+            },
+            (err: Error)=> {
+              alert("サーバに保存できませんでした" + err.toString())
+            });
         }
         return o
       })
     }
-  }, [])
+  }, [clientId, omiseId])
   const onError = useCallback((err: Error) => {
     alert(err)
     setQr(false)
@@ -96,9 +107,11 @@ function UserOrder() {
   return (
     <Grid container className={classes.root} spacing={3} justify="center" alignItems="center">
       <Grid item xs={12}>
-        {isInClient ?
-        <div>
-          <p>セキュリティ保護の為、ブラウザを起動します</p>
+        {isInClient
+        ? <Paper variant="outlined" elevation={3} className={classes.paper}>
+          <Divider />
+          <Typography variant="h3" className={classes.title}>QRコード読み取り</Typography>
+          <p>セキュリティ保護の為<br />外部ブラウザを起動します</p>
           <p><Button
               variant="contained"
               color="primary"
@@ -112,57 +125,66 @@ function UserOrder() {
             >
               ブラウザで開く
           </Button></p>
-        </div> :
-        <Paper variant="outlined" elevation={3} className={classes.paper}>
-          {(qr || qrDebug) &&
-            <div className={classes.message}>{okusuri.getMessage()}</div>
-          }
-          {!qr && !qrDebug &&
-          <p><Button
-              variant="contained"
-              color="primary"
-              onClick={()=>{
-                setQr(true)
-                setQrDebug(false)
-                setOkusuri(newOkusuri())
-              }}>
-                QRコードを読み込む
-            </Button></p>
-          }
-          {!qr && !qrDebug &&
-          <p><Button
-              variant="contained"
-              color="secondary"
-              onClick={()=>{
-                setQr(false)
-                setQrDebug(true)
-                setOkusuri(newOkusuri())
-              }}>
-                デバッグ用
-            </Button></p>
-          }
-          <p>{okusuri.print()}</p>
-          {qr &&
-            <QrReaderMemo
-              debug={false}
-              delay={100}
-              resolution={600}
-              onError={onError}
-              onScan={onScan}
-              constraints={constraints}
-            />
-          }
-          {qrDebug &&
-            <QrReaderMemo
-              debug={true}
-              delay={100}
-              resolution={600}
-              onError={onError}
-              onScan={onScan}
-              constraints={constraints}
-            />
-          }
         </Paper>
+        : okusuri.isEnd
+          ? <Paper variant="outlined" elevation={3} className={classes.paper}>
+            <p>お薬情報を登録しました。</p>
+            <p><Button
+                variant="contained"
+                color="primary"
+                href={liffUrl()}
+              >メニューへ</Button></p>
+          </Paper>
+          : <Paper variant="outlined" elevation={3} className={classes.paper}>
+            {(qr || qrDebug) &&
+              <div className={classes.message}>{okusuri.getMessage()}</div>
+            }
+            {!qr && !qrDebug &&
+            <p><Button
+                variant="contained"
+                color="primary"
+                onClick={()=>{
+                  setQr(true)
+                  setQrDebug(false)
+                  setOkusuri(newOkusuri())
+                }}>
+                  QRコードを読み込む
+              </Button></p>
+            }
+            {!qr && !qrDebug &&
+            <p><Button
+                variant="contained"
+                color="secondary"
+                onClick={()=>{
+                  setQr(false)
+                  setQrDebug(true)
+                  setOkusuri(newOkusuri())
+                }}>
+                  デバッグ用
+              </Button></p>
+            }
+            <p>{okusuri.print()}</p>
+            {qr &&
+              <QrReaderMemo
+                debug={false}
+                delay={100}
+                resolution={600}
+                onError={onError}
+                onScan={onScan}
+                constraints={constraints}
+              />
+            }
+            {qrDebug &&
+              <QrReaderMemo
+                debug={true}
+                delay={100}
+                resolution={600}
+                onError={onError}
+                onScan={onScan}
+                constraints={constraints}
+              />
+            }
+          </Paper>
         }
       </Grid>
     </Grid>

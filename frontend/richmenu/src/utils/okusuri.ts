@@ -70,13 +70,18 @@ export function newOkusuri(): Okusuri {
         : ""
     },
     getMessage: function(): string {
+
+      let text = ""
        if (this.text === "") {
-        return "一番左のQRにかざしてください"
+        text = "一番左のQRにかざしてください"
       } else if (this.isEnd) {
-        return "全て読み取りました"
+        text = "全て読み取りました"
       } else {
-        return `次のQRにかざしてください。読込QR ${this.count}つ`
+        text = `次のQRにかざしてください。読込QR ${this.count}つ`
       }
+      const speach = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(speach);
+      return text
     },
   }
 }

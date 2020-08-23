@@ -6,8 +6,11 @@ use crate::model::error::ApplicationError;
 
 #[derive(Deserialize, Debug)]
 pub struct Event {
+    #[serde(rename = "clientId")]
     client_id: String,
+    #[serde(rename = "omiseId")]
     omise_id: String,
+    #[serde(rename = "maroudoId")]
     maroudo_id: String,
     id: String,
 }

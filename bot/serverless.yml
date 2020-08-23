@@ -48,6 +48,17 @@ functions:
           cors: true
           origin: '*'
 
+  lineEnterOmise:
+    handler: bin/line_api
+    runtime: go1.x
+    environment: ${self:custom.otherfile.${self:provider.stage}}
+    events:
+      - http:
+          path: line-api/omise/enter
+          method: post
+          cors: true
+          origin: '*'
+
   lineTokishirazuLlcPassengers:
     handler: bin/line
     runtime: go1.x

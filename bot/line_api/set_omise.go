@@ -22,7 +22,8 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 	}
 
 	param := &struct {
-		OmiseURI string `json:"omiseUri"`
+		ClientID string `json:"clientId"`
+		OmiseID  string `json:"omiseId"`
 
 		Namae string `json:"namae"`
 		Ima   []struct {
@@ -49,14 +50,12 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 		Building string `json:"building"`
 
 		//  ラムダ用パラメータ
-		ClientID   string `json:"clientId"`
-		OmiseID    string `json:"omiseId"`
 		TanamonoID string `json:"tanamonoId"`
 	}{}
 	if err := json.Unmarshal([]byte(request.Body), param); err != nil {
 		return "", err
 	}
-	omise := cebab2Camel(param.OmiseURI)
+	omise := cebab2Camel(omiseURI(param.ClientID, param.OmiseID))
 
 	bot, err := NewLine(
 		os.Getenv(omise+"_CHANNEL_SECRET"),
@@ -87,8 +86,6 @@ func setOmise(request events.APIGatewayProxyRequest) (string, error) {
 	name := prof.DisplayName
 
 	param.TanamonoID = prof.UserID
-	param.ClientID = ClientID(param.OmiseURI)
-	param.OmiseID = OmiseID(param.OmiseURI)
 
 	payload, _ := json.Marshal(param)
 	_, err = lambda.New(session.New()).Invoke(&lambda.InvokeInput{
